@@ -280,7 +280,7 @@ abstract class VersioncontrolEntityController {
   }
 
   protected function queryAlterGetBackendType(&$query) {
-    if (!isset($this->backend)) {
+    if (!isset($this->backend) && $this->baseTable != 'versioncontrol_repositories') {
       $this->addRepositoriesTable($query);
       $query->addField('vcr', 'vcs');
     }
