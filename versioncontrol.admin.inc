@@ -846,7 +846,7 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
       'authorization_method' => $form_state['values']['authorization_method'],
       'backend' => $backends[$form['#vcs']],
     );
-    $repository = new $backends[$form['#vcs']]->classes['repo'](null, $repository, FALSE);
+     $repository = $backends[$form['#vcs']]->buildObject('repo', $repository);
   }
 
   // We also provide a 'data' array where other modules can put their own
