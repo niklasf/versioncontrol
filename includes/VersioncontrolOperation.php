@@ -422,7 +422,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
   private function fill($include_unauthorized = FALSE) {
     // If not already there, retrieve the Drupal user id of the committer.
     if (!isset($this->author)) {
-      $account = $this->repository->getAccounts(array(), array('username' => $this->author));
+      $account = $this->repository->load('account', array(), array('username' => $this->author));
 
       // If no uid could be retrieved, blame the commit on user 0 (anonymous).
       $this->author = isset($this->author) ? $this->author : 0;
