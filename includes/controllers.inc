@@ -324,10 +324,10 @@ abstract class VersioncontrolEntityController {
     foreach ($queried_entities as $entity) {
       $id = $entity->{$this->idKey};
       if (isset($this->backend)) {
-        $built[$id] = $this->backend->buildObject($this->entityType, $entity);
+        $built[$id] = $this->backend->buildEntity($this->entityType, $entity);
       }
       else {
-        $built[$id] = $this->backends[$entity->vcs]->buildObject($this->entityType, $entity);
+        $built[$id] = $this->backends[$entity->vcs]->buildEntity($this->entityType, $entity);
       }
     }
     return $built;
@@ -557,7 +557,7 @@ class VersioncontrolOperationController extends VersioncontrolEntityController {
     foreach ($result as $label) {
       $label->repository = $this->options['repository'];
       $queried_entities[$label->vc_op_id]->labels[$label->name] = $this->backend
-        ->buildObject($label->type === VERSIONCONTROL_LABEL_BRANCH ? 'branch' : 'tag', $label);
+        ->buildEntity($label->type === VERSIONCONTROL_LABEL_BRANCH ? 'branch' : 'tag', $label);
     }
   }
 }

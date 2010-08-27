@@ -57,7 +57,7 @@ class VersioncontrolRepositoryUnitTestingTestCase extends DrupalWebTestCase {
       'vcs' => 'test',
       'backend' => $backends['test'],
     );
-    $repo = $backends['test']->buildObject('repo', $data);
+    $repo = $backends['test']->buildEntity('repo', $data);
     $repo->insert();
     $repositories = $this->controller->load(array($repo->repo_id));
     $this->assertTrue(is_a($repositories[$repo->repo_id], 'VersioncontrolRepository'), t('Make sure we get a valid return when passing a good repo_id.'), 'getRepository');

@@ -76,7 +76,7 @@ abstract class VersioncontrolBackend {
    * @return VersioncontrolEntity
    *   The instantiated and built object.
    */
-  public function buildObject($type, $data) {
+  public function buildEntity($type, $data) {
     // Ensure this backend knows how to handle the entity type requested
     if (empty($this->classes[$type])) {
       throw new Exception("Invalid entity type '$type' requested; not supported by current backend.");
