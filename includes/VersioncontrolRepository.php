@@ -106,7 +106,8 @@ abstract class VersioncontrolRepository extends VersioncontrolEntity {
    *   An associative array of label objects, keyed on their
    */
   public function loadBranches($ids = array(), $conditions = array(), $options = array()) {
-    return $this->load('branch', $ids, $conditions, $options);
+    $conditions['repo_id'] = $this->repo_id;
+    return $this->backend->loadEntities('branch', $ids, $conditions, $options);
   }
 
   /**
@@ -128,16 +129,19 @@ abstract class VersioncontrolRepository extends VersioncontrolEntity {
    *   An associative array of label objects, keyed on their
    */
   public function loadTags($ids = array(), $conditions = array(), $options = array()) {
-    return $this->load('tag', $ids, $conditions, $options);
+    $conditions['repo_id'] = $this->repo_id;
+    return $this->backend->loadEntities('tag', $ids, $conditions, $options);
   }
 
   public function loadCommits($ids = array(), $conditions = array(), $options = array()) {
     $conditions['type'] = VERSIONCONTROL_OPERATION_COMMIT;
-    return $this->load('operation', $ids, $conditions, $options);
+    $conditions['repo_id'] = $this->repo_id;
+    return $this->backend->loadEntities('operation', $ids, $conditions, $options);
   }
 
   public function loadAccounts($ids = array(), $conditions = array(), $options = array()) {
-    return $this->load('account', $ids, $conditions, $options);
+    $conditions['repo_id'] = $this->repo_id;
+    return $this->backend->loadEntities('account', $ids, $conditions, $options);
   }
 
   /**

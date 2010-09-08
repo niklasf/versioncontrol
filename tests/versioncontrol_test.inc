@@ -15,7 +15,7 @@ class VersioncontrolTestBackend extends VersioncontrolBackend {
       // revision for each file.
       VERSIONCONTROL_CAPABILITY_ATOMIC_COMMITS
     );
-    $this->classes = array(
+    $this->classesEntities = array(
       'repo' => 'VersioncontrolTestRepository',
       'account' => 'VersioncontrolTestAccount',
       'operation' => 'VersioncontrolTestOperation',

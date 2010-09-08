@@ -9,8 +9,6 @@
  * Funcional tests for repository managment.
  */
 class VersioncontrolRepositoryManagementTestCase extends DrupalWebTestCase {
-
-  protected $admin_user;
   public $controller;
 
   /**
@@ -29,11 +27,11 @@ class VersioncontrolRepositoryManagementTestCase extends DrupalWebTestCase {
    */
   function setUp() {
     // load core and fake test backend modules
-    parent::setUp('dbtng', 'autoload', 'versioncontrol', 'versioncontrol_test');
+    parent::setUp('autoload', 'dbtng', 'versioncontrol', 'versioncontrol_test');
 
     // Create and login the admin user
-    $this->admin_user = $this->drupalCreateUser(array('administer version control systems'));
-    $this->drupalLogin($this->admin_user);
+    $admin_user = $this->drupalCreateUser(array('administer version control systems'));
+    $this->drupalLogin($admin_user);
 
     // repository cache
     $this->controller = new VersioncontrolRepositoryController();
