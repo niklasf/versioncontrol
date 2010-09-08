@@ -100,6 +100,13 @@ abstract class VersioncontrolBackend {
       throw new Exception('Invalid Versioncontrol entity class specified for building; all entity classes descend from VersioncontrolEntity.', $class);
     }
 
+    // If we're not building a repo object, snag the repo object and pass it to
+    // the object builder.
+    if ($type !== 'repo' && !empty($data->repository) && !empty($data->repo_id)) {
+      $repo = $this->loadEntities('repo', array($data->repo_id));
+      $data->repository = reset($repo);
+    }
+
     $obj = new $this->classesEntities[$type]($this);
     $obj->build($data);
     return $obj;

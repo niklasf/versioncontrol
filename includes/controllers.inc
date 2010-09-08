@@ -577,6 +577,10 @@ abstract class VersioncontrolEntity implements ArrayAccess {
   protected $built = FALSE;
 
   /**
+   * The VersioncontrolRepository representation of the repository with which
+   * this object is associated. The exception is for VersioncontrolRepository
+   * objects themselves, which also descend from this class.
+   *
    * @var VersioncontrolRepository
    */
   protected $repository;

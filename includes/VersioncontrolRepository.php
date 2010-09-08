@@ -9,7 +9,13 @@
  * Contain fundamental information about the repository.
  */
 abstract class VersioncontrolRepository extends VersioncontrolEntity {
-  // Attributes
+  /**
+   * Override the parent declaration that has the $repository property; no
+   * need to be self-referential.
+   *
+   * @var void
+   */
+  protected $repository = NULL;
   /**
    * db identifier
    *
