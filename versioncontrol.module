@@ -129,7 +129,6 @@ function versioncontrol_autoload_info() {
     'VersioncontrolBackend',
     'VersioncontrolBranch',
     'VersioncontrolItem',
-    'VersioncontrolLabel',
     'VersioncontrolOperation',
     'VersioncontrolOperationCache',
     'VersioncontrolRepository',
