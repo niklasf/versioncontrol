@@ -357,8 +357,7 @@ function versioncontrol_menu() {
   // takes additional arguments for implementation checking.
   foreach (versioncontrol_get_backends() as $vcs => $backend) {
     // we need to check and interface, so create an empty repo here
-    $repo = new $backend->classes['repo'](0, array(), FALSE);
-    if ($repo instanceof VersioncontrolRepositoryImportExport) {
+    if ($backend->classesEntities['repo'] instanceof VersioncontrolRepositoryImportExport) {
       $items['admin/project/versioncontrol-accounts/import'] = array(
         'title' => 'Import',
         'description' => 'Import an existing set of VCS user accounts.',
