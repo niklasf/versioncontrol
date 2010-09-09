@@ -35,5 +35,11 @@ function versioncontrol_test_autoload_info() {
     'VersioncontrolTestRepository' => array(
       'file' => 'versioncontrol_test.inc',
     ),
+    'VersioncontrolTestTag' => array(
+      'file' => 'versioncontrol_test.inc',
+    ),
+    'VersioncontrolTestBranch' => array(
+      'file' => 'versioncontrol_test.inc',
+    ),
   );
 }

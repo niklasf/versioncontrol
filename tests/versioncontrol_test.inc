@@ -20,7 +20,10 @@ class VersioncontrolTestBackend extends VersioncontrolBackend {
       'account' => 'VersioncontrolTestAccount',
       'operation' => 'VersioncontrolTestOperation',
       'item' => 'VersioncontrolTestItem',
+      'branch'    => 'VersioncontrolTestBranch',
+      'tag'       => 'VersioncontrolTestTag',
     );
+    parent::__construct();
   }
 }
 
@@ -38,6 +41,14 @@ class VersioncontrolTestOperation extends VersioncontrolOperation {
   public function getSelectedLabel($target_item) {
     return $operation->labels[0];
   }
+
+}
+
+class VersioncontrolTestBranch extends VersioncontrolBranch {
+
+}
+
+class VersioncontrolTestTag extends VersioncontrolTag {
 
 }
 
