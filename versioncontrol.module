@@ -365,7 +365,7 @@ function versioncontrol_menu() {
   // takes additional arguments for implementation checking.
   foreach (versioncontrol_get_backends() as $vcs => $backend) {
     // we need to check and interface, so create an empty repo here
-    if ($backend->classesEntities['repo'] instanceof VersioncontrolRepositoryImportExport) {
+    if (is_subclass_of($backend->classesEntities['repo'], 'VersioncontrolRepositoryImportExport')) {
       $items['admin/project/versioncontrol-accounts/import'] = array(
         'title' => 'Import',
         'description' => 'Import an existing set of VCS user accounts.',
@@ -577,10 +577,10 @@ function versioncontrol_user_accounts_load_multiple($ids = array(), $conditions 
  *
  *   An example of the result array can be found in the FakeVCS example module.
  */
-function versioncontrol_get_backends($backend = '') {
+function versioncontrol_get_backends($backend = '', $reset = FALSE) {
   static $backends;
 
-  if (!isset($backends)) {
+  if (!isset($backends) || $reset) {
     $backends = module_invoke_all('versioncontrol_backends');
   }
 
