@@ -1,0 +1,40 @@
+<?php
+// $Id$
+/**
+ * @file
+ * Tests ensuring proper behavior of the VersioncontrolBackend, and where
+ * possible, the classes descending from it.
+ */
+
+/**
+ * Unit tests ensuring all base VersioncontrolBackend behaviors work properly.
+ */
+class VersioncontrolBackendBaseUnitTest extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => t('Backend base unit tests'),
+      'description' => t('Low-level unit tests on VC Backend objects.'),
+      'group' => t('Version Control'),
+    );
+  }
+
+  function setUp() {
+    parent::setUp('autoload', 'dbtng', 'versioncontrol', 'versioncontrol_test');
+    // get the test backend
+    $this->backend = versioncontrol_get_backends('test', TRUE);
+  }
+
+  public function testDefaultSettings() {
+    // As soon as the backend is initialized, the base class should have a bunch
+    // of classes declared on it and available for factory operations. Check.
+    // This also has the effect of ensuring autoload declarations are in place.
+    $types = array('repo', 'account', 'operation', 'item', 'branch', 'tag');
+    foreach ($types as $type) {
+      $this->assertTrue(isset($this->backend->classesEntities[$type]), "Backend declares an entity class for type '$type'", 'PHP');
+      $this->assertTrue(is_subclass_of($this->backend->classesEntities[$type], 'VersioncontrolEntity'), "Declared entity class for type '$type' descends from VersioncontrolEntity.", 'PHP');
+      $this->assertTrue(isset($this->backend->classesControllers[$type]), "Backend declares an entity controller class for type '$type'", 'PHP');
+      $this->assertTrue(is_subclass_of($this->backend->classesControllers[$type], 'VersioncontrolEntityController'), "Declared entity controller class for type '$type' descends from VersioncontrolEntityController.", 'PHP');
+    }
+  }
+}
