@@ -257,7 +257,16 @@ function versioncontrol_user($type, &$edit, &$user, $category = NULL) {
 function versioncontrol_menu() {
   // FIXME this is hacky; it forces autoload to rebuild its cache to ensure
   // everything is up-to-date, since we need it to be for this function.
-  autoload_get_lookup(TRUE);
+  if (function_exists('autoload_get_lookup')) {
+    // for autoload 1.x
+    autoload_get_lookup(TRUE);
+  }
+  else {
+    // autoload 2.x branch
+    autoload_registry_update();
+  }
+
+
 
   $items = array();
 
