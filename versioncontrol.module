@@ -585,7 +585,7 @@ function versioncontrol_get_backends($backend = '', $reset = FALSE) {
   }
 
   if (!empty($backend)) {
-    return isset($backends[$backend]) ? $backends[$backend] : FALSE;
+    return isset($backends[$backend]) ? $backends[$backend] : array();
   }
   else {
     return $backends;
