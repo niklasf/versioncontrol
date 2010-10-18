@@ -422,8 +422,7 @@ abstract class VersioncontrolRepository extends VersioncontrolEntity {
   }
 
   /**
-   * Retrieve the VCS username for a given Drupal user id in a specific
-   * repository.
+   * Retrieve the Drupal user id for a given VCS username.
    *
    * @param $username
    *   The VCS specific username (a string) corresponding to the Drupal
@@ -455,8 +454,7 @@ abstract class VersioncontrolRepository extends VersioncontrolEntity {
   }
 
   /**
-   * Retrieve the Drupal user id for a given VCS username in a specific
-   * repository.
+   * Retrieve the VCS username for the Drupal user id.
    *
    * @param $uid
    *   The Drupal user id corresponding to the VCS account.
