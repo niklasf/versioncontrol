@@ -427,6 +427,18 @@ function versioncontrol_menu() {
 }
 
 /**
+ * Implementation of hook_views_api().
+ *
+ * @return array
+ */
+function versioncontrol_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'versioncontrol'). '/includes/views', 
+  );
+}
+
+/**
  * Custom access callback, determining if the current user (or the one given
  * in @p $account, if set) is permitted to administer version control system
  * functionality.
