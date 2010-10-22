@@ -439,6 +439,17 @@ function versioncontrol_views_api() {
 }
 
 /**
+ * General helper function to get an array relating type id to string
+ */
+function versioncontrol_operation_types() {
+  return array(
+    VERSIONCONTROL_OPERATION_COMMIT => t('Commit'),
+    VERSIONCONTROL_OPERATION_BRANCH => t('Branch'),
+    VERSIONCONTROL_OPERATION_TAG    => t('Tag'),
+  );
+}
+
+/**
  * Custom access callback, determining if the current user (or the one given
  * in @p $account, if set) is permitted to administer version control system
  * functionality.

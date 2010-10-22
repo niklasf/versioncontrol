@@ -16,7 +16,7 @@ class versioncontrol_handler_filter_operation_type_label extends views_handler_f
     
     $options = array(
       0 => t("All"),
-    ) + versioncontrol_views_operation_types();
+    ) + versioncontrol_operation_types();
     
     $form['operation_type'] = array(
       '#type' => 'radios',
