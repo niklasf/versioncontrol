@@ -166,6 +166,7 @@ function versioncontrol_autoload_info() {
     'VersioncontrolBranchController',
     'VersioncontrolOperationController',
     'VersioncontrolItemController',
+    'VersioncontrolEntityInterface',
     'VersioncontrolEntity',
   );
 
