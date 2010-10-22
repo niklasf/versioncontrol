@@ -434,6 +434,14 @@ function versioncontrol_install() {
 }
 
 /**
+ * Implementation of hook_enable().
+ */
+function versioncontrol_enable() {
+  // Clear all cache as recommended by autoload.
+  cache_clear_all();
+}
+
+/**
  * Implementation of hook_uninstall().
  */
 function versioncontrol_uninstall() {
