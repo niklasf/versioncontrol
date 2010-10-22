@@ -397,7 +397,12 @@ function versioncontrol_account_edit_form(&$form_state, $uid, $repository, $vcs_
 
   if ($create_account || $admin_access) {
     if ($create_account) {
-      $vcs_account = new $repository->backend->classes['account']($vcs_username, $uid, $repository);
+      $data = array(
+        'vcs_username' => $vcs_username,
+        'uid' => $uid,
+        'repository' => $repository,
+      );
+      $vcs_account = $repository->backend->buildEntity('account', $data);
       // Have a nice default value for the new VCS username.
       $vcs_username = $vcs_account->usernameSuggestion($user);
     }
@@ -472,7 +477,12 @@ function versioncontrol_account_edit_form_validate($form, &$form_state) {
   else {
     // Check for username validity - done by the backend, but with a fallback
     // for alphanum-only characters.
-    $vcs_account = new $repository->backend->classes['account']($username, $uid, $repository);
+    $data = array(
+      'vcs_username' => $username,
+      'uid' => $uid,
+      'repository' => $repository,
+    );
+    $vcs_account = $repository->backend->buildEntity('account', $data);
     if (!$vcs_account->isUsernameValid($username)) {
       form_set_error('account_name',
         t('The specified @vcs username is invalid.', array('@vcs' => $vcs_name))
@@ -518,7 +528,12 @@ function versioncontrol_account_edit_form_submit($form, &$form_state) {
   }
 
   if (empty($form['#original_username'])) {
-    $vcs_account = new $repository->backend->classes['account']($username, $uid, $repository);
+    $data = array(
+      'vcs_username' => $username,
+      'uid' => $uid,
+      'repository' => $repository,
+    );
+    $vcs_account = $repository->backend->buildEntity('account', $data);
     $vcs_account->insert($additional_data);
     $message = drupal_set_message(t(
       'The @vcs account %username has been registered.',

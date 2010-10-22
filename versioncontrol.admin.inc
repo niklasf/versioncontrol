@@ -345,7 +345,11 @@ function versioncontrol_admin_account_import_form(&$form_state) {
   $selected_backends = array();
 
   foreach (versioncontrol_get_backends() as $vcs => $backend) {
-    $repo = new $backend->classes['repo'](0, array(), FALSE);
+    $build_data = array(
+      'repo_id' => 0,
+      'vcs' => $backend->name,
+    );
+    $repo = $backend->buildEntity('repo', $build_data);
     if ($repo instanceof VersioncontrolRepositoryImportExport) {
       $selected_backends[] = $vcs;
     }
@@ -448,7 +452,11 @@ function versioncontrol_admin_account_export_form(&$form_state) {
   $selected_backends = array();
 
   foreach (versioncontrol_get_backends() as $vcs => $backend) {
-    $repo = new $backend->classes['repo'](0, array(), FALSE);
+    $build_data = array(
+      'repo_id' => 0,
+      'vcs' => $backend->name,
+    );
+    $repo = $backend->buildEntity('repo', $build_data);
     if ($repo instanceof VersioncontrolRepositoryImportExport) {
       $selected_backends[] = $vcs;
     }

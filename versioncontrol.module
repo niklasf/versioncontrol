@@ -718,6 +718,9 @@ function versioncontrol_fetch_source_items($repository, &$items) {
       $items[$successor_key]->source_items = array();
     }
 
+    // FIXME this should pass through the factory (VersioncontrolBackend::buildEntity()),
+    // but since we're getting rid of this whole 'source items' thing anyway,
+    // just gonna make this note since the whole function will be going away.
     $item = new $repository->backend->classes['item'](
       $item_revision->type,
       $item_revision->path,

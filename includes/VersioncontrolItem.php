@@ -435,8 +435,13 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
       $revision = $this->revision;
     }
 
-    $parent_item = new $this->repository->backend->classes['item'](VERSIONCONTROL_ITEM_DIRECTORY,
-      $path, $revision, NULL, $this->repository);
+    $build_data = array(
+      'type' => VERSIONCONTROL_ITEM_DIRECTORY,
+      'path' => $path,
+      'revision' => $revision,
+      'repository' => $this->repository,
+    );
+    $parent_item = $this->backend->buildEntity('item', $build_data);
 
     $parent_item->selected_label = new stdClass();
     $parent_item->selected_label->get_from = 'other_item';

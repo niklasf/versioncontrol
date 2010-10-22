@@ -164,7 +164,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    *        action - if so, this is an array containing the number of added lines
    *        in an element with key 'added', and the number of removed lines in
    *        the 'removed' key.
-   * FIXME refactor me to oo
+   * FIXME refactor to use backend-controlled loaders.
    */
   public function getItems($fetch_source_items = NULL) {
     $items = array();
