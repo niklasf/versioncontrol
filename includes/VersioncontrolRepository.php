@@ -8,7 +8,7 @@
 /**
  * Contain fundamental information about the repository.
  */
-abstract class VersioncontrolRepository extends VersioncontrolEntity {
+abstract class VersioncontrolRepository implements VersioncontrolEntityInterface {
   /**
    * Override the parent declaration that has the $repository property; no
    * need to be self-referential.
@@ -73,6 +73,39 @@ abstract class VersioncontrolRepository extends VersioncontrolEntity {
    * @var array
    */
   protected $controllers = array();
+
+  protected $built = FALSE;
+
+  public function __construct($backend = NULL) {
+    if ($backend instanceof VersioncontrolBackend) {
+      $this->backend = $backend;
+    }
+    else if (variable_get('versioncontrol_single_backend_mode', FALSE)) {
+      $backends = versioncontrol_get_backends();
+      $this->backend = reset($backends);
+    }
+  }
+
+  /**
+   * Pseudo-constructor method; call this method with an associative array or
+   * stdClass object containing properties to be assigned to this object.
+   *
+   * @param array $args
+   */
+  public function build($args = array()) {
+    // If this object has already been built, bail out.
+    if ($this->built == TRUE) {
+      return FALSE;
+    }
+
+    foreach ($args as $prop => $value) {
+      $this->$prop = $value;
+    }
+    if (!empty($this->data) && is_string($this->data)) {
+      $this->data = unserialize($this->data);
+    }
+    $this->built = TRUE;
+  }
 
   /**
    * Title callback for repository arrays.
@@ -483,6 +516,20 @@ abstract class VersioncontrolRepository extends VersioncontrolEntity {
     }
     return NULL;
   }
+
+  //ArrayAccess interface implementation FIXME soooooooo deprecated
+  public function offsetExists($offset) {
+    return isset($this->$offset);
+  }
+  public function offsetGet($offset) {
+    return $this->$offset;
+  }
+  public function offsetSet($offset, $value) {
+    $this->$offset = $value;
+  }
+  public function offsetUnset($offset) {
+    unset($this->$offset);
+  }
 }
 
 /**
@@ -711,5 +758,4 @@ class VersioncontrolRepositoryUrlHandler {
   public function getTrackerUrl($issue_id) {
     return strtr($this->urls['tracker'], array('%d' => $issue_id));
   }
-
 }

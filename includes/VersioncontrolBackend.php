@@ -96,8 +96,10 @@ abstract class VersioncontrolBackend {
 
     // Ensure the class to create descends from VersioncontrolEntity.
     $class = $this->classesEntities[$type];
-    if (!is_subclass_of($class, 'VersioncontrolEntity')) {
-      throw new Exception('Invalid Versioncontrol entity class specified for building; all entity classes descend from VersioncontrolEntity.', $class);
+    // FIXME temporary hack to accommodate the introduction of the VersioncontrolEntityInterface interface; have to use reflection to check interfaces on a classname string, and
+    // it's too annoying to refactor all this to accommodate that right now.
+    if (!is_subclass_of($class, 'VersioncontrolEntity') && !is_subclass_of($class, 'VersioncontrolRepository')) {
+      throw new Exception('Invalid Versioncontrol entity class specified for building; all entity classes must implement VersioncontrolEntityInterface.');
     }
 
     // If we're not building a repo object, snag the repo object and pass it to

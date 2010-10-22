@@ -568,12 +568,23 @@ class VersioncontrolItemController extends VersioncontrolEntityController {
   protected $idKey = 'item_revision_id';
 }
 
+interface VersioncontrolEntityInterface extends ArrayAccess {
+  public function build($args = array());
+  public function save();
+  // public function insert();
+  // public function update();
+}
+
 /**
  * Abstract parent class for all the various entity classes utilized by VC API.
  *
  * Basically just defines shared CRUD/loader-type behavior.
+ *
+ * Note that the defined methods here are mostly replicated on
+ * VersioncontrolRepository. Any updates made to this class will probably need
+ * to be made there, as well.
  */
-abstract class VersioncontrolEntity implements ArrayAccess {
+abstract class VersioncontrolEntity implements VersioncontrolEntityInterface {
   protected $built = FALSE;
 
   /**
@@ -624,12 +635,6 @@ abstract class VersioncontrolEntity implements ArrayAccess {
     }
     $this->built = TRUE;
   }
-
-  abstract public function save();
-
-  // abstract public function insert();
-
-  // abstract public function update();
 
   /**
    * Attach this entity's data to a query that will insert it into the database.
