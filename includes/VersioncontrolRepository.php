@@ -178,7 +178,7 @@ abstract class VersioncontrolRepository extends VersioncontrolEntity {
   }
 
   public function save() {
-    return isset($this->repo_id) ? $this->update() : $this->save();
+    return isset($this->repo_id) ? $this->update() : $this->insert();
   }
 
   public function buildSave(&$query) {
