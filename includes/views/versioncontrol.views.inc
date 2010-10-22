@@ -277,7 +277,7 @@ function versioncontrol_views_data() {
       'left_field' => 'uid',
       'field' => 'uid',
     ),
-    'versioncontrol_repository' => array(
+    'versioncontrol_repositories' => array(
       'left_field' => 'repo_id',
       'field' => 'repo_id',
     ),
