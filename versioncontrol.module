@@ -506,7 +506,7 @@ function versioncontrol_user_accounts_title_callback($accounts) {
   $usernames = array();
   foreach ($accounts as $uid => $user_accounts) {
     foreach ($user_accounts as $repo_id => $account) {
-      $usernames[] = $account->username;
+      $usernames[] = $account->vcs_username;
     }
   }
   $repositories = versioncontrol_repository_load_multiple(array_keys(reset($accounts)));
