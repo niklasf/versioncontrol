@@ -114,18 +114,6 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     return check_plain($repository->name);
   }
 
-  public function load($controller, $ids = array(), $conditions = array(), $options = array()) {
-    if (!isset($this->controllers[$controller])) {
-      $class = "Versioncontrol" . ucfirst($controller) . "Controller";
-      $this->controllers[$controller] = new $class();
-      $this->controllers[$controller]->setBackend($this->backend);
-      // Set the controller to instanciate with this repository by default.
-      $this->controllers[$controller]->defaultOptions['repository'] = $this;
-    }
-    $conditions['repo_id'] = $this->repo_id;
-    return $this->controllers[$controller]->load($ids, $conditions, $options);
-  }
-
   /**
    * Load known branches in a repository from the database as an array of
    * VersioncontrolBranch-descended objects.
