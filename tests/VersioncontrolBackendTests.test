@@ -32,7 +32,8 @@ class VersioncontrolBackendBaseUnitTest extends DrupalWebTestCase {
     $types = array('repo', 'account', 'operation', 'item', 'branch', 'tag');
     foreach ($types as $type) {
       $this->assertTrue(isset($this->backend->classesEntities[$type]), "Backend declares an entity class for type '$type'", 'PHP');
-      $this->assertTrue(is_subclass_of($this->backend->classesEntities[$type], 'VersioncontrolEntity'), "Declared entity class for type '$type' descends from VersioncontrolEntity.", 'PHP');
+      $refl = new ReflectionClass($this->backend->classesEntities[$type]);
+      $this->assertTrue($refl->implementsInterface('VersioncontrolEntityInterface'), "Declared entity class for type '$type' implements the VersioncontrolEntityInterface.", 'PHP');
       $this->assertTrue(isset($this->backend->classesControllers[$type]), "Backend declares an entity controller class for type '$type'", 'PHP');
       $this->assertTrue(is_subclass_of($this->backend->classesControllers[$type], 'VersioncontrolEntityController'), "Declared entity controller class for type '$type' descends from VersioncontrolEntityController.", 'PHP');
     }
