@@ -1,0 +1,118 @@
+<?php
+
+abstract class VersioncontrolTestCase extends DrupalWebTestCase {
+  const BACKENDS_TEST = 0x001;
+  const BACKENDS_ENABLED = 0x002;
+  const BACKENDS_DISABLED = 0x004;
+  const BACKENDS_INSTALLED = 0x006;
+  const BACKENDS_ALL = 0x007;
+  const BACKENDS_DEFAULT = 0x008;
+
+  const BACKENDS_NONE = 0x010;
+
+  /**
+   * Configuration property, used by child classes to communicate which backends
+   * should be loaded for use by the test.
+   *
+   * This variable and determines how the automated backend set up process works
+   * using a bitmask. The following flags are valid:
+   *
+   *  #- VersioncontrolTestCase::BACKENDS_TEST - include the 'test' backend,
+   *     contained in the versioncontrol_test.module owned by VCAPI.
+   *  #- VersioncontrolTestCase::BACKENDS_ENABLED - include all the backends
+   *     that are installed & enabled in the current Drupal instance.
+   *  #- VersioncontrolTestCase::BACKENDS_DISABLED - include all the backends
+   *     installed but not enabled on the current Drupal instance.
+   *  #- VersioncontrolTestCase::BACKENDS_DEFAULT - do no additional magic
+   *     inclusion of backends, but do initialize any backends that were
+   *     explicitly loaded (via the standard approach: passing the name of the
+   *     backend module as a string to parent::setUp()). This is the default.
+   *
+   * For tests that do not need to interact with backends (that is, with a
+   * VersioncontrolBackend-descended object) at all whatsoever,
+   * VersioncontrolTestCase::BACKENDS_NONE will skip magical backend loading
+   * logic (as with VersioncontrolTestCase::BACKENDS_DEFAULT) and perform no
+   * initialization of the backend objects.
+   *
+   * Defaults to loading only the test backend. Child classes wishing to change
+   * the behavior MUST set this to the appropriate value in their setUp()
+   * implementation BEFORE calling parent::setUp().
+   *
+   * @see VersioncontrolTestCase::determineBackends()
+   */
+  protected $useBackends = self::BACKENDS_DEFAULT;
+  public $testBackend;
+
+  public function setUp() {
+    $magic_modules = $this->determineBackends();
+    // load crucial required modules in addition to requested ones.
+    $arg_modules = func_get_args();
+    $modules = array_merge(array('dbtng', 'autoload', 'versioncontrol'), $arg_modules, $magic_modules);
+    call_user_func_array(array('VersioncontrolTestCase', 'parent::setUp'), $modules);
+    // parent::setUp($modules);
+
+    // init dbtng so it actually works.
+    dbtng_init();
+
+    if (!($this->useBackends & (self::BACKENDS_NONE))) {
+      // If the test requested it, init and attach backends.
+      $this->attachBackends();
+    }
+  }
+
+  /**
+   * Set up the testing environment with the appropriate set of backends for the
+   * current test run.
+   *
+   * Due to VCAPI's special relationship with its backends, it can be
+   * advantageous to have VCAPI-owned tests that operate directly on code in
+   * the backends. Such tests need to enable backend modules as appropriate, but
+   * must draw from the list of installed modules, not merely enabled modules,
+   * and therefore cannot rely on hook invocations responses for discovery. So
+   * we have to swim upstream a bit, relying on a custom addition to module
+   * .info files for discovery.
+   *
+   * This method is called only once during setUp(), and does two essential
+   */
+  private function determineBackends() {
+    if ($this->useBackends & (self::BACKENDS_NONE | self::BACKENDS_DEFAULT)) {
+      // Test requests that we do no magic loading, bail out early.
+      return array();
+    }
+
+    $modules = array();
+    if ($this->useBackends & self::BACKENDS_TEST) {
+      // Test requests the testing backend to be made available.
+      $modules[] = 'versioncontrol_test';
+    }
+
+    if ($this->useBackends & (self::BACKENDS_ENABLED | self::BACKENDS_DISABLED)) {
+      // Test requests magic loading of installed backend modules. Query the
+      // system table for a module list, then figure out which ones to add.
+      $result = db_query("SELECT name, status, info FROM {system} WHERE type = 'module'");
+      $files = array();
+      while ($module = db_fetch_object($result)) {
+        $module->info = unserialize($module->info);
+        if (!isset($module->info['vcapi-backend'])) { // sloppy check b/c we can't enforce anything effectively
+          // not a vcapi backend module, so skip it.
+          continue;
+        }
+        if (($module->status == TRUE && ($this->useBackends & self::BACKENDS_ENABLED)) ||
+            ($modules->status == FALSE && ($this->useBackends & self::BACKENDS_DISABLED))) {
+          $modules[] = $module->name;
+        }
+      }
+    }
+    return $modules;
+  }
+
+  private function attachBackends() {
+    // Clear the backend static cache and retrieve all backends.
+    $this->backends = versioncontrol_get_backends('', TRUE);
+
+    // If the test backend was requested, also store it in a special property.
+    if ($this->useBackends & self::BACKENDS_TEST) {
+      $this->testBackend = versioncontrol_get_backends('test');
+    }
+  }
+}

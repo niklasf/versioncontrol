@@ -1,5 +1,6 @@
 <?php
 // $Id$
+require_once drupal_get_path('module', 'versioncontrol') . '/tests/VersioncontrolTestCase.test';
 /**
  * @file
  * Unit tests for repository class
@@ -8,9 +9,7 @@
 /**
  * Unit tests for VersioncontrolRepository class
  */
-class VersioncontrolRepositoryUnitTestingTestCase extends DrupalWebTestCase {
-
-  public $controller;
+class VersioncontrolRepositoryUnitTestingTestCase extends VersioncontrolTestCase {
 
   /**
    * Implementation of getInfo().
@@ -28,39 +27,34 @@ class VersioncontrolRepositoryUnitTestingTestCase extends DrupalWebTestCase {
    * Implementation of setUp().
    */
   function setUp() {
-    // load core and fake test backend modules
-    parent::setUp('dbtng', 'autoload', 'versioncontrol', 'versioncontrol_test');
-    $this->controller = new VersioncontrolRepositoryController();
+    $this->useBackends = self::BACKENDS_TEST;
+    parent::setUp();
   }
 
-  public function testRepositoryLoadEmptyParam() {
-    $repo_id = '';
-    $repository = $this->controller->load(array($repo_id));
+  public function testBadLoadParams() {
+    $repository = $this->testBackend->loadEntities('repo', array(''));
     $this->assertTrue(empty($repository), t('Make sure we get an empty array when trying to get a repository with empty repo_id'), 'controller');
-  }
 
-  public function testRepositoryLoadNullParam() {
-    $repository = $this->controller->load(NULL);
+    $repository = $this->testBackend->loadEntities('repo', NULL);
     $this->assertTrue(empty($repository), t('Make sure we get an empty array when trying to get a repository with a NULL repo_id'), 'controller');
-  }
 
-  public function testRepositoryLoadNotFound() {
-    $repo_id = -1;
-    $repository = $this->controller->load(array($repo_id));
+    $repository = $this->testBackend->loadEntities('repo', array(1));
     $this->assertTrue(empty($repository), t('Make sure we get an empty array when trying to get a repository which do not exit'), 'controller');
   }
 
-  public function testRepositoryLoadFound() {
-    $backends = versioncontrol_get_backends();
+  public function testRepositoryLoadParams() {
+    $name = $this->randomName();
     $data = array(
-      'name' => 'test repository',
+      'name' => $name,
       'vcs' => 'test',
-      'backend' => $backends['test'],
+      'backend' => $this->testBackend,
+      'root' => '/fake/path/to/repo',
     );
-    $repo = $backends['test']->buildEntity('repo', $data);
+    $repo = $this->testBackend->buildEntity('repo', $data);
     $repo->insert();
-    $repositories = $this->controller->load(array($repo->repo_id));
-    $this->assertTrue(is_a($repositories[$repo->repo_id], 'VersioncontrolRepository'), t('Make sure we get a valid return when passing a good repo_id.'), 'getRepository');
-    $this->assertTrue($repositories[$repo->repo_id]->repo_id == $repo->repo_id, t('Make sure we get the right repository.'), 'controller');
+    $this->assertTrue(isset($repo->repo_id) && is_numeric($repo->repo_id), t('VersioncontrolRepository::insert() properly populates a new repository object with an integer repo_id.'));
+    $repositories = $this->testBackend->loadEntities('repo', array($repo->repo_id));
+    $this->assertTrue(isset($repositories[$repo->repo_id]) && is_a($repositories[$repo->repo_id], 'VersioncontrolRepository'), t('Make sure we get a valid return when passing a good repo_id.'));
+    $this->assertEqual($repositories[$repo->repo_id]->repo_id, $repo->repo_id, t('Make sure we get the right repository.'), 'controller');
   }
 }

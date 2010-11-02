@@ -1,6 +1,6 @@
 <?php
 // $Id$
-
+require_once drupal_get_path('module', 'versioncontrol') . '/tests/VersioncontrolTestCase.test';
 /**
  * @file
  * Functional test for account status module.
@@ -9,11 +9,10 @@
 /**
  * Testcase for versioncontrol_account_status module.
  */
-class VersioncontrolAccountStatusTestCase extends DrupalWebTestCase {
+class VersioncontrolAccountStatusTestCase extends VersioncontrolTestCase {
 
   protected $admin_user;
   protected $basic_user;
-  protected $controller;
 
   /**
    * Implementation of getInfo().
@@ -30,14 +29,12 @@ class VersioncontrolAccountStatusTestCase extends DrupalWebTestCase {
    * Implementation of setUp().
    */
   function setUp() {
-    // load core and fake test backend modules
-    parent::setUp('dbtng', 'autoload', 'versioncontrol', 'versioncontrol_test', 'versioncontrol_account_status');
+    $this->useBackends = self::BACKENDS_TEST;
+    parent::setUp('versioncontrol_account_status');
 
     // Create our users
     $this->admin_user = $this->drupalCreateUser(array('administer version control systems'));
     $this->basic_user = $this->drupalCreateUser(array('use version control systems'));
-
-    $this->controller = new VersioncontrolRepositoryController();
 
     // Temporarily change the 'smtp_library' and implement drupal_mail_wrapper()
     // Make sure our drupal_mail_wrapper function is called instead of the
@@ -64,7 +61,7 @@ class VersioncontrolAccountStatusTestCase extends DrupalWebTestCase {
     $this->drupalPost('admin/project/versioncontrol-repositories/add-test', $repo_edit, t('Save repository'));
 
     // get the created repo
-    $found_repositories = $this->controller->load(array(), array('name' => array($repo_edit['repo_name'])));
+    $found_repositories = $this->testBackend->loadEntities('repo', array(), array('name' => array($repo_edit['repo_name'])));
     $repo = array_shift($found_repositories);
     $this->assertTrue(!is_null($repo), t('Repository found in database.'));
 

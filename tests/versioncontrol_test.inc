@@ -8,7 +8,7 @@
 
 class VersioncontrolTestBackend extends VersioncontrolBackend {
   public function __construct() {
-    $this->name = 'TestVCS';
+    $this->name = 'API Test';
     $this->description = t('TestVCS backend for Version Control API.');
     $this->capabilities = array(
       // Use the commit hash for to identify the commit instead of an individual
@@ -16,10 +16,10 @@ class VersioncontrolTestBackend extends VersioncontrolBackend {
       VERSIONCONTROL_CAPABILITY_ATOMIC_COMMITS
     );
     $this->classesEntities = array(
-      'repo' => 'VersioncontrolTestRepository',
-      'account' => 'VersioncontrolTestAccount',
+      'repo'      => 'VersioncontrolTestRepository',
+      'account'   => 'VersioncontrolTestAccount',
       'operation' => 'VersioncontrolTestOperation',
-      'item' => 'VersioncontrolTestItem',
+      'item'      => 'VersioncontrolTestItem',
       'branch'    => 'VersioncontrolTestBranch',
       'tag'       => 'VersioncontrolTestTag',
     );
