@@ -9,7 +9,8 @@
  *
  */
 class versioncontrol_plugin_style_operations extends views_plugin_style {
-  var $formatting = "M d, Y"; //TODO: Make an option
+  //TODO: Make an option
+  var $formatting = "M d, Y";
   function query() {
     parent::query();
     
@@ -17,13 +18,13 @@ class versioncontrol_plugin_style_operations extends views_plugin_style {
   }
   
   function render() {
-    if(empty($this->row_plugin)) {
+    if (empty($this->row_plugin)) {
       vpr('versioncontrol_plugin_style_operations: Missing row plugin');
     }
     
     $group_alias = '';
     foreach ($this->view->query->fields as $alias => $data) {
-      if($data['field'] == 'date') {
+      if ($data['field'] == 'date') {
         $group_alias = $alias;
       }
     }

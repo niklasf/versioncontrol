@@ -36,7 +36,7 @@ class versioncontrol_handler_field_operation_labels extends views_handler_field_
       $vc_op_ids[] = $result->{$this->aliases['vc_op_id']};
     }
    
-    if($vc_op_ids) {
+    if ($vc_op_ids) {
 
       // query to get all related labels
       $result = db_query("SELECT vol.vc_op_id, vol.label_id, vl.name, vl.type 

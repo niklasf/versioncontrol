@@ -52,6 +52,22 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   public $authorization_method = 'versioncontrol_admin';
 
   /**
+   * The method that this repository will use to update the operations table.
+   *
+   * This should correspond to constants provided by the backend provider.
+   *
+   * @var    integer
+   */
+  public $update_method = 0;
+
+  /**
+   * The Unix timestamp when this repository was last updated.
+   *
+   * @var    integer
+   */
+  public $updated = 0;
+
+  /**
    * An array of additional per-repository settings, mostly populated by
    * third-party modules. It is serialized on DB.
    */

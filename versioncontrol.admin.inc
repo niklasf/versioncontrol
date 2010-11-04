@@ -549,71 +549,13 @@ function versioncontrol_admin_account_export_display_form(&$form_state, $reposit
 function versioncontrol_admin_repository_list(&$form_state) {
   $form = array();
   $backends = versioncontrol_get_backends();
-  $repositories = versioncontrol_repository_load_multiple(FALSE);
-
-  if (empty($repositories)) {
-    $form['empty'] = array(
-      '#value' => '<p>'. t('No repositories are currently known. Please add one or more repositories in order to be able to use version control features on the site.') .'</p>'
-    );
-    return $form;
-  }
-
-  // The header may be modified separately for each VCS,
-  // so this is only a template and still missing the Actions column.
-  $header_template = array(t('Name'), t('Root'));
-
-  // Sort repositories by backend.
-  $repositories_by_backend = array();
-  foreach ($repositories as $repo_id => $repository) {
-    if (!isset($repositories_by_backend[$repository['vcs']])) {
-      $repositories_by_backend[$repository['vcs']] = array();
-    }
-    $repositories_by_backend[$repository['vcs']][$repo_id] = $repository;
-  }
-
-  // Construct the form elements for each VCS separately.
-  foreach ($repositories_by_backend as $vcs => $vcs_repositories) {
-    $header = $header_template;
-    $title = t('@vcs repositories', array('@vcs' => $backends[$vcs]->name));
+  foreach ($backends as $vcs => $backend) {
+    $title = t('@vcs repositories', array('@vcs' => $backend->name));
     $form[$vcs] = array(
       '#value' => '<h4>'. $title .'</h4>',
     );
-
-    // Add the standard items of each repository - name and root - to the rows.
-    $rows_by_repo_id = array();
-    foreach ($vcs_repositories as $repo_id => $repository) {
-      $rows_by_repo_id[$repo_id] = array(
-        'name' => check_plain($repository['name']),
-        'root' => check_plain($repository['root']),
-      );
-    }
-    // Provide a possibility for backends and other modules to modify the list.
-    // TODO replace with drupal_alter()
-    foreach (module_implements('versioncontrol_alter_repository_list') as $module) {
-      $function = $module .'_versioncontrol_alter_repository_list';
-      $function($vcs, $vcs_repositories, $header, $rows_by_repo_id);
-    }
-    // Add the Actions column as final column, after all the other ones
-    $header[] = array('data' => t('Actions'), 'colspan' => 2);
-    foreach ($rows_by_repo_id as $repo_id => $row) {
-      $links = array(
-        array(
-          'title' => t('Edit'),
-          'href' => 'admin/project/versioncontrol-repositories/edit/'. $repo_id,
-        ),
-        array(
-          'title' => t('Delete'),
-          'href' => 'admin/project/versioncontrol-repositories/delete/'. $repo_id,
-        ),
-      );
-      $rows_by_repo_id[$repo_id]['links'] = theme('links', $links);
-    }
-    // We don't want the repository ids in the final $rows array.
-    $rows = array_values($rows_by_repo_id);
-
-    // The finished table for the currently processed VCS.
-    $form[$vcs]['list'] = array(
-      '#value' => theme('table', $header, $rows) .'<br/>'
+    $form[$vcs . '_repositories'] = array(
+      '#value' => views_embed_view($backend->getViewName('repositories'), 'default', $vcs),
     );
   }
   return $form;

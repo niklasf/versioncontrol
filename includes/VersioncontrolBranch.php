@@ -112,7 +112,7 @@ class VersioncontrolBranch extends VersioncontrolEntity {
     foreach($commits_as_op as $commit_op) {
       $new_labels = array();
       foreach($commit_op->labels as $label) {
-        if($label->type == VERSIONCONTROL_LABEL_BRANCH && $label->name != $this->name) {
+        if ($label->type == VERSIONCONTROL_LABEL_BRANCH && $label->name != $this->name) {
           $new_labels[] = $label;
         }
       }

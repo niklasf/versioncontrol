@@ -37,7 +37,7 @@ class versioncontrol_handler_field_operation_items extends views_handler_field_p
       $vc_op_ids[] = $result->{$this->aliases['vc_op_id']};
     }
    
-    if($vc_op_ids) {
+    if ($vc_op_ids) {
 
       // Retrieves the items based on the vc_op_id
       $result = db_query("SELECT voi.vc_op_id, voi.item_revision_id, vir.path 

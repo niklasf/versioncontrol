@@ -171,6 +171,18 @@ function versioncontrol_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'updated' => array(
+        'description' => 'The Unix timestamp when this repository was last updated.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'update_method' => array(
+        'description' => 'The method that this repository will use to update the operations table.  This should correspond to constants provided by the backend provider.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1
+      ),
       'data' => array(
         'description' => 'A serialized array of additional per-label data.',
         'type' => 'text',
@@ -660,5 +672,36 @@ function versioncontrol_update_6301() {
     'serialize' => TRUE,
   );
   db_add_field($ret, 'versioncontrol_labels', 'data', $data_spec);
+  return $ret;
+}
+
+/**
+ * Add the 'updated', 'updated_method' and 'locked' columns.
+ *
+ * These fields were previously stored as members of a serialized array stored
+ * in the data column but this could be problematic for views integration and
+ * the operations that we need to perform across large numbers of repositories.
+ *
+ * @return array
+ */
+function versioncontrol_update_6302() {
+  $ret = array();
+  $fields = array(
+    'updated' => array(
+      'description' => 'The Unix timestamp when this repository was last updated.',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0
+    ),
+    'update_method' => array(
+      'description' => 'The method that this repository will use to update the operations table.  This should correspond to constants provided by the backend provider.',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 1
+    ),
+  );
+  foreach  ($fields as $field_name => $data_spec) {
+    db_add_field($ret, 'versioncontrol_repositories', $field_name, $data_spec);
+  }
   return $ret;
 }

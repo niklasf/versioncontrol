@@ -76,6 +76,23 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
+  $data['versioncontrol_repositories']['update_method'] = array(
+    'title' => t("Update method"),
+    'help' => t("The method by which this repository will be updated."),
+    'field' => array(
+      'handler' => 'versioncontrol_handler_field_repository_update_method',
+      'click sortable' => TRUE,
+    ),
+  );
+
+  $data['versioncontrol_repositories']['actions'] = array(
+    'title' => t("Actions"),
+    'help' => t("Actions that can be performed on a repository."),
+    'field' => array(
+      'handler' => 'versioncontrol_handler_field_repository_actions',
+      'click sortable' => TRUE,
+    ),
+  );
   $data['versioncontrol_repositories']['root'] = array(
     'title' => t("Root Path"),
     'help' => t("The root path to the repository"),
@@ -88,6 +105,20 @@ function versioncontrol_views_data() {
     ),
     'filter' => array(
       'handler' => 'views_handler_filter',
+    ),
+  );
+  $data['versioncontrol_repositories']['updated'] = array(
+    'title' => t("Last Updated"),
+    'help' => t("The last time the repository was updated."),
+    'field' => array(
+      'handler' => 'views_handler_field_date',
+      'click sortable' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_date',
     ),
   );
   $data['versioncontrol_repositories']['table']['join'] = array(
@@ -528,6 +559,12 @@ function versioncontrol_views_handlers() {
     ),
     'handlers' => array(
       // field handlers
+      'versioncontrol_handler_field_repository_update_method' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'versioncontrol_handler_field_repository_actions' => array(
+        'parent' => 'views_handler_field',
+      ),
       'versioncontrol_handler_field_operation_type' => array(
         'parent' => 'views_handler_field',
       ),
