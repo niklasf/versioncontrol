@@ -288,7 +288,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   public final function delete() {
     // Delete operations.
     $branches = $this->loadBranches();
-    foreach ($this->loadBranches as $branch) {
+    foreach ($branches as $branch) {
       $branch->delete();
     }
     foreach ($this->loadTags() as $tag) {
