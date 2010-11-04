@@ -22,7 +22,7 @@ function versioncontrol_views_data() {
   $data['versioncontrol_repositories']['table']['group'] = t("VersionControl Repository");
   $data['versioncontrol_repositories']['table']['base'] = array(
     'field' => 'repo_id',
-    'title' => t('VersonControl Repository'),
+    'title' => t('VersionControl Repository'),
     'help'  => t('The repositories tracked by VersionControl.'),
   );
   $data['versioncontrol_repositories']['repo_id'] = array(
@@ -140,7 +140,7 @@ function versioncontrol_views_data() {
   $data['versioncontrol_operations']['table']['group'] = t('VersionControl Operations');
   $data['versioncontrol_operations']['table']['base'] = array(
     'field' => 'vc_op_id',
-    'title' => t('VersonControl Operation'),
+    'title' => t('VersionControl Operation'),
     'help'  => t('Operations are the actions that can be performed on a repository.  Examples are commit, tag, merge, and branch.'),
   );
   $data['versioncontrol_operations']['vc_op_id'] = array(
@@ -300,7 +300,7 @@ function versioncontrol_views_data() {
   $data['versioncontrol_accounts']['table']['group'] = t("VersionControl Accounts");
   $data['versioncontrol_accounts']['table']['base'] = array(
     'field' => 'uid',
-    'title' => t('VersonControl Accounts'),
+    'title' => t('VersionControl Accounts'),
     'help'  => t('The VersionControl accounts held by users.'),
   );
   $data['versioncontrol_accounts']['table']['join'] = array(
