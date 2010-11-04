@@ -171,18 +171,6 @@ function versioncontrol_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'updated' => array(
-        'description' => 'The Unix timestamp when this repository was last updated.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0
-      ),
-      'update_method' => array(
-        'description' => 'The method that this repository will use to update the operations table.  This should correspond to constants provided by the backend provider.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 1
-      ),
       'data' => array(
         'description' => 'A serialized array of additional per-label data.',
         'type' => 'text',
@@ -387,6 +375,18 @@ function versioncontrol_schema() {
         'length' => 64,
         'not null' => TRUE,
         'default' => '',
+      ),
+      'updated' => array(
+        'description' => 'The Unix timestamp when this repository was last updated.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'update_method' => array(
+        'description' => 'The method that this repository will use to update the operations table.  This should correspond to constants provided by the backend provider.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1
       ),
       'data' => array(
         'description' => t('A serialized array of additional per-repository settings, mostly populated by backends.'),
