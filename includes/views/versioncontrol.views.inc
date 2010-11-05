@@ -335,6 +335,11 @@ function versioncontrol_views_data() {
 
   // VersionControl Labels
   $data['versioncontrol_labels']['table']['group'] = t("VersionControl Labels");
+  $data['versioncontrol_labels']['table']['base'] = array(
+    'field' => 'label_id',
+    'title' => t('VersionControl Branches/Tags'),
+    'help'  => t('Branches & tags in repositories tracked by the Versioncontrol system.'),
+  );
   $data['versioncontrol_labels']['table']['join'] = array(
     'versioncontrol_operation_labels' => array(
       'left_field' => 'label_id',
@@ -380,7 +385,7 @@ function versioncontrol_views_data() {
   );
   $data['versioncontrol_labels']['type'] = array(
       'title' => t('Label Type'),
-      'help' => t('The type of the label. Tag or Branch'),
+      'help' => t('The label type - either a tag or a branch.'),
       //TODO: Handler 'field' and 'filter'
       'field' => array(
         'handler' => 'views_handler_field_numeric',
@@ -418,6 +423,11 @@ function versioncontrol_views_data() {
   
   // VersionControl Item Revisions
   $data['versioncontrol_item_revisions']['table']['group'] = t("VersionControl Item Revisions");
+  $data['versioncontrol_item_revisions']['table']['base'] = array(
+    'field' => 'label_id',
+    'title' => t('VersionControl Item Revisions'),
+    'help'  => t('File-by-file revision histories.'),
+  );
   $data['versioncontrol_item_revisions']['table']['join'] = array(
     'versioncontrol_operation_items' => array(
       'left_field' => 'item_revision_id',
@@ -470,7 +480,7 @@ function versioncontrol_views_data() {
   );
   $data['versioncontrol_item_revisions']['type'] = array(
     'title' => t("Op Item Type"),
-    'help' => t("The type of item's operation"),
+    'help' => t("The type of item - file or directory & deleted or current."),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
     ),
