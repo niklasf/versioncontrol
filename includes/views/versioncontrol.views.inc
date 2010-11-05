@@ -313,9 +313,9 @@ function versioncontrol_views_data() {
       'field' => 'repo_id',
     ),
   );
-  $data['versioncontrol_accounts']['username'] = array(
+  $data['versioncontrol_accounts']['vcs_username'] = array(
     'title' => t('Versioncontrol Name'),
-    'help' => t('The name of the committer from the VCS.'),
+    'help' => t('The username of the committer, as known by the VCS.'),
     'field' => array(
       'handler' => 'views_handler_field',
       'click sortable' => TRUE,

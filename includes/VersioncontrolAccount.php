@@ -70,7 +70,7 @@ abstract class VersioncontrolAccount extends VersioncontrolEntity {
    * the one given on account creation, whereas vcs_username and
    * @p $additional_data may change.
    *
-   * @param $username
+   * @param $vcs_username
    *   The VCS specific username (a string). Here we are using an explicit
    *   parameter instead of taking the vcs_username data member to be able to
    *   verify is it changed, there would be lots of operations, so we do not
@@ -82,12 +82,12 @@ abstract class VersioncontrolAccount extends VersioncontrolEntity {
    * FIXME the function sig here is incompatible with VersioncontrolEntity, and
    * needs the logic needs to be fixed to suit.
    */
-  public final function update($username, $additional_data = array()) {
+  public final function update($vcs_username, $additional_data = array()) {
     $repo_id = $this->repository->repo_id;
-    $username_changed = ($username != $this->vcs_username);
+    $username_changed = ($vcs_username != $this->vcs_username);
 
     if ($username_changed) {
-      $this->vcs_username = $username;
+      $this->vcs_username = $vcs_username;
       db_query("UPDATE {versioncontrol_accounts}
                 SET username = '%s'
                 WHERE uid = %d AND repo_id = %d",

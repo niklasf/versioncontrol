@@ -515,7 +515,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     while ($account = db_fetch_object($result)) {
       // Only include approved accounts, except in case the caller said otherwise.
       if ($include_unauthorized || $this->isAccountAuthorized($account->uid)) {
-        return $account->username;
+        return $account->vcs_username;
       }
     }
     return NULL;

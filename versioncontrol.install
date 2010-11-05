@@ -420,7 +420,7 @@ function versioncontrol_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'username' => array(
+      'vcs_username' => array(
         'description' => 'VCS-specific username of the VCS account associated with the Drupal user in {versioncontrol_accounts}.uid.',
         'type' => 'varchar',
         'length' => 64,
@@ -429,7 +429,7 @@ function versioncontrol_schema() {
       ),
     ),
     'unique keys' => array(
-      'repo_id_username' => array('repo_id', 'username'),
+      'repo_id_username' => array('repo_id', 'vcs_username'),
     ),
     'primary key' => array('uid', 'repo_id'),
   );
@@ -683,6 +683,10 @@ function versioncontrol_update_6301() {
  * the operations that we need to perform across large numbers of repositories.
  *
  * @return array
+ * properties and field names, and VersioncontrolAccount has a $vcs_username
+ * property, not a $username property. We're changing the db column name rather
+ * than the class property name as vcs_username is more specific & accurate, and
+ * won't be confused with Drupal's own {users}.username.
  */
 function versioncontrol_update_6302() {
   $ret = array();
@@ -703,5 +707,28 @@ function versioncontrol_update_6302() {
   foreach  ($fields as $field_name => $data_spec) {
     db_add_field($ret, 'versioncontrol_repositories', $field_name, $data_spec);
   }
+  return $ret;
+}
+
+/**
+ * Rename {versioncontrol_accounts}.username to
+ * {versioncontrol_accounts}.vcs_username.
+ *
+ * VCAPI's entity controllers expect an exact naming match between object
+ * properties and field names, and VersioncontrolAccount has a $vcs_username
+ * property, not a $username property. We're changing the db column name rather
+ * than the class property name as vcs_username is more specific & accurate, and
+ * won't be confused with Drupal's own {users}.username.
+ */
+function versioncontrol_update_6303() {
+  $ret = array();
+  $spec = array(
+    'description' => 'VCS-specific username of the VCS account associated with the Drupal user in {versioncontrol_accounts}.uid.',
+    'type' => 'varchar',
+    'length' => 64,
+    'not null' => TRUE,
+    'default' => '',
+  );
+  db_change_field($ret, 'versioncontrol_accounts', 'username', 'vcs_username', $spec);
   return $ret;
 }
