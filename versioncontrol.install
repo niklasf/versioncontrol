@@ -185,42 +185,6 @@ function versioncontrol_schema() {
     'primary key' => array('label_id'),
   );
 
-  $schema['versioncontrol_operation_items'] = array(
-    'description' =>
-      'This table relates an operation to the items (or more correctly, to the item revisions) that it affected. For example, an SVN commit with revision "1234" might modify an item that is now /trunk/file.txt at revision "1234", and move a directory from somewhere else that is now /trunk/dir at revision "1234". Those items are recorded here along with the vc_op_id that describes the general operation properties.
-
-      Branch/tag operations that affect the whole repository (like in Git or Mercurial) do not have items associated, whereas branch/tag operations that affect only a limited set of items (like in CVS or Subversion) link to the branched/tagged items with this table.',
-    'fields' => array(
-      'vc_op_id' => array(
-        'description' => 'Foreign key (referring to {versioncontrol_operations}.vc_op_id) for the operation that affected the given item(s).',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'item_revision_id' => array(
-        'description' => 'Foreign key (referring to {versioncontrol_item_revisions}.item_revision_id) for the affected item revision.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'type' => array(
-        'description' =>
-          'Real member or cached item. This is an implementation detail of a performance optimization (for queries with a "paths" constraint), and private to the API module. Other modules must not touch this. VERSIONCONTROL_OPERATION_MEMBER_ITEM is the standard value and makes up for most entries in here, whereas VERSIONCONTROL_OPERATION_CACHED_AFFECTED_ITEM is the optimization (denoting an item that is not part of a VersioncontrolOperation::getItems() result but will still cause that operation to be found if it matches the "paths" constraint).',
-        'type' => 'int',
-        'size' => 'tiny',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-    ),
-    'indexes' => array(
-      'type' => array('type'),
-    ),
-    'primary key' => array('vc_op_id', 'item_revision_id'),
-  );
-
   $schema['versioncontrol_source_items'] = array(
     'description' =>
       'This table stores item history, i.e. it relates an item to one or more direct predecessors (= source items). Likewise, a source item can also have multiple successors, for example if it\'s copied to one location and later (or at the same time) moved to another location.',
@@ -293,6 +257,13 @@ function versioncontrol_schema() {
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
+      ),
+      'vc_op_id' => array(
+        'description' => 'Foreign key (referring to {versioncontrol_operations}.vc_op_id) for the operation that affected the given item(s).',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
       ),
       'repo_id' => array(
         'description' => 'Foreign key (referring to {versioncontrol_repositories}.repo_id) for the repository that this item is located in.',
@@ -730,5 +701,39 @@ function versioncontrol_update_6303() {
     'default' => '',
   );
   db_change_field($ret, 'versioncontrol_accounts', 'username', 'vcs_username', $spec);
+
+  $result = db_query("SELECT vc_op_id, item_revision_id FROM {versioncontrol_operation_items}");
+
+  $data = array();
+  while ($row = db_fetch_object($result)) {
+    db_query('UPDATE {versioncontrol_operation_items} SET vc_op_id = %d WHERE item_revision_id = %d', $row->vc_op_id, $row->item_revision_id);
+  }
+
+  db_drop_table($ret, 'versioncontrol_operation_items');
+  return $ret;
+}
+
+/**
+ * Remove the versioncontrol_operation_items table, as it was an unnecessary
+ * mapping layer between item revisions and operations.
+ */
+function versioncontrol_update_6304() {
+  $ret = array();
+  $spec = array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  db_add_field($ret, 'versioncontrol_item_revisions', 'vc_op_id', $spec);
+
+  $result = db_query("SELECT vc_op_id, item_revision_id FROM {versioncontrol_operation_items}");
+
+  $data = array();
+  while ($row = db_fetch_object($result)) {
+    db_query('UPDATE {versioncontrol_operation_items} SET vc_op_id = %d WHERE item_revision_id = %d', $row->vc_op_id, $row->item_revision_id);
+  }
+
+  db_drop_table($ret, 'versioncontrol_operation_items');
   return $ret;
 }
