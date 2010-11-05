@@ -424,19 +424,14 @@ function versioncontrol_views_data() {
   // VersionControl Item Revisions
   $data['versioncontrol_item_revisions']['table']['group'] = t("VersionControl Item Revisions");
   $data['versioncontrol_item_revisions']['table']['base'] = array(
-    'field' => 'label_id',
+    'field' => 'item_revision_id',
     'title' => t('VersionControl Item Revisions'),
     'help'  => t('File-by-file revision histories.'),
   );
   $data['versioncontrol_item_revisions']['table']['join'] = array(
-    'versioncontrol_operation_items' => array(
-      'left_field' => 'item_revision_id',
-      'field' => 'item_revision_id',
-    ),
     'versioncontrol_operations' => array(
-      'left_table' => 'versioncontrol_operation_items',
-      'left_field' => 'item_revision_id',
-      'field' => 'item_revision_id',
+      'left_field' => 'vc_op_id',
+      'field' => 'vc_op_id',
     ),
 
     'versioncontrol_repositories' => array(
@@ -499,8 +494,8 @@ function versioncontrol_views_data() {
     ),
   );
   $data['versioncontrol_operation_items']['item_revision_id'] = array(
-    'title' => t('Item List'),
-    'help' => t('A list of items that were affected by this operation.'),
+    'title' => t('Item Revision ID'),
+    'help' => t('The unique ID of this item revision.'),
     'field' => array(
       'handler' => 'versioncontrol_handler_field_operation_items',
     ),
