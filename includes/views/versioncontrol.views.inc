@@ -160,7 +160,7 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_argument_numeric',
     ),
   );
-  $data['versioncontrol_operations']['type']     = array(
+  $data['versioncontrol_operations']['type'] = array(
     'title'    => t('Type'),
     'help'     => t('The type of operation. Tag, Commit or Branch'),
     'field'    => array(
@@ -174,7 +174,7 @@ function versioncontrol_views_data() {
       'handler' => 'versioncontrol_handler_filter_operation_type',
     ),
   );
-  $data['versioncontrol_operations']['date']  = array(
+  $data['versioncontrol_operations']['date'] = array(
     'title'    => t('Date'),
     'help'     => t('The date of the operation'),
     'field'    => array(
@@ -191,7 +191,7 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_argument_date',
     ),
   );
-  $date['versioncontrol_operations']['uid'] = array(
+  $data['versioncontrol_operations']['uid'] = array(
     'title' => t('User'),
     'help' => t('The user that did the operation'),
     'relationship' => array(
@@ -201,7 +201,7 @@ function versioncontrol_views_data() {
       'label' => t('User'),
     ),
   );
-  $date['versioncontrol_operations']['author'] = array(
+  $data['versioncontrol_operations']['author'] = array(
     'title'    => t('Author'),
     'help'     => t('The Operation Author'),
     'field'    => array(
@@ -218,7 +218,7 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
-  $date['versioncontrol_operations']['committer'] = array(
+  $data['versioncontrol_operations']['committer'] = array(
     'title'    => t('Commiter'),
     'help'     => t('The Operation Commiter'),
     'field'    => array(
@@ -234,7 +234,7 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
-  $date['versioncontrol_operations']['revision'] = array(
+  $data['versioncontrol_operations']['revision'] = array(
     'title'    => t('Revision'),
     'help'     => t('The Operation Revision Identifier'),
     'field'    => array(
@@ -251,7 +251,7 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
-  $date['versioncontrol_operations']['message'] = array(
+  $data['versioncontrol_operations']['message'] = array(
     'title'    => t('Message'),
     'help'     => t('The Operation Message'),
     'field'    => array(
