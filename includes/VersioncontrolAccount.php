@@ -11,20 +11,24 @@
  * This class provides the way to manage users accounts.
  */
 abstract class VersioncontrolAccount extends VersioncontrolEntity {
-  // Attributes
   /**
-   * VCS's username
+   * The username, as it is represented by the VCS.
    *
-   * @var    string
+   * @var string
    */
-  public $vcs_username;
+  public $vcs_username = '';
 
   /**
-   * Drupal user id
+   * The uid of the associated Drupal user.
    *
-   * @var    int
+   * If 0, indicates that there is no known associated Drupal user. Code using
+   * this class should construct their behaviors to respect this magic value.
+   *
+   * @var int
    */
-  public $uid;
+  public $uid = 0;
+
+  public $repo_id;
 
   /**
    * Repo user id
