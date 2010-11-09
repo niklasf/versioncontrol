@@ -47,17 +47,23 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     $magic_modules = $this->determineBackends();
     // load crucial required modules in addition to requested ones.
     $arg_modules = func_get_args();
-    $modules = array_merge(array('dbtng', 'autoload', 'versioncontrol'), $arg_modules, $magic_modules);
+    $modules = array_merge(array('autoload', 'dbtng', 'views', 'versioncontrol'), $arg_modules, $magic_modules);
     call_user_func_array(array('VersioncontrolTestCase', 'parent::setUp'), $modules);
-    // parent::setUp($modules);
-
-    // init dbtng so it actually works.
-    dbtng_init();
 
     if (!($this->useBackends & (self::BACKENDS_NONE))) {
       // If the test requested it, init and attach backends.
       $this->attachBackends();
     }
+  }
+
+  protected function tearDown() {
+    // For dbtng the prefix is part of the data associated with the
+    // connection, so, when simpletest makes a new prefix to run another
+    // test method, dbtng do not notice it is a _new_ connection, so
+    // removing by hand force it to open a new one with the right changed
+    // prefix.
+    Database::removeConnection('default');
+    parent::tearDown();
   }
 
   /**
