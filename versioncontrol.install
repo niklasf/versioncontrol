@@ -359,6 +359,12 @@ function versioncontrol_schema() {
         'not null' => TRUE,
         'default' => 1
       ),
+      'locked' => array(
+        'description' => '1 locked repository, 0 unlocked.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'data' => array(
         'description' => t('A serialized array of additional per-repository settings, mostly populated by backends.'),
         'type' => 'text',
@@ -647,7 +653,7 @@ function versioncontrol_update_6301() {
 }
 
 /**
- * Add the 'updated', 'updated_method' and 'locked' columns.
+ * Add the 'updated' and 'updated_method' columns.
  *
  * These fields were previously stored as members of a serialized array stored
  * in the data column but this could be problematic for views integration and
@@ -735,5 +741,23 @@ function versioncontrol_update_6304() {
   }
 
   db_drop_table($ret, 'versioncontrol_operation_items');
+  return $ret;
+}
+
+/**
+ * Add 'locked' column.
+ *
+ * This field was previously stored as members of a serialized array stored
+ * in the data column. Now an independent field.
+ */
+function versioncontrol_update_6305() {
+  $ret = array();
+  $locked = array(
+    'description' => '1 locked repository, 0 unlocked.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  db_add_field($ret, 'versioncontrol_repositories', 'locked', $locked);
   return $ret;
 }

@@ -68,12 +68,18 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   public $updated = 0;
 
   /**
+   * Indicates if the repository is being updated now.
+   *
+   * @var    integer
+   */
+  public $locked = 0;
+
+  /**
    * An array of additional per-repository settings, mostly populated by
    * third-party modules. It is serialized on DB.
    */
   public $data = array();
 
-  // Associations
   /**
    * The backend associated with this repository
    *
