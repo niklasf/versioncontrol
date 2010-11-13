@@ -240,11 +240,10 @@ function versioncontrol_user($type, &$edit, &$user, $category = NULL) {
       return $categories;
 
     case 'delete':
-      if ($accounts = versioncontrol_user_accounts_load($user->uid, TRUE)) {
-        foreach ($accounts as $uid => $usernames_by_repository) {
-          foreach ($usernames_by_repository as $repo_id => $account) {
-            $account->delete();
-          }
+      $accounts = versioncontrol_user_accounts_load($user->uid, TRUE);
+      foreach ($accounts as $uid => $usernames_by_repository) {
+        foreach ($usernames_by_repository as $repo_id => $account) {
+          $account->delete();
         }
       }
       break;
@@ -503,13 +502,11 @@ function versioncontrol_private_account_access($vcs_accounts, $account = NULL) {
  * Title callback for the "user/%versioncontrol_user_accounts/edit/versioncontrol" tab.
  */
 function versioncontrol_user_accounts_title_callback($accounts) {
-  $usernames = array();
-  foreach ($accounts as $uid => $user_accounts) {
-    foreach ($user_accounts as $repo_id => $account) {
-      $usernames[] = $account->vcs_username;
-    }
+  $repo_ids = array();
+  foreach ($accounts as $account) {
+    $repo_ids[] = $account->repository->repo_id;
   }
-  $repositories = versioncontrol_repository_load_multiple(array_keys(reset($accounts)));
+  $repositories = versioncontrol_repository_load_multiple($repo_ids);
   $vcses = array();
   foreach ($repositories as $repository) {
     $vcses[$repository['vcs']] = TRUE;
@@ -564,8 +561,7 @@ function versioncontrol_repository_load_multiple($ids = array(), $conditions = a
 
 /**
  * Menu wildcard loader for '%versioncontrol_user_accounts':
- * Load and return all VCS accounts of a given user, or FALSE if no accounts
- * exist for that user.
+ * Load and return all VCS accounts of a given user.
  *
  * @param $uid
  *   Drupal user id of the user whose VCS accounts should be loaded.
@@ -574,8 +570,7 @@ function versioncontrol_repository_load_multiple($ids = array(), $conditions = a
  *   API documentation of that function.
  */
 function versioncontrol_user_accounts_load($uid, $include_unauthorized = FALSE) {
-  $accounts = versioncontrol_user_accounts_load_multiple(array($uid), array(), array('include unauthorized' => $include_unauthorized));
-  return empty($accounts) ? FALSE : $accounts;
+  return versioncontrol_user_accounts_load_multiple(array($uid), array(), array('include unauthorized' => $include_unauthorized));
 }
 
 function versioncontrol_user_accounts_load_multiple($ids = array(), $conditions = array(), $options = array()) {

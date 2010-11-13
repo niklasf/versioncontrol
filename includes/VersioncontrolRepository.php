@@ -484,7 +484,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   public function getAccountUidForUsername($username, $include_unauthorized = FALSE) {
     $result = db_query("SELECT uid, repo_id
       FROM {versioncontrol_accounts}
-      WHERE username = '%s' AND repo_id = %d",
+      WHERE vcs_username = '%s' AND repo_id = %d",
       $username, $this->repo_id);
 
     while ($account = db_fetch_object($result)) {

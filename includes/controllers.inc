@@ -427,7 +427,6 @@ class VersioncontrolAccountController extends VersioncontrolEntityController {
     else { // No repository specified, create a specially-keyed array
       $return = array();
       foreach ($result as $row) {
-        $return[$row->repo_id . '-' . $row->uid] = $row;
         if (!isset($return[$row->uid])) {
           $return[$row->uid] = array();
         }
@@ -443,14 +442,16 @@ class VersioncontrolAccountController extends VersioncontrolEntityController {
       return parent::buildEntities($queried_entities);
     }
     // Otherwise we need special handling for our two-level array.
-    $this->idKey = 'repo_id';
-    $built = array();
-    foreach ($queried_entities as $uid => $repo_array) {
-      // Trick the parent into doing each of the inner arrays for us.
-      $built[$uid] = parent::buildEntities($repo_array);
+    $almost_built = array();
+    foreach ($queried_entities as $uid => $raw_accounts_per_repo) {
+      foreach ($raw_accounts_per_repo as $repo_id => $raw_account) {
+        $id = "$uid-$repo_id";
+        // load the repository object
+        $raw_account->repository = reset($this->backends[$raw_account->vcs]->loadEntities('repo', array($repo_id)));
+        $almost_built[$id] = $raw_account;
+      }
     }
-    $this->idKey = 'uid';
-    return $built;
+    return parent::buildEntities($almost_built);
   }
 
   protected function modifyReturn($entities) {

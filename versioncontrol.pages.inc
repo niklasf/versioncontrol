@@ -231,29 +231,22 @@ function versioncontrol_account_register_form_submit($form, &$form_state) {
  * array from versioncontrol_account_edit_form() if only a single account
  * exists for that user (or if the account has been given in the URL).
  */
-function versioncontrol_account_page($accounts, $url_repo_id = NULL, $url_username = NULL) {
+function versioncontrol_account_page($vcs_accounts, $url_repo_id = NULL, $url_username = NULL) {
   $selected_usernames = array();
 
-  foreach ($accounts as $only_uid => $vcs_accounts_by_repository) {
+  foreach ($vcs_accounts as $key => $vcs_account) {
     // The caller (menu system) ensures that there is only one uid.
-    $uid = $only_uid;
-
-    foreach ($vcs_accounts_by_repository as $repo_id => $vcs_account) {
-      if (isset($url_repo_id) && $repo_id != $url_repo_id) {
-        unset($accounts[$uid][$repo_id]);
-        continue; // disregard repositories that don't match the URL constraints
-      }
-      $vcs_accounts = array($vcs_account);
-
-      foreach ($vcs_accounts as $key => $vcs_account) {
-        if (isset($url_username) && $vcs_account->vcs_username != $url_username) {
-          unset($vcs_accounts[$uid][$repo_id]);
-          continue; // disregard usernames that don't match the URL constraints
-        }
-        $any_repo_id = $repo_id;
-        $selected_usernames[] = $vcs_account->vcs_username;
-      }
+    $uid = $vcs_account->uid;
+    if (isset($url_repo_id) && $vcs_account->repository->repo_id != $url_repo_id) {
+      unset($vcs_accounts[$key]);
+      continue; // disregard repositories that don't match the URL constraints
     }
+    if (isset($url_username) && $vcs_account->vcs_username != $url_username) {
+      unset($vcs_accounts[$key]);
+      continue; // disregard usernames that don't match the URL constraints
+    }
+    $any_repo_id = $vcs_account->repository->repo_id;
+    $selected_usernames[] = $vcs_account->vcs_username;
   }
 
   if (empty($selected_usernames)) {
@@ -267,7 +260,7 @@ function versioncontrol_account_page($accounts, $url_repo_id = NULL, $url_userna
     );
   }
   else {
-    return drupal_get_form('versioncontrol_account_list_form', $accounts);
+    return drupal_get_form('versioncontrol_account_list_form', $vcs_accounts);
   }
 }
 
@@ -545,11 +538,11 @@ function versioncontrol_account_edit_form_submit($form, &$form_state) {
     //      uid and repo_id are the PK on the table getAccounts query
     $conditions = array(
       'repo_id' => array($repository->repo_id),
-      'username' => array($form['#original_username'])
+      'vcs_username' => array($form['#original_username'])
     );
-    $vcs_accounts = versioncontrol_user_account_load_multiple(array($uid), $conditions, array('include unauthorized' => TRUE));
+    $vcs_accounts = versioncontrol_user_accounts_load_multiple(array($uid), $conditions, array('include unauthorized' => TRUE));
     // if we got an original_username we can trust on getting a value
-    $vcs_account = array_shift(array_shift($vcs_accounts));
+    $vcs_account = array_shift($vcs_accounts);
 
     $vcs_account->update($username, $additional_data);
 

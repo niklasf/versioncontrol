@@ -93,7 +93,7 @@ abstract class VersioncontrolAccount extends VersioncontrolEntity {
     if ($username_changed) {
       $this->vcs_username = $vcs_username;
       db_query("UPDATE {versioncontrol_accounts}
-                SET username = '%s'
+                SET vcs_username = '%s'
                 WHERE uid = %d AND repo_id = %d",
                 $this->vcs_username, $this->uid, $repo_id
       );
@@ -143,7 +143,7 @@ abstract class VersioncontrolAccount extends VersioncontrolEntity {
    */
   public final function insert($additional_data = array()) {
     db_query(
-      "INSERT INTO {versioncontrol_accounts} (uid, repo_id, username)
+      "INSERT INTO {versioncontrol_accounts} (uid, repo_id, vcs_username)
        VALUES (%d, %d, '%s')", $this->uid, $this->repository->repo_id, $this->vcs_username
     );
 
