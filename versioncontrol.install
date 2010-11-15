@@ -708,14 +708,6 @@ function versioncontrol_update_6303() {
   );
   db_change_field($ret, 'versioncontrol_accounts', 'username', 'vcs_username', $spec);
 
-  $result = db_query("SELECT vc_op_id, item_revision_id FROM {versioncontrol_operation_items}");
-
-  $data = array();
-  while ($row = db_fetch_object($result)) {
-    db_query('UPDATE {versioncontrol_operation_items} SET vc_op_id = %d WHERE item_revision_id = %d', $row->vc_op_id, $row->item_revision_id);
-  }
-
-  db_drop_table($ret, 'versioncontrol_operation_items');
   return $ret;
 }
 

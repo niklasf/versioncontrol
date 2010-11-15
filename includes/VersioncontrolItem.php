@@ -22,6 +22,13 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
   public $item_revision_id;
 
   /**
+   * Operation identifier.
+   *
+   * @var    int
+   */
+  public $vc_op_id;
+
+  /**
    * The path of the item.
    *
    * @var    string

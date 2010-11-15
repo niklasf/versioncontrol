@@ -16,14 +16,14 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    * which is unique among all operations (commits, branch ops, tag ops)
    * in all repositories.
    *
-   * @var    int
+   * @var int
    */
   public $vc_op_id;
 
   /**
    * Who actually perform the change on the repository.
    *
-   * @var    string
+   * @var string
    */
   public $committer;
 
@@ -33,7 +33,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    * was committed, whereas for branch/tag operations it is the time
    * when the files were branched or tagged.)
    *
-   * @var    timestamp
+   * @var timestamp
    */
   public $date;
 
@@ -46,7 +46,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    * For branch and tag operations, this element indicates the
    * (repository-wide) revision of the files that were branched or tagged.
    *
-   * @var    string
+   * @var string
    */
   public $revision;
 
@@ -55,7 +55,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    * If a version control system doesn't support messages for the current
    * operation type, this element should be empty.
    *
-   * @var    string
+   * @var string
    */
   public $message;
 
@@ -63,14 +63,14 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    * The system specific VCS username of the user who executed this
    * operation(aka who write the change)
    *
-   * @var    string
+   * @var string
    */
   public $author;
 
   /**
    * The repository where this operation occurs.
    *
-   * @var    VersioncontrolRepository
+   * @var VersioncontrolRepository
    */
   public $repository;
 
@@ -78,7 +78,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    * The type of the operation - one of the
    * VERSIONCONTROL_OPERATION_{COMMIT,BRANCH,TAG} constants.
    *
-   * @var    string
+   * @var string
    */
   public $type;
 
@@ -94,7 +94,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    * or 'master' - is also considered a branch. Each element in 'labels'
    * is a VersioncontrolLabel(VersioncontrolBranch VersioncontrolTag)
    *
-   * @var    array
+   * @var array
    */
   public $labels = array();
 
@@ -102,7 +102,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    * The Drupal user id of the operation author, or 0 if no Drupal user
    * could be associated to the author.
    *
-   * @var    int
+   * @var int
    */
   public $uid;
 
@@ -276,6 +276,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
 
     foreach ($operation_items as $path => $item) {
       $item->sanitize();
+      $item->vc_op_id = $this->vc_op_id;
       $item->ensure();
       $this->insertOperationItem($item,
         VERSIONCONTROL_OPERATION_MEMBER_ITEM);
