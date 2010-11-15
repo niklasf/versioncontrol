@@ -279,13 +279,7 @@ function versioncontrol_views_data() {
       'left_field' => 'vc_op_id',
       'field' => 'vc_op_id',
     ),
-
-    'versioncontrol_operation_items' => array(
-      'left_field' => 'vc_op_id',
-      'field' => 'vc_op_id',
-    ),
     'versioncontrol_item_revisions' => array(
-      'left_table' => 'versioncontrol_operation_items',
       'left_field' => 'vc_op_id',
       'field' => 'vc_op_id',
     ),
@@ -481,34 +475,6 @@ function versioncontrol_views_data() {
     ),
   );
 
-  // VersionControl Operation Items 
-  $data['versioncontrol_operation_items']['table']['group'] = t("VersionControl Item Revisions");
-  $data['versioncontrol_operation_items']['table']['join'] = array(
-    'versioncontrol_item_revisions' => array(
-      'left_field' => 'item_revision_id',
-      'field' => 'item_revision_id',
-    ),
-    'versioncontrol_operations' => array(
-      'left_field' => 'vc_op_id',
-      'field' => 'vc_op_id',
-    ),
-  );
-  $data['versioncontrol_operation_items']['item_revision_id'] = array(
-    'title' => t('Item Revision ID'),
-    'help' => t('The unique ID of this item revision.'),
-    'field' => array(
-      'handler' => 'versioncontrol_handler_field_operation_items',
-    ),
-  );
-  //TODO: Confirm what this is.
-  $data['versioncontrol_operation_items']['type'] = array(
-    'title' => t("Op Item Type"),
-    'help' => t("The type of items' operation"),
-    'field' => array(
-      'handler' => 'views_handler_field_numeric',
-    ),
-  );
-
   // VersionControl Source Items
   $data['versioncontrol_source_items']['table']['group'] = t("VersionControl Source Items");
   // TODO: item_revision_id
@@ -572,9 +538,6 @@ function versioncontrol_views_handlers() {
       ),
       'versioncontrol_handler_field_operation_type' => array(
         'parent' => 'views_handler_field',
-      ),
-      'versioncontrol_handler_field_operation_items' => array(
-        'parent' => 'views_handler_field_prerender_list',
       ),
       'versioncontrol_handler_field_operation_labels' => array(
         'parent' => 'views_handler_field_prerender_list',
