@@ -36,21 +36,6 @@ define('VERSIONCONTROL_ACTION_OTHER',    8); //< for example, SVN revprop-only c
 //@}
 
 /**
- * @name VCS flag for operation item database entries
- * The flag for operation item database entries, specifying whether an item
- * is actually a direct "member" item of that operation or just a cached
- * source item that speeds up operation queries. (Background: we want some
- * source items to be considered when the caller passes a 'paths' constraint,
- * but joining those is unnecessarily inefficient. Therefore, searched source
- * items get directly included in the {versioncontrol_operation_items} table.)
- * This is an implementation detail, the API user won't get to see this. Ever.
- */
-//@{
-define('VERSIONCONTROL_OPERATION_MEMBER_ITEM',          1);
-define('VERSIONCONTROL_OPERATION_CACHED_AFFECTED_ITEM', 2);
-//@}
-
-/**
  * @name Constraint 'cardinality' key
  * Allowed values for the 'cardinality' key in constraint descriptions
  * provided by hook_versioncontrol_operation_constraint_info().
