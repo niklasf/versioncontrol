@@ -170,11 +170,9 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
     $items = array();
     $result = db_query(
       'SELECT ir.item_revision_id, ir.path, ir.revision, ir.type
-      FROM {versioncontrol_operation_items} opitem
-      INNER JOIN {versioncontrol_item_revisions} ir
-      ON opitem.item_revision_id = ir.item_revision_id
-      WHERE opitem.vc_op_id = %d AND opitem.type = %d',
-      $this->vc_op_id, VERSIONCONTROL_OPERATION_MEMBER_ITEM);
+      FROM {versioncontrol_item_revisions} ir
+      WHERE ir.vc_op_id = %d',
+      $this->vc_op_id);
 
     while ($item_revision = db_fetch_object($result)) {
       $items[$item_revision->path] = new $this->repository->backend->classes['item']($item_revision->type, $item_revision->path, $item_revision->revision, NULL, $this->repository, NULL, $item_revision->item_revision_id);
@@ -225,7 +223,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    * necessary module hooks. Only call this function after the operation has been
    * successfully executed.
    *
-   * @param $operation_items
+   * @param $item_revisions
    *   A structured array containing the exact details of happened to each
    *   item in this operation. The structure of this array is the same as
    *   the return value of VersioncontrolOperation::getItems() - that is,
@@ -241,7 +239,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    *   This parameter is passed by reference as the insert operation will
    *   check the validity of a few item properties and will also assign an
    *   'item_revision_id' property to each of the given items. So when this
-   *   function returns with a result other than NULL, the @p $operation_items
+   *   function returns with a result other than NULL, the @p $item_revisions
    *   array will also be up to snuff for further processing.
    *
    * @return
@@ -252,7 +250,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    *   versioncontrol_get_operations() and VersioncontrolOperation::getItems().)
    *   In case of an error, NULL is returned instead of the operation array.
    */
-  public final function insert(&$operation_items) {
+  public final function insert(&$item_revisions) {
     $this->fill(TRUE);
 
     if (!isset($this->repository)) {
@@ -272,14 +270,12 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
     $vcs = $this->repository->vcs;
 
     // So much for the operation itself, now the more verbose part: items.
-    ksort($operation_items); // similar paths should be next to each other
+    ksort($item_revisions); // similar paths should be next to each other
 
-    foreach ($operation_items as $path => $item) {
+    foreach ($item_revisions as $path => $item) {
       $item->sanitize();
       $item->vc_op_id = $this->vc_op_id;
       $item->ensure();
-      $this->insertOperationItem($item,
-        VERSIONCONTROL_OPERATION_MEMBER_ITEM);
       $item['selected_label'] = new stdClass();
       $item['selected_label']->get_from = 'operation';
       $item['selected_label']->successor_item = &$this;
@@ -289,21 +285,6 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
       foreach ($item->source_items as $key => $source_item) {
         $source_item->ensure();
         $item->insertSourceRevision($source_item, $item->action);
-
-        // Cache other important items in the operations table for 'path' search
-        // queries, because joining the source revisions table is too expensive.
-        switch ($item['action']) {
-        case VERSIONCONTROL_ACTION_MOVED:
-        case VERSIONCONTROL_ACTION_COPIED:
-        case VERSIONCONTROL_ACTION_MERGED:
-          if ($item->path != $source_item->path) {
-            $this->insertOperationItem($source_item,
-              VERSIONCONTROL_OPERATION_CACHED_AFFECTED_ITEM);
-          }
-          break;
-        default: // No additional caching for added, modified or deleted items.
-          break;
-        }
 
         $source_item->selected_label = new stdClass();
         $source_item->selected_label->get_from = 'other_item';
@@ -329,15 +310,15 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
         $item->replaced_item->selected_label->other_item = &$item;
         $item->replaced_item->selected_label->other_item_tags = array('successor_item');
       }
-      $operation_items[$path] = $item;
+      $item_revisions[$path] = $item;
     }
 
     // Notify the backend first.
-    $this->_insert($operation_items);
+    $this->_insert($item_revisions);
 
     // Everything's done, let the world know about it!
     module_invoke_all('versioncontrol_operation',
-      'insert', $this, $operation_items
+      'insert', $this, $item_revisions
     );
 
     // This one too, as there is also an update function & hook for it.
@@ -354,7 +335,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
     if (module_exists('rules')) {
       rules_invoke_event('versioncontrol_operation_insert', array(
         'operation' => $this,
-        'items' => $operation_items,
+        'items' => $item_revisions,
       ));
     }
 
@@ -365,7 +346,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
   /**
    * Let child backend operation classes add information if necessary.
    */
-  protected function _insert($operation_items) {
+  protected function _insert($item_revisions) {
   }
 
   public function update() {}
@@ -379,7 +360,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    *   the operation that should be deleted.
    */
   public final function delete() {
-    $operation_items = $this->getItems();
+    $item_revisions = $this->getItems();
 
     // As versioncontrol_update_operation_labels() provides an update hook for
     // operation labels, we should also have a delete hook for completeness.
@@ -389,14 +370,14 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
     // Calls hook_versioncontrol_commit(), hook_versioncontrol_branch_operation()
     // or hook_versioncontrol_tag_operation().
     module_invoke_all('versioncontrol_operation',
-      'delete', $this, $operation_items);
+      'delete', $this, $item_revisions);
 
     // Provide an opportunity for the backend to delete its own stuff.
-    $this->_delete($operation_items);
+    $this->_delete($item_revisions);
 
     db_query('DELETE FROM {versioncontrol_operation_labels}
     WHERE vc_op_id = %d', $this->vc_op_id);
-    db_query('DELETE FROM {versioncontrol_operation_items}
+    db_query('DELETE FROM {versioncontrol_item_revisions}
     WHERE vc_op_id = %d', $this->vc_op_id);
     db_query('DELETE FROM {versioncontrol_operations}
     WHERE vc_op_id = %d', $this->vc_op_id);
@@ -407,7 +388,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    * VersioncontrolRepository::data without modifying general flow if
    * necessary.
    */
-  protected function _delete($operation_items) {
+  protected function _delete($item_revisions) {
   }
 
   /**
@@ -481,21 +462,6 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
   }
 
   /**
-   * Insert an operation item entry into the {versioncontrol_operation_items} table.
-   * The item is expected to have an 'item_revision_id' property already.
-   */
-  private function insertOperationItem($item, $type) {
-    // Before inserting that item entry, make sure it doesn't exist already.
-    db_query("DELETE FROM {versioncontrol_operation_items}
-    WHERE vc_op_id = %d AND item_revision_id = %d",
-    $this->vc_op_id, $item->item_revision_id);
-
-    db_query("INSERT INTO {versioncontrol_operation_items}
-    (vc_op_id, item_revision_id, type) VALUES (%d, %d, %d)",
-      $this->vc_op_id, $item->item_revision_id, $type);
-  }
-
-  /**
    * Determine if a commit, branch or tag operation may be executed or not.
    * Call this function inside a pre-commit hook.
    *
@@ -532,7 +498,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    *        or 'master' - is also considered a branch. Each element in 'labels'
    *        is a VersioncontrolLabel(VersioncontrolBranch VersioncontrolTag)
    *
-   * @param $operation_items
+   * @param $item_revisions
    *   A structured array containing the exact details of what is about to happen
    *   to each item in this commit. The structure of this array is the same as
    *   the return value of VersioncontrolOperation::getItems() - that is,
@@ -548,7 +514,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    *   If FALSE is returned, you can retrieve the concerning error messages
    *   by calling versioncontrol_get_access_errors().
    */
-  protected function hasWriteAccess($operation, $operation_items) {
+  protected function hasWriteAccess($operation, $item_revisions) {
     $operation->fill();
 
     // If we can't determine this operation's repository,
@@ -603,7 +569,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
 
       // If at least one hook_versioncontrol_write_access returns TRUE,
       // the commit goes through. (This is for admin or sandbox exceptions.)
-      $outcome = $function($operation, $operation_items);
+      $outcome = $function($operation, $item_revisions);
       if ($outcome === TRUE) {
         return TRUE;
       }
