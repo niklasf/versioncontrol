@@ -166,14 +166,6 @@ function versioncontrol_autoload_info() {
     'file' => 'includes/VersioncontrolRepository.php',
   );
 
-  // Add rules classes
-  $items['versioncontrol_data_type_repository'] = array(
-    'file' => 'includes/versioncontrol.rules.inc',
-  );
-  $items['versioncontrol_data_type_operation'] = array(
-    'file' => 'includes/versioncontrol.rules.inc',
-  );
-
   return $items;
 }
 
