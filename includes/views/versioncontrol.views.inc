@@ -205,7 +205,6 @@ function versioncontrol_views_data() {
     'title'    => t('Author'),
     'help'     => t('The Operation Author'),
     'field'    => array(
-      //TODO: Display handler to filter GIT usernames?
       'handler' => 'views_handler_field',
     ),
     'sort' => array(
@@ -258,18 +257,15 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_field',
     ),
   );
-
   $data['versioncontrol_operations']['table']['join'] = array(
     'users' => array(
       'left_field' => 'uid',
       'field'      => 'uid',
     ),
-
     'versioncontrol_repositories' => array(
       'left_field' => 'repo_id',
       'field' => 'repo_id',
     ),
-
     'versioncontrol_operation_labels' => array(
       'left_field' => 'vc_op_id',
       'field' => 'vc_op_id',
@@ -397,13 +393,14 @@ function versioncontrol_views_data() {
       'field' => 'vc_op_id',
     ),
   );
+  /*
   $data['versioncontrol_operation_labels']['label_id'] = array(
     'title' => t('Label List'),
     'help' => t('A list of labels this operation affected'),
     'field' => array(
-      'handler' => 'versioncontrol_handler_field_operation_labels',
     ),
   );
+  */
   $data['versioncontrol_operation_labels']['action'] = array(
     //TODO: What is this again?
     'title' => t("Op Label Action"),
@@ -539,13 +536,7 @@ function versioncontrol_views_handlers() {
       'versioncontrol_handler_field_operation_type' => array(
         'parent' => 'views_handler_field',
       ),
-      'versioncontrol_handler_field_operation_labels' => array(
-        'parent' => 'views_handler_field_prerender_list',
-      ),
       'versioncontrol_handler_filter_operation_type' => array(
-        'parent' => 'views_handler_filter_in_operator',
-      ),
-      'versioncontrol_handler_filter_operation_label' => array(
         'parent' => 'views_handler_filter_in_operator',
       ),
       'versioncontrol_handler_filter_repo_backend' => array(
@@ -559,46 +550,3 @@ function versioncontrol_views_handlers() {
 
   return $ret;
 }
-
-/**
- * Implementation of hook_views_plugins()
- *
- * @return array
- */
-function versioncontrol_views_plugins() {
-  //TODO: This is in progress...
-  /*
-  return array(
-    'module' => 'versioncontrol',
-    'row' => array(
-      'versioncontrol_operations' => array(
-        'title' => t('Operation'),
-        'help' => t('Display a rendered operation'),
-        'handler' => 'versioncontrol_plugin_row_operation',
-        'path' => drupal_get_path('module', 'versioncontrol') . '/includes/views/handlers',
-        'base' => array(
-          'versioncontrol_operations',
-        ),
-        'type' => 'normal',
-        'uses fields' => FALSE,
-      ),
-    ),
-    'style' => array(
-      'versioncontrol_operations' => array(
-        'title' => t('Versioncontrol Operations'),
-        'help' => t('Displays a grouped list of operations'),
-        'handler' => 'versioncontrol_plugin_style_operations',
-        'path' => drupal_get_path('module', 'versioncontrol') . '/handlers',
-        'base' => array(
-          'versioncontrol_operations',
-        ),
-        'type' => 'normal',
-        'uses grouping' => TRUE,
-        'uses row plugin' => TRUE,
-        'theme' => 'versioncontrol_views_style_operations',
-      ),
-    ),
-  );
-  */
-}
-

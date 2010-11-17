@@ -8,12 +8,12 @@ function versioncontrol_views_default_views() {
   $views = array();
 
   /*
-   * View 'versioncontrol_repositories'
+   * Provides a list of versioncontrol repositories.
    */
   $view = new view;
   $view->name = 'versioncontrol_repositories';
   $view->description = 'VersionControl Repositories';
-  $view->tag = 'VersionControl';
+  $view->tag = 'VersionControl Core';
   $view->view_php = '';
   $view->base_table = 'versioncontrol_repositories';
   $view->is_cacheable = FALSE;
@@ -315,4 +315,3 @@ function versioncontrol_views_default_views() {
 
   return $views;
 }
-

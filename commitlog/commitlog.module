@@ -23,6 +23,22 @@ function commitlog_menu() {
     'access arguments' => array($view_access),
     'type' => MENU_SUGGESTED_ITEM,
   );
+  $items['commitlog/repository/%'] = array(
+    'title' => 'Commit messages',
+    'page callback' => 'commitlog_operations_page',
+    'page arguments' => array('repository', 2),
+    'access arguments' => array($view_access),
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $items['commitlog/author/%'] = array(
+    'title' => 'Commit messages',
+    'page callback' => 'commitlog_operations_page',
+    'page arguments' => array('author', 2),
+    'access arguments' => array($view_access),
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  /*
+  TODO: This should be completely replaced by views.
   $items['commitlog/%/%'] = array(
     'title' => 'Commit messages',
     'page callback' => 'commitlog_operations_filtered_page',
@@ -30,12 +46,14 @@ function commitlog_menu() {
     'access arguments' => array($view_access),
     'type' => MENU_CALLBACK,
   );
+  TODO: Implement in views.
   $items['commitlog/feed'] = array(
     'title' => 'Commit messages',
     'page callback' => 'commitlog_operations_rss',
     'access arguments' => array($view_access),
     'type' => MENU_CALLBACK,
   );
+  */
 
   // Search pages:
 /*
@@ -323,18 +341,26 @@ function commitlog_operations_filtered_page($constraint_name, $constraint_value)
 }
 
 /**
- * Page callback for the 'commitlog' menu path, also usable by other modules
- * as commit log page with additional constraints.
+ * Page callback for the 'commitlog' family of menu paths.
  *
- * @param $additional_constraints
- *   A fixed set of operation constraints that will be used in addition to
- *   the constraints given by the user in the URL's query attributes.
- *   If a constraint is given both in the @p $additional_constraints array
- *   and as the query attribute then the latter is discarded.
+ * @param $type
+ *   What type of commit log listing we're creating.  Supported types are 'author' and 'repository'.
+ * @param $argument
+ *   The argument with which to filter the view.  This is used as the first argument in the view in question.
  */
-function commitlog_operations_page($additional_constraints = array()) {
-  $constraints = $additional_constraints + _commitlog_get_constraints();
-  return commitlog_operations($constraints);
+function commitlog_operations_page($type = NULL, $argument = NULL) {
+  // TODO: Add CSS?
+  // TODO: Preprocess functions to assign our own templates to these views?
+  if ($type == 'author' && !is_null($argument)) {
+    $output = views_embed_view('commitlog_author_commits', 'default', $argument);
+  }
+  else if ($type == 'repository' && !is_null($argument)) {
+    $output = views_embed_view('commitlog_repository_commits', 'default', $argument);
+  }
+  else {
+    $output = views_embed_view('commitlog_global_commits', 'default');
+  }
+  return $output;
 }
 
 /**
@@ -1151,3 +1177,16 @@ function theme_commitlog_project($repository, $project, $format = 'html') {
   }
   return '';
 }
+
+/**
+ * Implementation of hook_views_api().
+ *
+ * @return array
+ */
+function commitlog_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'commitlog'). '/includes', 
+  );
+}
+
