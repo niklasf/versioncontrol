@@ -677,13 +677,11 @@ function versioncontrol_fetch_source_items($repository, &$items) {
   }
 
   $result = db_query(
-    'SELECT sit.item_revision_id, sit.source_item_revision_id, sit.action,
-            sit.line_changes_recorded, sit.line_changes_added,
-            sit.line_changes_removed, ir.path, ir.revision, ir.type
-     FROM {versioncontrol_source_items} sit
-      LEFT JOIN {versioncontrol_item_revisions} ir
-       ON sit.source_item_revision_id = ir.item_revision_id
-     WHERE sit.item_revision_id IN ('. implode(',', $placeholders) .')', $ids);
+    'SELECT item_revision_id, source_item_revision_id, action,
+            line_changes_recorded, line_changes_added,
+            line_changes_removed, path, revision, type
+     FROM {versioncontrol_item_revisions}
+     WHERE item_revision_id IN ('. implode(',', $placeholders) .')', $ids);
 
   while ($item_revision = db_fetch_object($result)) {
     $successor_key = $item_keys[$item_revision->item_revision_id];
@@ -777,12 +775,10 @@ function versioncontrol_fetch_successor_items($repository, &$items) {
   }
 
   $result = db_query(
-    'SELECT sit.item_revision_id, sit.source_item_revision_id, sit.action,
-            ir.path, ir.revision, ir.type
-     FROM {versioncontrol_source_items} sit
-      INNER JOIN {versioncontrol_item_revisions} ir
-       ON sit.item_revision_id = ir.item_revision_id
-     WHERE sit.source_item_revision_id IN ('. implode(',', $placeholders) .')', $ids);
+    'SELECT item_revision_id, source_item_revision_id, action,
+            path, revision, type
+     FROM {versioncontrol_item_revisions}
+     WHERE source_item_revision_id IN ('. implode(',', $placeholders) .')', $ids);
 
   while ($item_revision = db_fetch_object($result)) {
     $source_key = $item_keys[$item_revision->source_item_revision_id];

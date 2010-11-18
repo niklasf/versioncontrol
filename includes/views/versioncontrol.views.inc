@@ -429,10 +429,6 @@ function versioncontrol_views_data() {
       'left_field' => 'repo_id',
       'field' => 'repo_id',
     ),
-    'versioncontrol_source_items' => array(
-      'left_field' => 'item_revision_id',
-      'field' => 'item_revision_id',
-    ),
   );
   $data['versioncontrol_item_revisions']['path'] = array(
     'title' => t("File path"),
@@ -471,14 +467,9 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_field_numeric',
     ),
   );
-
-  // VersionControl Source Items
-  $data['versioncontrol_source_items']['table']['group'] = t("VersionControl Source Items");
-  // TODO: item_revision_id
-  $data['versioncontrol_source_items']['item_revision_id'] = array();
   // TODO: source_item_revision_id
-  $data['versioncontrol_source_items']['source_item_revision_id'] = array();
-  $data['versioncontrol_source_items']['action'] = array(
+  $data['versioncontrol_item_revisions']['source_item_revision_id'] = array();
+  $data['versioncontrol_item_revisions']['action'] = array(
     'title' => t('Action'),
     'help' => t('The action performed on this item'),
     'field' => array(
@@ -486,11 +477,9 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_field_generic',
     ),
   );
-  // TODO: line_changes_recorded
-  $data['versioncontrol_source_items']['line_changes_recorded'] = array();
-  $data['versioncontrol_source_items']['line_changes_added'] = array(
-    'title' => t("Lines Added"),
-    'help' => t("The number of lines added to this item"),
+  $data['versioncontrol_item_revisions']['line_changes_added'] = array(
+    'title' => t('Lines Added'),
+    'help' => t('The number of lines added to this item'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
       'click sortable' => TRUE,
@@ -499,16 +488,16 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_sort',
     ),
   );
-  $data['versioncontrol_source_items']['line_changes_removed'] = array(
-    'title' => t("Lines Removed"),
-    'help' => t("The number of lines removed from this item"),
+  $data['versioncontrol_item_revisions']['line_changes_removed'] = array(
+    'title' => t('Lines Removed'),
+    'help' => t('The number of lines removed from this item'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
       'click sortable' => TRUE,
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
-    ), 
+    ),
   );
   return $data;
 }

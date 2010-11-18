@@ -185,68 +185,6 @@ function versioncontrol_schema() {
     'primary key' => array('label_id'),
   );
 
-  $schema['versioncontrol_source_items'] = array(
-    'description' =>
-      'This table stores item history, i.e. it relates an item to one or more direct predecessors (= source items). Likewise, a source item can also have multiple successors, for example if it\'s copied to one location and later (or at the same time) moved to another location.',
-    'fields' => array(
-      'item_revision_id' => array(
-        'description' =>
-          'Foreign key for the successor item, referring to {versioncontrol_item_revisions}.item_revision_id. This one is more recent in revision history than the source item.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'source_item_revision_id' => array(
-        'description' =>
-          'Foreign key for the source item - also referring to {versioncontrol_item_revisions}.item_revision_id, but to a different one than the above {versioncontrol_source_items}.item_revision_id. Contains 0 if the action is VERSIONCONTROL_ACTION_ADDED.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'action' => array(
-        'description' =>
-          'Action that was performed while transforming the source item into the successor item. Can be one of the VERSIONCONTROL_ACTION_* values listed at the top of versioncontrol.module.
-
-          The VERSIONCONTROL_ACTION_DELETED and VERSIONCONTROL_ACTION_REPLACED actions are considered to be the end in the history of an item, no further successors than the current one should be retrieved. (For VERSIONCONTROL_ACTION_DELETED, item_revision_id links to a deleted item. For VERSIONCONTROL_ACTION_REPLACED, item_revision_id links to a different item at the same path that replaced the item specified by source_item_revision_id.
-
-          Likewise, the VERSIONCONTROL_ACTION_ADDED action is considered the beginning, with source_item_revision_id being 0 in that case.',
-        'type' => 'int',
-        'size' => 'tiny',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'line_changes_recorded' => array(
-        'description' =>
-          'Specifies whether line-change information is available (1 as value) or not (0 as value). Naturally, this should only apply to file items, not to directory items. VERSIONCONTROL_ACTION_DELETED and VERSIONCONTROL_ACTION_REPLACED actions are also not supposed to contain line-change information.',
-        'type' => 'int',
-        'size' => 'tiny',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'line_changes_added' => array(
-        'description' =>
-          'If the line_changes_recorded column is 1 then this column contains the amount of lines that was added to the file compared to its source revision. (Equivalent to the "plus" lines in a unified diff.)',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'line_changes_removed' => array(
-        'description' =>
-          'If the line_changes_recorded column is 1 then this column contains the amount of lines that was removed from the file compared to its source revision. (Equivalent to the "minus" lines in a unified diff.)',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-    ),
-    'primary key' => array('item_revision_id', 'source_item_revision_id'),
-  );
-
   $schema['versioncontrol_item_revisions'] = array(
     'description' =>
       'This table contains all known different versions of a file or directory item. For version control systems using global revisions, only the revisions should be recorded in here when the item was actually changed, i.e. part of a commit operation. (Not every revision needs to have all associated items recorded in here, that would be insane.) Non-versioned items, such as directories in CVS or Git, should not be recorded in this table.',
@@ -297,6 +235,43 @@ function versioncontrol_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'source_item_revision_id' => array(
+        'description' =>
+          'Foreign key for the source item - also referring to {versioncontrol_item_revisions}.item_revision_id, but to a different one than this {versioncontrol_item_revisions}.item_revision_id. Contains 0 if the action is VERSIONCONTROL_ACTION_ADDED.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'action' => array(
+        'description' =>
+          'Action that was performed while transforming the source item into the successor item. Can be one of the VERSIONCONTROL_ACTION_* values listed at the top of versioncontrol.module.
+
+          The VERSIONCONTROL_ACTION_DELETED and VERSIONCONTROL_ACTION_REPLACED actions are considered to be the end in the history of an item, no further successors than the current one should be retrieved. (For VERSIONCONTROL_ACTION_DELETED, item_revision_id links to a deleted item. For VERSIONCONTROL_ACTION_REPLACED, item_revision_id links to a different item at the same path that replaced the item specified by source_item_revision_id.
+
+          Likewise, the VERSIONCONTROL_ACTION_ADDED action is considered the beginning, with source_item_revision_id being 0 in that case.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'line_changes_added' => array(
+        'description' =>
+          'If possible, this column contains the amount of lines that was added to the file compared to its source revision. (Equivalent to the "plus" lines in a unified diff.)',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'line_changes_removed' => array(
+        'description' =>
+          'If possible, this column contains the amount of lines that was removed from the file compared to its source revision. (Equivalent to the "minus" lines in a unified diff.)',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     // Key too long, cannot create an index for this unique key.
     //'unique keys' => array(
@@ -306,6 +281,7 @@ function versioncontrol_schema() {
     'indexes' => array(
       'repo_id_path' => array('repo_id', 'path'),
       'revision' => array('revision'),
+      'source_item_revision_id' => array('source_item_revision_id'),
     ),
     'primary key' => array('item_revision_id'),
   );
@@ -751,5 +727,70 @@ function versioncontrol_update_6305() {
     'default' => 0,
   );
   db_add_field($ret, 'versioncontrol_repositories', 'locked', $locked);
+  return $ret;
+}
+
+/**
+ * Merge {versioncontrol_item_revisions} and {versioncontrol_source_items} tables.
+ *
+ * This is mainly to avoid unnecessary complexity.
+ * See #975864 for details.
+ */
+function versioncontrol_update_6306() {
+  $ret = array();
+  $fields = array(
+    'source_item_revision_id' => array(
+      'description' =>
+        'Foreign key for the source item - also referring to {versioncontrol_item_revisions}.item_revision_id, but to a different one than this {versioncontrol_item_revisions}.item_revision_id. Contains 0 if the action is VERSIONCONTROL_ACTION_ADDED.',
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'action' => array(
+      'description' =>
+        'Action that was performed while transforming the source item into the successor item. Can be one of the VERSIONCONTROL_ACTION_* values listed at the top of versioncontrol.module.
+
+        The VERSIONCONTROL_ACTION_DELETED and VERSIONCONTROL_ACTION_REPLACED actions are considered to be the end in the history of an item, no further successors than the current one should be retrieved. (For VERSIONCONTROL_ACTION_DELETED, item_revision_id links to a deleted item. For VERSIONCONTROL_ACTION_REPLACED, item_revision_id links to a different item at the same path that replaced the item specified by source_item_revision_id.
+
+        Likewise, the VERSIONCONTROL_ACTION_ADDED action is considered the beginning, with source_item_revision_id being 0 in that case.',
+      'type' => 'int',
+      'size' => 'tiny',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'line_changes_added' => array(
+      'description' =>
+        'If possible, this column contains the amount of lines that was added to the file compared to its source revision. (Equivalent to the "plus" lines in a unified diff.)',
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'line_changes_removed' => array(
+      'description' =>
+        'If possible, this column contains the amount of lines that was removed from the file compared to its source revision. (Equivalent to the "minus" lines in a unified diff.)',
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+  );
+
+  foreach  ($fields as $field_name => $data_spec) {
+    db_add_field($ret, 'versioncontrol_item_revisions', $field_name, $data_spec);
+  }
+
+  db_add_index($ret, 'versioncontrol_item_revisions', 'source_item_revision_id', array('source_item_revision_id'));
+
+  $result = db_query("SELECT item_revision_id, source_item_revision_id, action, line_changes_added, line_changes_removed FROM {versioncontrol_source_items}");
+
+  while ($row = db_fetch_object($result)) {
+    db_query('UPDATE {versioncontrol_item_revisions} SET source_item_revision_id = %d, action = %d, line_changes_added = %d, line_changes_removed WHERE item_revision_id = %d', $row->source_item_revision_id, $row->action, $row->line_changes_added, $row->line_changes_removed, $row->item_revision_id);
+  }
+
+  db_drop_table($ret, 'versioncontrol_source_items');
+
   return $ret;
 }
