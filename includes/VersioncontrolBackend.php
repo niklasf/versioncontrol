@@ -147,6 +147,22 @@ abstract class VersioncontrolBackend {
   }
 
   /**
+   * Perform a load operation that is expected to produce a single
+   * VersioncontrolEntity object.
+   *
+   * Convenience function that helps simplify other code which is only
+   * interested in loading a single object. All parameters pass straight through
+   * to @see VersioncontrolBackend::loadEntities().
+   *
+   * @return VersioncontrolEntity
+   */
+  public function loadEntity($controller, $ids = array(), $conditions = array(), $options = array()) {
+    $results = $this->loadEntities($controller, $ids, $conditions, $options);
+    // Pop the first item off the result set and return it.
+    return reset($results);
+  }
+
+  /**
    * Augment a select query with options specific to this backend.
    *
    * This method is fired by entity controllers whenever the backend type is

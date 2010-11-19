@@ -129,6 +129,18 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     $this->built = TRUE;
   }
 
+
+  /**
+   * Perform a log fetch, synchronizing VCAPI database data with the current
+   * state of the repository.
+   *
+   * FIXME - this should be an abstract method, but until we can make VersioncontrolRepository abstract again, we'll have to live with the fatal error.
+   *
+   */
+  public function fetchLogs() {
+    throw new Exception('Cannot perform a log fetch using base VersioncontrolRepository; your loaded repository object must be backend-specific.', E_ERROR);
+  }
+
   /**
    * Title callback for repository arrays.
    */

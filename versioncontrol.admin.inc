@@ -840,7 +840,7 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
  */
 function versioncontrol_admin_repository_delete_confirm(&$form_state, $repository) {
   $form = array();
-  $form['#repo_id'] = $repository['repo_id'];
+  $form['#repo_id'] = $repository->repo_id;
 
   $form = confirm_form($form,
     t('Are you sure you want to delete %name?', array('%name' => $repository['name'])),
@@ -860,5 +860,48 @@ function versioncontrol_admin_repository_delete_confirm_submit($form, &$form_sta
   drupal_set_message(t('The %repository repository has been deleted.', array(
     '%repository' => $repository['name'],
   )));
+  $form_state['redirect'] = 'admin/project/versioncontrol-repositories';
+}
+
+function versioncontrol_admin_repository_clearlock_confirm(&$form_state, $repository) {
+  $form_state['repo_id'] = $repository->repo_id;
+  $form_state['backend'] = $repository->vcs;
+
+  $question = t('Are you sure you want to clear the lock on this repository?');
+  $path = 'admin/project/versioncontrol-repositories';
+  $description = t('Locks protect repositories while log fetches are being run. Breaking this lock could result in multiple fetches running in parallel, which will cause irrecoverable data inconsistencies.');
+  $yes = t('Clear Lock');
+  $no = t('Cancel');
+
+  return confirm_form(array(), $question, $path, $description, $yes, $no);
+}
+
+function versioncontrol_admin_repository_clearlock_confirm_submit($form, &$form_state) {
+  $backend = versioncontrol_get_backends($form_state['backend']);
+  $repository = $backend->loadEntity('repo', array($form_state['repo_id']));
+
+  $repository->locked = FALSE;
+  $repository->update();
+  $form_state['redirect'] = 'admin/project/versioncontrol-repositories';
+}
+
+function versioncontrol_admin_repository_fetch_confirm(&$form_state, $repository) {
+  $form_state['repo_id'] = $repository->repo_id;
+  $form_state['backend'] = $repository->vcs;
+
+  $question = t('Are you sure you want to fetch logs from this repository?');
+  $path = 'admin/project/versioncontrol-repositories';
+  $description = t('Manually triggering a log fetch from this repository will attempt to fully synchronize database-stored data with all the latest changes in the repository. It <em>should</em> be non-destructive.');
+  $yes = t('Fetch logs');
+  $no = t('Cancel');
+
+  return confirm_form(array(), $question, $path, $description, $yes, $no);
+}
+
+function versioncontrol_admin_repository_fetch_confirm_submit($form, &$form_state) {
+  $backend = versioncontrol_get_backends($form_state['backend']);
+  $repository = $backend->loadEntity('repo', array($form_state['repo_id']));
+
+  $repository->fetchLogs();
   $form_state['redirect'] = 'admin/project/versioncontrol-repositories';
 }

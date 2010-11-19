@@ -321,6 +321,16 @@ function versioncontrol_menu() {
     'page arguments' => array('versioncontrol_admin_repository_delete_confirm', 4),
     'type' => MENU_CALLBACK,
   ) + $admin;
+  $items['admin/project/versioncontrol-repositories/clearlock/%versioncontrol_repository'] = array(
+    'title' => 'Clear lock',
+    'page arguments' => array('versioncontrol_admin_repository_clearlock_confirm', 4),
+    'type' => MENU_CALLBACK,
+  ) + $admin;
+  $items['admin/project/versioncontrol-repositories/fetch/%versioncontrol_repository'] = array(
+    'title' => 'Fetch logs',
+    'page arguments' => array('versioncontrol_admin_repository_fetch_confirm', 4),
+    'type' => MENU_CALLBACK,
+  ) + $admin;
 
   $items['admin/project/versioncontrol-accounts'] = array(
     'title' => 'VCS accounts',
@@ -411,7 +421,7 @@ function versioncontrol_menu() {
 function versioncontrol_views_api() {
   return array(
     'api' => 2,
-    'path' => drupal_get_path('module', 'versioncontrol'). '/includes/views', 
+    'path' => drupal_get_path('module', 'versioncontrol'). '/includes/views',
   );
 }
 

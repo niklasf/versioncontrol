@@ -93,6 +93,16 @@ function versioncontrol_views_data() {
       'click sortable' => TRUE,
     ),
   );
+
+  $data['versioncontrol_repositories']['manual_fetch'] = array(
+    'title' => t("Log Fetching"),
+    'help' => t("Controls for managing manual log fetching."),
+    'field' => array(
+      'handler' => 'versioncontrol_handler_field_repository_manual_fetch',
+      'click sortable' => TRUE,
+    ),
+  );
+
   $data['versioncontrol_repositories']['root'] = array(
     'title' => t("Root Path"),
     'help' => t("The root path to the repository"),
@@ -285,7 +295,7 @@ function versioncontrol_views_data() {
       'field'      => 'uid',
       'type'       => 'inner',
   );
-  
+
   // VersionControl Accounts
   $data['versioncontrol_accounts']['table']['group'] = t("VersionControl Accounts");
   $data['versioncontrol_accounts']['table']['base'] = array(
@@ -411,7 +421,7 @@ function versioncontrol_views_data() {
     ),
   );
 
-  
+
   // VersionControl Item Revisions
   $data['versioncontrol_item_revisions']['table']['group'] = t("VersionControl Item Revisions");
   $data['versioncontrol_item_revisions']['table']['base'] = array(
@@ -517,6 +527,9 @@ function versioncontrol_views_handlers() {
     'handlers' => array(
       // field handlers
       'versioncontrol_handler_field_repository_update_method' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'versioncontrol_handler_field_repository_manual_fetch' => array(
         'parent' => 'views_handler_field',
       ),
       'versioncontrol_handler_field_repository_actions' => array(
