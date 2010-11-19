@@ -337,8 +337,7 @@ function versioncontrol_schema() {
       ),
       'locked' => array(
         'description' => 'Dead-simple semaphore - boolean indicating whether the repository is unlocked (0) or locked (1). Locking is typically used when doing log fetches.',
-        'type' => 'tinyint',
-        'unsigned' => TRUE,
+        'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ),
@@ -723,8 +722,7 @@ function versioncontrol_update_6305() {
   $ret = array();
   $locked = array(
     'description' => 'Dead-simple semaphore - boolean indicating whether the repository is unlocked (0) or locked (1). Locking is typically used when doing log fetches.',
-    'type' => 'tinyint',
-    'unsigned' => TRUE,
+    'type' => 'int',
     'not null' => TRUE,
     'default' => 0,
   );
