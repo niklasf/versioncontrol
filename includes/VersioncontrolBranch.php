@@ -133,8 +133,8 @@ class VersioncontrolBranch extends VersioncontrolEntity {
     foreach ($commits as $commit) {
       // Only delete the commit if this branch is the commit's only branch.
       $sole_branch = TRUE;
-      foreach ($commit->branches as $label_id => $branch) {
-        if ($label_id != $this->label_id) {
+      foreach ($commit->labels as $label_id => $label) {
+        if ($label_id != $this->label_id && $label->type != VERSIONCONTROL_LABEL_TAG) {
           $sole_branch = FALSE;
         }
       }
@@ -145,7 +145,7 @@ class VersioncontrolBranch extends VersioncontrolEntity {
       }
       // Or remove only the reference to this branch on the commit.
       else {
-        unset($commit->branches[$this->label_id]);
+        unset($commit->labels[$this->label_id]);
       }
     }
   }
