@@ -565,7 +565,7 @@ class VersioncontrolOperationController extends VersioncontrolEntityController {
 
 class VersioncontrolItemController extends VersioncontrolEntityController {
   protected $entityType = 'item';
-  protected $baseTable = 'versioncontrol_items';
+  protected $baseTable = 'versioncontrol_item_revisions';
   protected $idKey = 'item_revision_id';
 }
 
