@@ -9,6 +9,7 @@
  * Stuff that happened in a repository at a specific time
  */
 abstract class VersioncontrolOperation extends VersioncontrolEntity {
+  protected $_id = 'vc_op_id';
   /**
    * db identifier
    *
@@ -107,249 +108,111 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
   public $uid;
 
   /**
+   * An array of VersioncontrolItem objects affected by this commit.
+   *
+   * @var array
+   */
+  public $itemRevisions = array();
+
+  protected $defaultCrudOptions = array(
+    'update' => array('nested' => TRUE),
+    'insert' => array('nested' => TRUE),
+    'delete' => array('nested' => TRUE),
+  );
+
+  /**
    * Error messages used mainly to get descriptions of errors at
    * hasWriteAccess().
    */
   private static $error_messages = array();
 
-  /**
-   * Retrieve all items that were affected by an operation.
-   *
-   * @param $fetch_source_items
-   *   If TRUE, source and replaced items will be retrieved as well,
-   *   and stored as additional properties inside each item array.
-   *   If FALSE, only current/new items will be retrieved.
-   *   If NULL (default), source and replaced items will be retrieved for commits
-   *   but not for branch or tag operations.
-   *
-   * @return
-   *   A structured array containing all items that were affected by the given
-   *   operation. Array keys are the current/new paths, even if the item doesn't
-   *   exist anymore (as is the case with delete actions in commits).
-   *   The associated array elements are structured item arrays and consist of
-   *   the following elements:
-   *
-   *   - 'type': Specifies the item type, which is either
-   *        VERSIONCONTROL_ITEM_FILE or VERSIONCONTROL_ITEM_DIRECTORY for items
-   *        that still exist, or VERSIONCONTROL_ITEM_FILE_DELETED respectively
-   *        VERSIONCONTROL_ITEM_DIRECTORY_DELETED for items that have been
-   *        removed (by a commit's delete action).
-   *   - 'path': The path of the item at the specific revision.
-   *   - 'revision': The (file-level) revision when the item was changed.
-   *        If there is no such revision (which may be the case for
-   *        directory items) then the 'revision' element is an empty string.
-   *   - 'item_revision_id': Identifier of this item revision in the database.
-   *        Note that you can only rely on this element to exist for
-   *        operation items - functions that interface directly with the VCS
-   *        (such as VersioncontrolItem::getDirectoryContents() or
-   *        VersioncontrolItem::getParallelItems()) might not include
-   *        this identifier, for obvious reasons.
-   *
-   *   If the @p $fetch_source_items parameter is TRUE,
-   *   versioncontrol_fetch_source_items() will be called on the list of items
-   *   in order to retrieve additional information about their origin.
-   *   The following elements will be set for each item in addition
-   *   to the ones listed above:
-   *
-   *   - 'action': Specifies how the item was changed.
-   *        One of the predefined VERSIONCONTROL_ACTION_* values.
-   *   - 'source_items': An array with the previous revision(s) of the affected
-   *        item. Empty if 'action' is VERSIONCONTROL_ACTION_ADDED. The key for
-   *        all items in this array is the respective item path.
-   *   - 'replaced_item': The previous but technically unrelated item at the
-   *        same location as the current item. Only exists if this previous item
-   *        was deleted and replaced by a different one that was just moved
-   *        or copied to this location.
-   *   - 'line_changes': Only exists if line changes have been recorded for this
-   *        action - if so, this is an array containing the number of added lines
-   *        in an element with key 'added', and the number of removed lines in
-   *        the 'removed' key.
-   * FIXME refactor to use backend-controlled loaders.
-   */
-  public function getItems($fetch_source_items = NULL) {
-    $items = array();
-    $result = db_query(
-      'SELECT ir.item_revision_id, ir.path, ir.revision, ir.type
-      FROM {versioncontrol_item_revisions} ir
-      WHERE ir.vc_op_id = %d',
-      $this->vc_op_id);
-
-    while ($item_revision = db_fetch_object($result)) {
-      $items[$item_revision->path] = new $this->repository->backend->classes['item']($item_revision->type, $item_revision->path, $item_revision->revision, NULL, $this->repository, NULL, $item_revision->item_revision_id);
-      $items[$item_revision->path]->selected_label = new stdClass();
-      $items[$item_revision->path]->selected_label->get_from = 'operation';
-      $items[$item_revision->path]->selected_label->operation = &$this;
-
-      //TODO inherit from operation class insteadof types?
-      if ($this->type == VERSIONCONTROL_OPERATION_COMMIT) {
-        $items[$item_revision->path]->commit_operation = $this;
-      }
-    }
-
-    if (!isset($fetch_source_items)) {
-      // By default, fetch source items for commits but not for branch or tag ops.
-      $fetch_source_items = ($this->type == VERSIONCONTROL_OPERATION_COMMIT);
-    }
-    if ($fetch_source_items) {
-      versioncontrol_fetch_source_items($this->repository, $items);
-    }
-    ksort($items); // similar paths should be next to each other
-    return $items;
+  public function loadItemRevisions($ids = array(), $conditions = array(), $options = array()) {
+    $conditions['repo_id'] = $this->repo_id;
+    $conditions['vc_op_id'] = $this->vc_op_id;
+    return $this->backend->loadEntities('item', $ids, $conditions, $options);
   }
 
-  /**
-   * Replace the set of affected labels of the actual object with the one in
-   * @p $labels. If any of the given labels does not yet exist in the
-   * database, a database entry (including new 'label_id' array element) will
-   * be written as well.
-   */
-  public function updateLabels($labels) {
-    module_invoke_all('versioncontrol_operation_labels',
-      'update', $this, $labels
-    );
-    $this->setLabels($labels);
-  }
-
-  public function save() {
-    return isset($this->repo_id) ? $this->update() : $this->save();
-  }
-
-  public function buildSave(&$query) {
-
-  }
-
-  /**
-   * Insert a commit, branch or tag operation into the database, and call the
-   * necessary module hooks. Only call this function after the operation has been
-   * successfully executed.
-   *
-   * @param $item_revisions
-   *   A structured array containing the exact details of happened to each
-   *   item in this operation. The structure of this array is the same as
-   *   the return value of VersioncontrolOperation::getItems() - that is,
-   *   elements for 'type', 'path' and 'revision' - but doesn't include the
-   *   'item_revision_id' element, that one will be filled in by this function.
-   *
-   *   For commit operations, you also have to fill in the 'action' and
-   *   'source_items' elements (and optionally 'replaced_item') that are also
-   *   described in the VersioncontrolOperation::getItems() API documentation.
-   *   The 'line_changes' element, as in VersioncontrolOperation::getItems(),
-   *   is optional to provide.
-   *
-   *   This parameter is passed by reference as the insert operation will
-   *   check the validity of a few item properties and will also assign an
-   *   'item_revision_id' property to each of the given items. So when this
-   *   function returns with a result other than NULL, the @p $item_revisions
-   *   array will also be up to snuff for further processing.
-   *
-   * @return
-   *   The finalized operation array, with all of the 'vc_op_id', 'repository'
-   *   and 'uid' properties filled in, and 'repo_id' removed if it existed before.
-   *   Labels are now equipped with an additional 'label_id' property.
-   *   (For more info on these labels, see the API documentation for
-   *   versioncontrol_get_operations() and VersioncontrolOperation::getItems().)
-   *   In case of an error, NULL is returned instead of the operation array.
-   */
-  public final function insert(&$item_revisions) {
-    $this->fill(TRUE);
-
-    if (!isset($this->repository)) {
-      return NULL;
+  public function insert($options = array()) {
+    if (!empty($this->vc_op_id)) {
+      // This is supposed to be a new commit, but has a vc_op_id already.
+      throw new Exception('Attempted to insert a Versioncontrol commit which is already present in the database.', E_ERROR);
     }
 
-    // Ok, everything's there, insert the operation into the database.
-    $this->repo_id = $this->repository->repo_id; // for drupal_write_record()
-    //FIXME $this->uid = 0;
+    // Append default options.
+    $options += $this->defaultCrudOptions['insert'];
+
     drupal_write_record('versioncontrol_operations', $this);
-    unset($this->repo_id);
-    // drupal_write_record() has now added the 'vc_op_id' to the $operation array.
 
-    // Insert labels that are attached to the operation.
-    $this->setLabels($this->labels);
-
-    $vcs = $this->repository->vcs;
-
-    // So much for the operation itself, now the more verbose part: items.
-    ksort($item_revisions); // similar paths should be next to each other
-
-    foreach ($item_revisions as $path => $item) {
-      $item->sanitize();
-      $item->vc_op_id = $this->vc_op_id;
-      $item->ensure();
-      $item['selected_label'] = new stdClass();
-      $item['selected_label']->get_from = 'operation';
-      $item['selected_label']->successor_item = &$this;
-
-      // If we've got source items (which is the case for commit operations),
-      // add them to the item revisions and source revisions tables as well.
-      foreach ($item->source_items as $key => $source_item) {
-        $source_item->ensure();
-        $item->insertSourceRevision($source_item, $item->action);
-
-        $source_item->selected_label = new stdClass();
-        $source_item->selected_label->get_from = 'other_item';
-        $source_item->selected_label->other_item = &$item;
-        $source_item->selected_label->other_item_tags = array('successor_item');
-
-        $item->source_items[$key] = $source_item;
-      }
-      // Plus a special case for the "added" action, as it needs an entry in the
-      // source items table but contains no items in the 'source_items' property.
-      if ($item->action == VERSIONCONTROL_ACTION_ADDED) {
-        $item->insertSourceRevision(0, $item['action']);
-      }
-
-      // If we've got a replaced item (might happen for copy/move commits),
-      // add it to the item revisions and source revisions table as well.
-      if (isset($item->replaced_item)) {
-        $item->replaced_item->ensure();
-        $item->insertSourceRevision($item->replaced_item,
-          VERSIONCONTROL_ACTION_REPLACED);
-        $item->replaced_item->selected_label = new stdClass();
-        $item->replaced_item->selected_label->get_from = 'other_item';
-        $item->replaced_item->selected_label->other_item = &$item;
-        $item->replaced_item->selected_label->other_item_tags = array('successor_item');
-      }
-      $item_revisions[$path] = $item;
+    if (!empty($options['nested'])) {
+      $this->insertNested($options);
     }
 
-    // Notify the backend first.
-    $this->_insert($item_revisions);
+    $this->backendInsert($options);
 
-    // Everything's done, let the world know about it!
-    module_invoke_all('versioncontrol_operation',
-      'insert', $this, $item_revisions
-    );
-
-    // This one too, as there is also an update function & hook for it.
-    // Pretend that the labels didn't exist beforehand.
-    $labels = $this->labels;
-    $this->labels = array();
-    module_invoke_all('versioncontrol_operation_labels',
-      'insert', $this, $labels
-    );
-    $this->labels = $labels;
-
-    // Rules integration, because we like to enable people to be flexible.
-    // FIXME change callback
-    if (module_exists('rules')) {
-      rules_invoke_event('versioncontrol_operation_insert', array(
-        'operation' => $this,
-        'items' => $item_revisions,
-      ));
-    }
-
-    //FIXME avoid return, it's on the object
+    // Everything's done, invoke the hook.
+    module_invoke_all('versioncontrol_entity_commit_insert', $this);
     return $this;
   }
 
-  /**
-   * Let child backend operation classes add information if necessary.
-   */
-  protected function _insert($item_revisions) {
+  protected function insertNested($options) {
+    foreach ($this->itemRevisions as $item) {
+      if (!isset($item->vc_op_id)) {
+        $item->vc_op_id = $this->vc_op_id;
+      }
+      $item->insert($options);
+    }
   }
 
-  public function update() {}
+  public function update($options = array()) {
+    if (empty($this->vc_op_id)) {
+      // This is supposed to be an existing branch, but has no vc_op_id.
+      throw new Exception('Attempted to update a Versioncontrol commit which has not yet been inserted in the database.', E_ERROR);
+    }
+
+    // Append default options.
+    $options += $this->defaultCrudOptions['update'];
+
+    drupal_write_record('versioncontrol_operations', $this, 'vc_op_id');
+
+    if (!empty($options['nested'])) {
+      $this->updateNested($options);
+    }
+
+    $this->backendUpdate($options);
+
+    // Everything's done, invoke the hook.
+    module_invoke_all('versioncontrol_entity_commit_update', $this);
+    return $this;
+  }
+
+  protected function updateNested($options) {
+    foreach ($this->itemRevisions as $item) {
+      $item->save($options);
+    }
+  }
+
+  public function updateLabels() {
+    db_delete('versioncontrol_operation_labels')
+      ->condition('vc_op_id', $this->vc_op_id)
+      ->execute();
+
+    $insert = db_insert('versioncontrol_operation_labels')
+      ->fields(array('vc_op_id', 'label_id', 'action'));
+    foreach ($this->labels as $label) {
+      // first, ensure there's a record of the label already
+      if (!isset($label->label_id)) {
+        $label->insert();
+      }
+      $values = array(
+        'vc_op_id' => $this->vc_op_id,
+        'label_id' => $label->label_id,
+        // FIXME temporary hack, sets a default action. _CHANGE_ this.
+        'action' => !empty($label->action) ? $label->action : VERSIONCONTROL_ACTION_MODIFIED,
+      );
+      $insert->values($values);
+    }
+    $insert->execute();
+  }
 
   /**
    * Delete a commit, a branch operation or a tag operation from the database,
@@ -359,63 +222,32 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    *   The commit, branch operation or tag operation array containing
    *   the operation that should be deleted.
    */
-  public final function delete() {
-    $item_revisions = $this->getItems();
+  public function delete($options = array()) {
+    // Append default options.
+    $options += $this->defaultCrudOptions['delete'];
 
-    // As versioncontrol_update_operation_labels() provides an update hook for
-    // operation labels, we should also have a delete hook for completeness.
-    module_invoke_all('versioncontrol_operation_labels',
-      'delete', $this, array());
-    // Announce deletion of the operation before anything has happened.
-    // Calls hook_versioncontrol_commit(), hook_versioncontrol_branch_operation()
-    // or hook_versioncontrol_tag_operation().
-    module_invoke_all('versioncontrol_operation',
-      'delete', $this, $item_revisions);
+    db_delete('versioncontrol_operations')
+      ->condition('vc_op_id', $this->vc_op_id)
+      ->execute();
 
-    // Provide an opportunity for the backend to delete its own stuff.
-    $this->_delete($item_revisions);
-
-    db_query('DELETE FROM {versioncontrol_operation_labels}
-    WHERE vc_op_id = %d', $this->vc_op_id);
-    db_query('DELETE FROM {versioncontrol_item_revisions}
-    WHERE vc_op_id = %d', $this->vc_op_id);
-    db_query('DELETE FROM {versioncontrol_operations}
-    WHERE vc_op_id = %d', $this->vc_op_id);
-  }
-
-  /**
-   * Let child backend repo classes add information that _is not_ in
-   * VersioncontrolRepository::data without modifying general flow if
-   * necessary.
-   */
-  protected function _delete($item_revisions) {
-  }
-
-  /**
-   * Fill in various operation members into the object(commit, branch op or tag
-   * op), in case those values are not given.
-   *
-   * @param $operation
-   *   The plain operation array that might lack have some properties yet.
-   * @param $include_unauthorized
-   *   If FALSE, the 'uid' property will receive a value of 0 for known
-   *   but unauthorized users. If TRUE, all known users are mapped to their uid.
-   */
-  private function fill($include_unauthorized = FALSE) {
-    // If not already there, retrieve the Drupal user id of the committer.
-    if (!isset($this->author)) {
-      $account = $this->repository->load('account', array(), array('username' => $this->author));
-
-      // If no uid could be retrieved, blame the commit on user 0 (anonymous).
-      $this->author = isset($this->author) ? $this->author : 0;
+    if (!empty($options['nested'])) {
+      $this->deleteNested($options);
     }
 
-    // For insertions (which have 'date' set, as opposed to write access checks),
-    // fill in the log message if it's unset. We don't want to do this for
-    // write access checks because empty messages are denied access,
-    // which requires distinguishing between unset and empty.
-    if (isset($this->date) && !isset($this->message)) {
-      $this->message = '';
+    // Remove relevant entries from the versioncontrol_operation_labels table.
+    db_delete('versioncontrol_operation_labels')
+      ->condition('vc_op_id', $this->vc_op_id)
+      ->execute();
+
+    $this->backendDelete($options);
+
+    module_invoke_all('versioncontrol_entity_commit_delete', $this);
+  }
+
+  protected function deleteNested($options) {
+    $items = $this->loadItemRevisions();
+    foreach ($items as $item) {
+      $item->delete($options);
     }
   }
 
@@ -439,26 +271,6 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
     if (isset($new_messages)) {
       self::$error_messages = $new_messages;
     }
-  }
-
-  /**
-   * Write @p $labels to the database as set of affected labels of the
-   * actual operation object. Label ids are not required to exist yet.
-   * After this the set of labels, all of them with 'label_id' filled in.
-   *
-   * @return
-   */
-  private function setLabels($labels) {
-    db_query("DELETE FROM {versioncontrol_operation_labels}
-    WHERE vc_op_id = %d", $this->vc_op_id);
-
-    foreach ($labels as &$label) {
-      $label->ensure();
-      db_query("INSERT INTO {versioncontrol_operation_labels}
-      (vc_op_id, label_id, action) VALUES (%d, %d, %d)",
-        $this->vc_op_id, $label->label_id, $label->action);
-    }
-    $this->labels = $labels;
   }
 
   /**

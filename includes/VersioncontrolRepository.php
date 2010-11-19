@@ -9,13 +9,8 @@
  * Contain fundamental information about the repository.
  */
 abstract class VersioncontrolRepository implements VersioncontrolEntityInterface {
-  /**
-   * Override the parent declaration that has the $repository property; no
-   * need to be self-referential.
-   *
-   * @var void
-   */
-  protected $repository = NULL;
+  protected $_id = 'repo_id';
+
   /**
    * db identifier
    *
@@ -97,6 +92,12 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   protected $controllers = array();
 
   protected $built = FALSE;
+
+  protected $defaultCrudOptions = array(
+    'update' => array('nested' => TRUE),
+    'insert' => array('nested' => TRUE),
+    'delete' => array('nested' => TRUE),
+  );
 
   public function __construct($backend = NULL) {
     if ($backend instanceof VersioncontrolBackend) {
@@ -232,37 +233,36 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     return TRUE;
   }
 
-  public function save() {
-    return isset($this->repo_id) ? $this->update() : $this->insert();
-  }
-
-  public function buildSave(&$query) {
-
+  public function save($options = array()) {
+    return isset($this->repo_id) ? $this->update($options) : $this->insert($options);
   }
 
   /**
-   * Update a repository in the database, and call the necessary hooks.
+   * Update a repository in the database, and invoke the necessary hooks.
+   *
    * The 'repo_id' and 'vcs' properties of the repository object must stay
    * the same as the ones given on repository creation,
    * whereas all other values may change.
-   * TODO refactor to use a custom-built db_insert().
    */
-  public final function update() {
+  public function update($options = array()) {
+    if (empty($this->repo_id)) {
+      // This is supposed to be an existing repository, but has no repo_id.
+      throw new Exception('Attempted to update a Versioncontrol repository which has not yet been inserted in the database.', E_ERROR);
+    }
+
+    // Append default options.
+    $options += $this->defaultCrudOptions['update'];
+
     drupal_write_record('versioncontrol_repositories', $this, 'repo_id');
 
-    $this->_update();
+    $this->backendUpdate($options);
 
     // Everything's done, let the world know about it!
-    module_invoke_all('versioncontrol_repository', 'update', $this);
-
-    watchdog('special',
-      'Version Control API: updated repository @repository',
-      array('@repository' => $this->name),
-      WATCHDOG_NOTICE, l('view', 'admin/project/versioncontrol-repositories')
-    );
+    module_invoke_all('versioncontrol_repository_entity_update', $this);
+    return $this;
   }
 
-  protected function _update() {}
+  protected function backendUpdate($options) {}
 
   /**
    * Insert a repository into the database, and call the necessary hooks.
@@ -270,116 +270,63 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
    * @return
    *   The finalized repository array, including the 'repo_id' element.
    */
-  public final function insert() {
-    if (isset($this->repo_id)) {
-      // This is a new repository, it's not supposed to have a repo_id yet.
-      unset($this->repo_id);
+  public function insert($options = array()) {
+    if (!empty($this->repo_id)) {
+      // This is supposed to be a new repository, but has a repo_id already.
+      throw new Exception('Attempted to insert a Versioncontrol repository which is already present in the database.', E_ERROR);
     }
-    drupal_write_record('versioncontrol_repositories', $this);
-    // drupal_write_record() has now added the 'repo_id' to the $repository array.
 
-    $this->_insert();
+    // Append default options.
+    $options += $this->defaultCrudOptions['insert'];
+
+    // drupal_write_record() will fill the $repo_id property on $this.
+    drupal_write_record('versioncontrol_repositories', $this);
+
+    $this->backendInsert($options);
 
     // Everything's done, let the world know about it!
-    module_invoke_all('versioncontrol_repository', 'insert', $this);
-
-    watchdog('special',
-      'Version Control API: added repository @repository',
-      array('@repository' => $this->name),
-      WATCHDOG_NOTICE, l('view', 'admin/project/versioncontrol-repositories')
-    );
+    module_invoke_all('versioncontrol_repository_entity_insert', $this);
     return $this;
   }
 
-  /**
-   * Let child backend repo classes add information that _is not_ in
-   * VersioncontrolRepository::data without modifying general flow if
-   * necessary.
-   */
-  protected function _insert() {}
+  protected function backendInsert($options) {}
 
   /**
    * Delete a repository from the database, and call the necessary hooks.
    * Together with the repository, all associated commits and accounts are
    * deleted as well.
    */
-  public final function delete() {
-    // Delete operations.
-    $branches = $this->loadBranches();
-    foreach ($branches as $branch) {
-      $branch->delete();
-    }
-    foreach ($this->loadTags() as $tag) {
-      $tag->delete();
-    }
-    foreach ($this->loadCommits() as $commit) {
-      $commit->delete();
-    }
+  public function delete($options = array()) {
+    // Append default options.
+    $options += $this->defaultCrudOptions['delete'];
 
-    // $operations = VersioncontrolOperationCache::getInstance()->getOperations(array('repo_ids' => array($this->repo_id)));
-    // foreach ($operations as $operation) {
-    //  $operation->delete();
-    // }
-    // unset($operations); // conserve memory, this might get quite large
-
-    // Delete labels.
-    db_query('DELETE FROM {versioncontrol_labels}
-              WHERE repo_id = %d', $this->repo_id);
-
-    // Delete item revisions and related source item entries.
-    $result = db_query('SELECT item_revision_id
-                        FROM {versioncontrol_item_revisions}
-                        WHERE repo_id = %d', $this->repo_id);
-    $item_ids = array();
-    $placeholders = array();
-
-    while ($item_revision = db_fetch_object($result)) {
-      $item_ids[] = $item_revision->item_revision_id;
-      $placeholders[] = '%d';
-    }
-    if (!empty($item_ids)) {
-      $placeholders = '('. implode(',', $placeholders) .')';
-
-      db_query('DELETE FROM {versioncontrol_source_items}
-                WHERE item_revision_id IN '. $placeholders, $item_ids);
-      db_query('DELETE FROM {versioncontrol_source_items}
-                WHERE source_item_revision_id IN '. $placeholders, $item_ids);
-      db_query('DELETE FROM {versioncontrol_item_revisions}
-                WHERE repo_id = %d', $this->repo_id);
-    }
-    unset($item_ids); // conserve memory, this might get quite large
-    unset($placeholders); // ...likewise
-
-    // Delete accounts.
-    $accounts = $this->loadAccounts();
-    foreach ($accounts as $uid => $usernames_by_repository) {
-      foreach ($usernames_by_repository as $repo_id => $account) {
+    if ($options['nested']) {
+      // Delete operations.
+      foreach ($this->loadBranches() as $branch) {
+        $branch->delete();
+      }
+      foreach ($this->loadTags() as $tag) {
+        $tag->delete();
+      }
+      foreach ($this->loadCommits() as $commit) {
+        $commit->delete();
+      }
+      // FIXME accounts are changing significantly, this will need to, too
+      foreach ($this->loadAccounts() as $account) {
         $account->delete();
       }
     }
 
-    // Announce deletion of the repository before anything has happened.
-    module_invoke_all('versioncontrol_repository', 'delete', $this);
+    db_delete('versioncontrol_repositories')
+      ->condition('repo_id', $this->repo_id)
+      ->execute();
 
-    $this->_delete();
+    $this->backendDelete($options);
 
-    // Phew, everything's cleaned up. Finally, delete the repository.
-    db_query('DELETE FROM {versioncontrol_repositories} WHERE repo_id = %d',
-      $this->repo_id);
-
-    watchdog('special',
-      'Version Control API: deleted repository @repository',
-      array('@repository' => $this->name),
-      WATCHDOG_NOTICE, l('view', 'admin/project/versioncontrol-repositories')
-    );
+    module_invoke_all('versioncontrol_entity_repository_delete', $this);
   }
 
-  /**
-   * Let child backend repo classes delete information that _is not_ in
-   * VersioncontrolRepository::data without modifying general flow if
-   * necessary.
-   */
-  protected function _delete() {}
+  protected function backendDelete($options) {}
 
   /**
    * Export a repository's authenticated accounts to the version control system's
@@ -397,50 +344,6 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   public function exportAccounts() {
     $accounts = $this->loadAccounts();
     return $repository->exportAccounts($accounts);
-  }
-
-
-  /**
-   * Try to retrieve a given item in a repository.
-   *
-   * @param $path
-   *   The path of the requested item.
-   * @param $constraints
-   *   An optional array specifying one of two possible array keys which
-   *   specify the exact revision of the item:
-   *
-   *   - 'revision': A specific revision for the requested item, in the
-   *        same VCS-specific format as $item['revision']. A
-   *        repository/path/revision combination is always unique, so no
-   *        additional information is needed.
-   *   - 'label': A label array with at least 'name' and 'type' elements
-   *        filled in. If a label is provided, it should be incorporated
-   *        into the result item as 'selected_label' (see return value
-   *        docs), and will cause the most recent item on the label to
-   *        be fetched. If the label includes an additional 'date'
-   *        property holding a Unix timestamp, the item at that point of
-   *        time will be retrieved instead of the most recent one. (For
-   *        tag labels, there is only one item anyways, so nevermind the
-   *        "most recent" part in that case.)
-   *
-   * @return
-   *   If the item with the given path and revision cannot be retrieved,
-   *   NULL is returned. Otherwise the result is an VersioncontrollItem
-   *   object.
-   */
-  public function getItem($path, $constraints = array()) {
-    if (!$this instanceof VersioncontrolRepositoryGetItem) {
-      return NULL;
-    }
-    $info = $this->_getItem($path, $constraints);
-    if (is_null($info)) {
-      return NULL;
-    }
-    $item = $info['item'];
-    $item['selected_label'] = new stdClass();
-    $item['selected_label']->label = is_null($info['selected_label'])
-      ? FALSE : $info['selected_label'];
-    return $item;
   }
 
   /**

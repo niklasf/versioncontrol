@@ -509,7 +509,7 @@ function versioncontrol_account_edit_form_validate($form, &$form_state) {
 function versioncontrol_account_edit_form_submit($form, &$form_state) {
   // Reconstruct the user data from the $form_state that was passed.
   $uid = $form['#uid'];
-  $username = $form_state['values']['account_name'];
+  $vcs_username = $form_state['values']['account_name'];
   $repository = $form['#repository'];
   $vcs_name = $form['#vcs_name'];
 
@@ -522,15 +522,16 @@ function versioncontrol_account_edit_form_submit($form, &$form_state) {
 
   if (empty($form['#original_username'])) {
     $data = array(
-      'vcs_username' => $username,
+      'vcs_username' => $vcs_username,
       'uid' => $uid,
       'repository' => $repository,
     );
     $vcs_account = $repository->backend->buildEntity('account', $data);
-    $vcs_account->insert($additional_data);
+    $vcs_account->additional_data = $additional_data;
+    $vcs_account->insert();
     $message = drupal_set_message(t(
-      'The @vcs account %username has been registered.',
-      array('@vcs' => $vcs_name, '%username' => $username)
+      'The @vcs account %vcs_username has been registered.',
+      array('@vcs' => $vcs_name, '%vcs_username' => $vcs_username)
     ));
   }
   else {
@@ -544,14 +545,16 @@ function versioncontrol_account_edit_form_submit($form, &$form_state) {
     // if we got an original_username we can trust on getting a value
     $vcs_account = array_shift($vcs_accounts);
 
-    $vcs_account->update($username, $additional_data);
+    $vcs_account->vcs_username = $vcs_username;
+    $vcs_account->additional_data = $additional_data;
+    $vcs_account->update();
 
     // Regular users cannot change the username, and will probably get
     // a message for each of the other actions that hook into the form.
     if (versioncontrol_admin_access()) {
       $message = drupal_set_message(t(
         'The @vcs account %username has been updated successfully.',
-        array('@vcs' => $vcs_name, '%username' => $username)
+        array('@vcs' => $vcs_name, '%username' => $vcs_username)
       ));
     }
   }
@@ -559,5 +562,5 @@ function versioncontrol_account_edit_form_submit($form, &$form_state) {
   $form_state['redirect'] = versioncontrol_admin_access()
     ? 'admin/project/versioncontrol-accounts'
     : 'user/'. $uid .'/edit/versioncontrol/'. $repository->repo_id
-        .'/'. drupal_urlencode($username);
+        .'/'. drupal_urlencode($vcs_username);
 }

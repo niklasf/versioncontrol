@@ -546,27 +546,40 @@ function versioncontrol_account_status_versioncontrol_repository_submit(&$reposi
 }
 
 /**
- * Implementation of hook_versioncontrol_repository():
- * Act on database changes when VCS repositories are inserted,
- * updated or deleted.
+ * Implementation of hook_versioncontrol_repository_entity_insert().
  */
-function versioncontrol_account_status_versioncontrol_repository($op, $repository) {
-  if (!isset($repository['versioncontrol_account_status'])) {
+function versioncontrol_account_status_versioncontrol_repository_entity_insert($repository) {
+  if (!isset($repository->versioncontrol_account_status)) {
     return;
   }
   $strings = $repository->versioncontrol_account_status['strings'];
 
-  switch ($op) {
-    case 'update':
-    case 'insert':
-      _versioncontrol_account_status_set_strings($repository->repo_id, $strings);
-      break;
+  _versioncontrol_account_status_set_strings($repository->repo_id, $strings);
+}
 
-    case 'delete':
-      db_query('DELETE FROM {versioncontrol_account_status_strings}
-                WHERE repo_id = %d', $repository['repo_id']);
-      break;
+/**
+ * Implementation of hook_versioncontrol_repository_entity_update().
+ */
+function versioncontrol_account_status_versioncontrol_repository_entity_update($repository) {
+  if (!isset($repository->versioncontrol_account_status)) {
+    return;
   }
+  $strings = $repository->versioncontrol_account_status['strings'];
+
+  _versioncontrol_account_status_set_strings($repository->repo_id, $strings);
+}
+
+/**
+ * Implementation of hook_versioncontrol_repository_entity_delete().
+ */
+function versioncontrol_account_status_versioncontrol_repository_entity_delete($repository) {
+  if (!isset($repository->versioncontrol_account_status)) {
+    return;
+  }
+  $strings = $repository->versioncontrol_account_status['strings'];
+
+  db_query('DELETE FROM {versioncontrol_account_status_strings}
+    WHERE repo_id = %d', $repository->repo_id);
 }
 
 function _versioncontrol_account_status_get_value_names() {
@@ -905,58 +918,75 @@ function versioncontrol_account_status_versioncontrol_account_submit(&$additiona
 }
 
 /**
- * Implementation of hook_versioncontrol_account():
- * Insert the account status for accounts that are being inserted or updated,
- * and delete the account status for those that are being deleted.
+ * Implementation of hook_versioncontrol_entity_account_insert().
  */
-function versioncontrol_account_status_versioncontrol_account($op, $uid, $username, $repository, $additional_data = array()) {
-  switch ($op) {
-    case 'insert':
-    case 'update':
-      // Recap: if form_alter() wasn't applied, our array element is not set.
-      $additional_data = isset($additional_data['versioncontrol_account_status'])
-        ? $additional_data['versioncontrol_account_status']
-        : NULL;
+function versioncontrol_account_status_versioncontrol_entity_account_insert($vcs_account) {
+  // Recap: if form_alter() wasn't applied, our array element is not set.
+  $additional_data = isset($vcs_account->additional_data['versioncontrol_account_status'])
+    ? $vcs_account->additional_data['versioncontrol_account_status']
+    : NULL;
 
-      if (!isset($additional_data)) {
-        // Auto-approve the account if it was inserted programmatically and
-        // the caller doesn't know anything about this module.
-        if ($op == 'insert') {
-          $additional_data = array(
-            'status_data' => array(
-              'uid' => $uid,
-              'repo_id' => $repository['repo_id'],
-              'motivation' => 'Inserted programmatically.',
-              'status' => VERSIONCONTROL_ACCOUNT_STATUS_APPROVED,
-            ),
-            'admin_message' => array('is_send' => FALSE, 'contents' => ''),
-            'send_application_mails' => FALSE,
-          );
-        }
-        // Don't change the status for programmatical updates, though.
-        if ($op == 'update') {
-          break;
-        }
-      }
-
-      $status_data = $additional_data['status_data'];
-      versioncontrol_account_status_set($status_data);
-
-      if ($additional_data['admin_message']['is_send']) {
-        $contents = $additional_data['admin_message']['contents'];
-        _versioncontrol_account_status_send_status_update_mails($status_data, $contents);
-      }
-      if ($additional_data['send_application_mails']) {
-        $is_reapplication = !empty($additional_data['is_reapplication']);
-        _versioncontrol_account_status_send_application_mails($status_data, $is_reapplication);
-      }
-      break;
-
-    case 'delete':
-      db_query('DELETE FROM {versioncontrol_account_status_users}
-                WHERE uid = %d', $uid);
-      break;
+  if (!isset($additional_data)) {
+    // Auto-approve the account if it was inserted programmatically and
+    // the caller doesn't know anything about this module.
+    $additional_data = array(
+      'status_data' => array(
+        'uid' => $vcs_account->uid,
+        'repo_id' => $vcs_account->repository->repo_id,
+        'motivation' => 'Inserted programmatically.',
+        'status' => VERSIONCONTROL_ACCOUNT_STATUS_APPROVED,
+      ),
+      'admin_message' => array('is_send' => FALSE, 'contents' => ''),
+      'send_application_mails' => FALSE,
+    );
   }
+
+  $status_data = $additional_data['status_data'];
+  versioncontrol_account_status_set($status_data);
+
+  if ($additional_data['admin_message']['is_send']) {
+    $contents = $additional_data['admin_message']['contents'];
+    _versioncontrol_account_status_send_status_update_mails($status_data, $contents);
+  }
+  if ($additional_data['send_application_mails']) {
+    $is_reapplication = !empty($additional_data['is_reapplication']);
+    _versioncontrol_account_status_send_application_mails($status_data, $is_reapplication);
+  }
+}
+
+/**
+ * Implementation of hook_versioncontrol_entity_account_update().
+ */
+function versioncontrol_account_status_versioncontrol_entity_account_update($vcs_account) {
+  // Recap: if form_alter() wasn't applied, our array element is not set.
+  $additional_data = isset($vcs_account->additional_data['versioncontrol_account_status'])
+    ? $vcs_account->additional_data['versioncontrol_account_status']
+    : NULL;
+
+  if (!isset($additional_data)) {
+    // Don't change the status for programmatical updates, though.
+    return;
+  }
+
+  $status_data = $additional_data['status_data'];
+  versioncontrol_account_status_set($status_data);
+
+  if ($additional_data['admin_message']['is_send']) {
+    $contents = $additional_data['admin_message']['contents'];
+    _versioncontrol_account_status_send_status_update_mails($status_data, $contents);
+  }
+  if ($additional_data['send_application_mails']) {
+    $is_reapplication = !empty($additional_data['is_reapplication']);
+    _versioncontrol_account_status_send_application_mails($status_data, $is_reapplication);
+  }
+}
+
+/**
+ * Implementation of hook_versioncontrol_entity_account_delete().
+ */
+function versioncontrol_account_status_versioncontrol_entity_account_delete($vcs_account) {
+  db_query('DELETE FROM {versioncontrol_account_status_users}
+    WHERE uid = %d', $vcs_account->uid);
 }
 
 /**

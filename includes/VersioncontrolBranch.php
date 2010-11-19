@@ -9,6 +9,8 @@
  * Represents a repository branch.
  */
 class VersioncontrolBranch extends VersioncontrolEntity {
+  protected $_id = 'label_id';
+
   /**
    * The tag identifier (a simple integer), used for unique identification of
    * this tag in the database.
@@ -47,6 +49,12 @@ class VersioncontrolBranch extends VersioncontrolEntity {
    */
   public $repo_id;
 
+  protected $defaultCrudOptions = array(
+    'update' => array('nested' => TRUE),
+    'insert' => array('nested' => TRUE),
+    'delete' => array('nested' => TRUE),
+  );
+
   /**
    * Load commits from the database that are associated with this branch.
    *
@@ -59,67 +67,86 @@ class VersioncontrolBranch extends VersioncontrolEntity {
     return $this->backend->loadCommits($ids, $conditions, $options);
   }
 
-  /**
-   * Insert a tag entry into the {versioncontrol_labels} table, or retrieve the
-   * same one that's already there.
-   *
-   * The object is enhanced with the newly added property 'label_id' specifying
-   * the database identifier for that label. There may be labels with a similar
-   * 'name' but different 'type' properties, those are considered to be
-   * different and will both go into the database side by side.
-   *
-   * @deprecated FIXME remove this approach, it leads to inefficient single-loading.
-   */
-  public function ensure() {
-    if (!empty($this->label_id)) { // already in the database
-      return;
+  public function update($options = array()) {
+    if (empty($this->label_id)) {
+      // This is supposed to be an existing branch, but has no label_id.
+      throw new Exception('Attempted to update a Versioncontrol branch which has not yet been inserted in the database.', E_ERROR);
     }
-    $result = db_result(db_query("SELECT label_id FROM {versioncontrol_labels} WHERE repo_id = %d AND name = '%s' AND type = %d",
-      $this->repository->repo_id, $this->name, $this->type));
-    if ($result) {
-      $this->label_id = $result;
-    }
-    else {
-      // The item doesn't yet exist in the database, so create it.
-      $this->insert();
-    }
+
+    // Append default options.
+    $options += $this->defaultCrudOptions['update'];
+
+    drupal_write_record('versioncontrol_labels', $this, 'label_id');
+
+    // Let the backend take action.
+    $this->backendUpdate($options);
+
+    // Everything's done, invoke the hook.
+    module_invoke_all('versioncontrol_entity_branch_update', $this);
+    return $this;
   }
 
-  /**
-   * Insert label to db
-   */
-  public function insert() {
-    if (isset($this->label_id)) {
-      // The label already exists in the database, update the record.
-      drupal_write_record('versioncontrol_labels', $this, 'label_id');
+  public function insert($options = array()) {
+    if (!empty($this->label_id)) {
+      // This is supposed to be a new branch, but has a label_id already.
+      throw new Exception('Attempted to insert a Versioncontrol branch which is already present in the database.', E_ERROR);
     }
-    else {
-      // The label does not yet exist, create it.
-      // drupal_write_record() also assigns the new id to $this->label_id.
-      drupal_write_record('versioncontrol_labels', $this);
-    }
-    unset($this->repo_id);
+
+    // Append default options.
+    $options += $this->defaultCrudOptions['insert'];
+
+    drupal_write_record('versioncontrol_labels', $this);
+
+    $this->backendInsert($options);
+
+    // Everything's done, invoke the hook.
+    module_invoke_all('versioncontrol_entity_branch_insert', $this);
+    return $this;
   }
-  public function save() {}
-  public function update() {}
-  public function buildSave(&$query) {}
 
   /**
    * Delete this branch from the database, along with all related data.
    */
-  public function delete() {
-    $commits_as_op = $this->loadCommits();
-    foreach($commits_as_op as $commit_op) {
-      $new_labels = array();
-      foreach($commit_op->labels as $label) {
-        if ($label->type == VERSIONCONTROL_LABEL_BRANCH && $label->name != $this->name) {
-          $new_labels[] = $label;
+  public function delete($options = array()) {
+    // Append default options.
+    $options += $this->defaultCrudOptions['delete'];
+
+    if (!empty($options['nested'])) {
+      $this->deleteRelatedCommits($options);
+    }
+
+    db_delete('versioncontrol_operation_labels')
+      ->condition('label_id', $this->label_id)
+      ->execute();
+
+    db_delete('versioncontrol_labels')
+      ->condition('label_id', $this->label_id)
+      ->execute();
+
+    $this->backendDelete($options);
+
+    module_invoke_all('versioncontrol_entity_branch_delete', $this);
+  }
+
+  protected function deleteRelatedCommits($options) {
+    $commits = $this->loadCommits();
+    foreach ($commits as $commit) {
+      // Only delete the commit if this branch is the commit's only branch.
+      $sole_branch = TRUE;
+      foreach ($commit->branches as $label_id => $branch) {
+        if ($label_id != $this->label_id) {
+          $sole_branch = FALSE;
         }
       }
-      $commit_op->updateLabels($new_labels);
+
+      // Either remove the commit entirely...
+      if ($sole_branch) {
+        $commit->delete();
+      }
+      // Or remove only the reference to this branch on the commit.
+      else {
+        unset($commit->branches[$this->label_id]);
+      }
     }
-    db_delete('versioncontrol_labels')
-      // ->condition('repo_id', $this->repository->repo_id)
-      ->condition('label_id', $this->label_id);
   }
 }

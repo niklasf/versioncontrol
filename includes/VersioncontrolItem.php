@@ -14,6 +14,8 @@
  * them, are recorded in the database.
  */
 abstract class VersioncontrolItem extends VersioncontrolEntity {
+  protected $_id = 'item_revision_id';
+
   /**
    * DB identifier.
    *
@@ -51,12 +53,15 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
    */
   public $revision;
 
+  public $source_item_revision_id;
+
   /**
-   * FIXME: ?
+   * The VersioncontrolItem representing the previous revision of this file
+   * or directory.
    *
-   * @var    array
+   * @var VersioncontrolItem
    */
-  public $source_items = array();
+  protected $sourceItem;
 
   /**
    * For a single item (file or directory) in a commit, or for branches
@@ -68,23 +73,9 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
    */
   public $action;
 
-  /**
-   * Let count added/removed lines if possible.
-   *
-   * It has the following elements:
-   *
-   * - 'added': Number of lines added to the repository in this
-   * VersioncontrolItem.
-   * - 'removed': Number of lines removed to the repository in this
-   * VersioncontrolItem.
-   *
-   * @var    array
-   */
-  public $line_changes = array();
+  public $line_changes_added;
 
-  //TODO subclass per type?
-  public $selected_label;
-  public $commit_operation;
+  public $line_changes_removed;
 
   /**
    * FIXME: ?
@@ -682,127 +673,102 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
     return $this->_getFileAnnotation();
   }
 
-  /**
-   * Check and if necessary correct item arrays so that item type and the
-   * number of source items correspond to specified actions.
-   */
-  public function sanitize() {
-    if (isset($this->action)) {
-      // Make sure the number of source items corresponds with the action.
-      switch ($this->action) {
-        // No source items for "added" actions.
-      case VERSIONCONTROL_ACTION_ADDED:
-        if (count($this->source_items) > 0) {
-          $this->badItemWarning('At least one source item exists although the "added" action was set (which mandates an empty \'source_items\' array.');
-          $this->source_items = array(reset($this->source_items)); // first item
-          $this->source_items = array();
-        }
-        break;
-        // Exactly one source item for actions other than "added", "merged" or "other".
-      case VERSIONCONTROL_ACTION_MODIFIED:
-      case VERSIONCONTROL_ACTION_MOVED:
-      case VERSIONCONTROL_ACTION_COPIED:
-      case VERSIONCONTROL_ACTION_DELETED:
-        if (count($this->source_items) > 1) {
-          $this->badItemWarning('More than one source item exists although a "modified", "moved", "copied" or "deleted" action was set (which allows only one of those).');
-          $item->source_items = array(reset($item->source_items)); // first item
-        }
-        // fall through
-      case VERSIONCONTROL_ACTION_MERGED:
-        if (empty($this->source_items)) {
-          $this->badItemWarning('No source item exists although a "modified", "moved", "copied", "merged" or "deleted" action was set (which requires at least or exactly one of those).');
-        }
-        break;
-      default:
-        break;
+  public function getSourceItem() {
+    if (!empty($this->sourceItem)) {
+      if ($this->sourceItem instanceof VersioncontrolItem) {
+        // Simple case - the item is loaded, so return it.
+        return $this->sourceItem;
       }
-      // For a "delete" action, make sure the item type is also a "deleted" one.
-      // That's quite a minor error, so don't complain but rather fix it quietly.
-      if ($this->action == VERSIONCONTROL_ACTION_DELETED) {
-        if ($this->type == VERSIONCONTROL_ITEM_FILE) {
-          $this->type = VERSIONCONTROL_ITEM_FILE_DELETED;
-        }
-        elseif ($this->type == VERSIONCONTROL_ITEM_DIRECTORY) {
-          $this->type = VERSIONCONTROL_ITEM_DIRECTORY_DELETED;
-        }
+      else {
+        // Some invalid data got into $this->sourceItem - pop a warning.
+        throw new Exception ('VersioncontrolItem contains a non-VersioncontrolItem as its source item.', E_WARNING);
       }
     }
-  }
-
-  /**
-   * Insert an item entry into the {versioncontrol_source_items} table.
-   *
-   * Both target and source items are expected to have an
-   * 'item_revision_id' property already. For "added" actions, it's also
-   * possible to pass 0 as the @p $source_item parameter instead of a
-   * full item array.
-   */
-  public function insertSourceRevision($source_item, $action) {
-    if ($action == VERSIONCONTROL_ACTION_ADDED && $source_item === 0) {
-      $source_item = new stdClass();
-      $source_item->item_revision_id = 0;
-    }
-    // Before inserting that item entry, make sure it doesn't exist already.
-    db_query("DELETE FROM {versioncontrol_source_items}
-    WHERE item_revision_id = %d AND source_item_revision_id = %d",
-    $this->item_revision_id, $source_item->item_revision_id);
-
-    $line_changes = !empty($this->line_changes);
-    db_query("INSERT INTO {versioncontrol_source_items}
-    (item_revision_id, source_item_revision_id, action,
-    line_changes_recorded, line_changes_added, line_changes_removed)
-    VALUES (%d, %d, %d, %d, %d, %d)",
-      $this->item_revision_id, $source_item->item_revision_id,
-      $action, ($line_changes ? 1 : 0),
-      ($line_changes ? $this->line_changes['added'] : 0),
-      ($line_changes ? $this->line_changes['removed'] : 0));
-  }
-
-  /**
-   * Insert an item entry into the {versioncontrol_item_revisions} table,
-   * or retrieve the same one that's already there on the object.
-   */
-  public function ensure() {
-    $result = db_query(
-      "SELECT item_revision_id, type
-       FROM {versioncontrol_item_revisions}
-       WHERE repo_id = %d AND path = '%s' AND revision = '%s'",
-       $this->repository->repo_id, $this->path, $this->revision
-    );
-    while ($item_revision = db_fetch_object($result)) {
-      // Replace / fill in properties that were not in the WHERE condition.
-      $this->item_revision_id = $item_revision->item_revision_id;
-
-      if ($this->type == $item_revision->type) {
-        return; // no changes needed - otherwise, replace the existing item.
-      }
-    }
-    // The item doesn't yet exist in the database, so create it.
-    $this->insert();
-  }
-
-  /**
-   * Insert an item revision entry into the {versioncontrol_items_revisions}
-   * table.
-   */
-  public function insert() {
-    $this->repo_id = $this->repository->repo_id; // for drupal_write_record() only
-
-    if (isset($this->item_revision_id)) {
-      // The item already exists in the database, update the record.
-      drupal_write_record('versioncontrol_item_revisions', $this, 'item_revision_id');
+    else if (!empty($this->source_item_revision_id)) {
+      // Item isn't loaded, but should exist. Load it, save it, and return.
+      return $this->sourceItem = $this->backend->load('item', array($this->source_item_revision_id));
     }
     else {
-      // The label does not yet exist, create it.
-      // drupal_write_record() also adds the 'item_revision_id' to the $item array.
-      drupal_write_record('versioncontrol_item_revisions', $this);
+      return FALSE;
     }
-    unset($this->repo_id);
   }
 
-  public function save() {}
-  public function update() {}
-  public function buildSave(&$query) {}
+  public function setSourceItem(VersioncontrolItem $item) {
+    $this->sourceItem = $item;
+  }
+
+  public function update($options = array()) {
+    if (empty($this->item_revision_id)) {
+      // This is supposed to be an existing item, but has no item_revision_id.
+      throw new Exception('Attempted to update a Versioncontrol item which has not yet been inserted in the database.', E_ERROR);
+    }
+
+    // Append default options.
+    $options += $this->defaultCrudOptions['update'];
+
+    if ($options['source item update']) {
+      $this->determineSourceItemRevisionID($options);
+    }
+
+    drupal_write_record('versioncontrol_item_revisions', $this, 'item_revision_id');
+
+    // Let the backend take action.
+    $this->backendUpdate($options);
+
+    // Everything's done, invoke the hook.
+    module_invoke_all('versioncontrol_entity_item_update', $this);
+    return $this;
+  }
+
+  public function insert($options = array()) {
+    if (!empty($this->item_revision_id)) {
+      // This is supposed to be a new item, but has an item_revision_id already.
+      throw new Exception('Attempted to insert a Versioncontrol item which is already present in the database.', E_ERROR);
+    }
+
+    // Append default options.
+    $options += $this->defaultCrudOptions['insert'];
+
+    if (empty($this->source_item_revision_id)) {
+      $this->determineSourceItemRevisionID($options);
+    }
+
+    drupal_write_record('versioncontrol_item_revisions', $this);
+
+    $this->backendInsert($options);
+
+    // Everything's done, invoke the hook.
+    module_invoke_all('versioncontrol_entity_item_insert', $this);
+    return $this;
+  }
+
+  /**
+   * Calculate the appropriate contents for $this->source_item_revision_id, if
+   * any, based on the contents of $this->sourceItem.
+   *
+   * // FIXME this is colosally hacky right now. right now it just inserts if the data is available, there is ZERO discovery
+   */
+  protected function determineSourceItemRevisionID($options) {
+    if ($this->sourceItem instanceof VersioncontrolItem) {
+      if (!isset($this->sourceItem->item_revision_id)) {
+        $this->sourceItem->insert($options);
+      }
+      $this->source_item_revision_id = $this->sourceItem->item_revision_id;
+    }
+  }
+
+  public function delete($options = array()) {
+    // Append default options.
+    $options += $this->defaultCrudOptions['delete'];
+
+    db_delete('versioncontrol_item_revisions')
+      ->condition('item_revision_id', $this->item_revision_id)
+      ->execute();
+
+    $this->backendDelete($options);
+
+    module_invoke_all('versioncontrol_entity_item_delete', $this);
+  }
 
   /**
    * Get the user-visible version of an item's revision identifier, as

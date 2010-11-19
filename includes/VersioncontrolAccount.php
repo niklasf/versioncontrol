@@ -33,7 +33,7 @@ abstract class VersioncontrolAccount extends VersioncontrolEntity {
   /**
    * Repo user id
    *
-   * @var    VersioncontrolRepository
+   * @var VersioncontrolRepository
    */
   public $repository;
 
@@ -72,83 +72,63 @@ abstract class VersioncontrolAccount extends VersioncontrolEntity {
    * Update a VCS user account in the database, and call the necessary
    * module hooks. The account repository and uid must stay the same values as
    * the one given on account creation, whereas vcs_username and
-   * @p $additional_data may change.
+   * data data members can change.
    *
-   * @param $vcs_username
-   *   The VCS specific username (a string). Here we are using an explicit
-   *   parameter instead of taking the vcs_username data member to be able to
-   *   verify is it changed, there would be lots of operations, so we do not
-   *   want to update them if it's not necessary.
-   * @param $additional_data
-   *   An array of additional author information. Modules can fill this array
-   *   by implementing hook_versioncontrol_account_submit().
-   *
-   * FIXME the function sig here is incompatible with VersioncontrolEntity, and
-   * needs the logic needs to be fixed to suit.
+   * FIXME use same logic as in other classes, this probably would
+   * be changed only when we get account_id PK schema change in.
+   * TODO review performance impact of updating the vcs_username since
+   * original jpetso work try to avoid to update if not needed by passing
+   * it as parameter.
    */
-  public final function update($vcs_username, $additional_data = array()) {
+  public function update($options = array()) {
+    // Append default options.
+    $options += $this->defaultCrudOptions['update'];
+
     $repo_id = $this->repository->repo_id;
-    $username_changed = ($vcs_username != $this->vcs_username);
 
-    if ($username_changed) {
-      $this->vcs_username = $vcs_username;
-      db_query("UPDATE {versioncontrol_accounts}
-                SET vcs_username = '%s'
-                WHERE uid = %d AND repo_id = %d",
-                $this->vcs_username, $this->uid, $repo_id
-      );
-    }
-
-    // Provide an opportunity for the backend to add its own stuff.
-    $this->_update($additional_data);
-
-    if ($username_changed) {
-      db_query("UPDATE {versioncontrol_operations}
-                SET uid = 0
-                WHERE uid = %d AND repo_id = %d",
-                $this->uid, $repo_id);
-      db_query("UPDATE {versioncontrol_operations}
-                SET uid = %d
-                WHERE committer = '%s' AND repo_id = %d",
-                $this->uid, $this->vcs_username, $repo_id);
-    }
-
-    // Everything's done, let the world know about it!
-    module_invoke_all('versioncontrol_account',
-      'update', $this->uid, $this->vcs_username, $this->repository, $additional_data
+    db_query("UPDATE {versioncontrol_accounts}
+      SET vcs_username = '%s'
+      WHERE uid = %d AND repo_id = %d",
+      $this->vcs_username, $this->uid, $repo_id
     );
 
-    watchdog('special',
-      'Version Control API: updated @username account in repository @repository',
-      array('@username' => $this->vcs_username, '@repository' => $this->repository->name),
-      WATCHDOG_NOTICE, l('view', 'admin/project/versioncontrol-accounts')
-    );
-  }
+    db_query("UPDATE {versioncontrol_operations}
+      SET uid = 0
+      WHERE uid = %d AND repo_id = %d",
+      $this->uid, $repo_id);
+    // not using data field for now, but backends can
+    db_query("UPDATE {versioncontrol_operations}
+      SET uid = %d
+      WHERE committer = '%s' AND repo_id = %d",
+      $this->uid, $this->vcs_username, $repo_id);
 
-  /**
-   * Let child backend account classes update information.
-   */
-  protected function _update($additional_data) {
+    // Let the backend take action.
+    $this->backendUpdate($options);
+
+    // Everything's done, invoke the hook.
+    module_invoke_all('versioncontrol_entity_account_update', $this);
+    return $this;
   }
 
   /**
    * Insert a VCS user account into the database,
    * and call the necessary module hooks.
    *
-   * @param $additional_data
-   *   An array of additional author information. Modules can fill this array
-   *   by implementing hook_versioncontrol_account_submit().
-   *
-   * FIXME function sig & logic incompatibilities with VersioncontrolEntity
+   * FIXME use same logic as in other classes, this probably would
+   * be changed only when we get account_id PK schema change in.
    */
-  public final function insert($additional_data = array()) {
+  public function insert($options = array()) {
+    // Append default options.
+    $options += $this->defaultCrudOptions['insert'];
+
+    // not using data field for now, but backends can
     db_query(
       "INSERT INTO {versioncontrol_accounts} (uid, repo_id, vcs_username)
        VALUES (%d, %d, '%s')", $this->uid, $this->repository->repo_id, $this->vcs_username
     );
 
     // Provide an opportunity for the backend to add its own stuff.
-    $this->_insert($additional_data);
+    $this->backendInsert($options);
 
     // Update the operations table.
     // FIXME differentiate author and commiter
@@ -157,60 +137,37 @@ abstract class VersioncontrolAccount extends VersioncontrolEntity {
               WHERE author = '%s' AND repo_id = %d",
               $this->uid, $this->vcs_username, $this->repository->repo_id);
 
-    // Everything's done, let the world know about it!
-    module_invoke_all('versioncontrol_account',
-      'insert', $this->uid, $this->vcs_username, $this->repository, $additional_data
-    );
-
-    watchdog('special',
-      'Version Control API: added @vcs_username account in repository @repository',
-      array('@vcs_username' => $this->vcs_username, '@repository' => $this->repository->name),
-      WATCHDOG_NOTICE, l('view', 'admin/project/versioncontrol-accounts')
-    );
-  }
-
-  /**
-   * Let child backend account classes add information
-   */
-  protected function _insert($additional_data) {
+    // Everything's done, invoke the hook.
+    module_invoke_all('versioncontrol_entity_account_insert', $this);
+    return $this;
   }
 
   /**
    * Delete a VCS user account from the database, set all commits with this
    * account as author to user 0 (anonymous), and call the necessary hooks.
+   *
+   * FIXME use same logic as in other classes, this probably would
+   * be changed only when we get account_id PK schema change in.
    */
-  public final function delete() {
+  public function delete($options = array()) {
+    // Append default options.
+    $options += $this->defaultCrudOptions['delete'];
+
     // Update the operations table.
     db_query('UPDATE {versioncontrol_operations}
               SET uid = 0
               WHERE uid = %d AND repo_id = %d',
               $this->uid, $this->repository->repo_id);
 
-    // Announce deletion of the account before anything has happened.
-    module_invoke_all('versioncontrol_account',
-      'delete', $this->uid, $this->vcs_username, $this->repository, array()
-    );
+    db_delete('versioncontrol_accounts')
+      ->condition('uid', $this->uid)
+      ->condition('repo_id', $this->repo_id)
+      ->execute();
 
     // Provide an opportunity for the backend to delete its own stuff.
-    $this->_delete();
+    $this->backendDelete($options);
 
-    db_query('DELETE FROM {versioncontrol_accounts}
-              WHERE uid = %d AND repo_id = %d',
-              $this->uid, $this->repository->repo_id);
-
-    watchdog('special',
-      'Version Control API: deleted @username account in repository @repository',
-      array('@username' => $this->vcs_username, '@repository' => $this->repository->name),
-      WATCHDOG_NOTICE, l('view', 'admin/project/versioncontrol-accounts')
-    );
+    module_invoke_all('versioncontrol_entity_account_delete', $this);
   }
 
-  /**
-   * Let child backend account classes delete information.
-   */
-  protected function _delete() {
-  }
-
-  public function save() {}
-  public function buildSave(&$query) {}
 }

@@ -571,9 +571,23 @@ class VersioncontrolItemController extends VersioncontrolEntityController {
 
 interface VersioncontrolEntityInterface extends ArrayAccess {
   public function build($args = array());
-  public function save();
-  // public function insert();
-  // public function update();
+  public function save($options = array());
+
+  /**
+   * Insert a new entity into the database, then invoke relevant hooks, if any.
+   */
+  public function insert($options = array());
+
+  /**
+   * Update an existing entity's record in the database, then invoke relevant
+   * hooks, if any.
+   */
+  public function update($options = array());
+
+  /**
+   * Delete an entity from the database, along with any of its dependent data.
+   */
+  public function delete($options = array());
 }
 
 /**
@@ -598,6 +612,14 @@ abstract class VersioncontrolEntity implements VersioncontrolEntityInterface {
   protected $repository;
 
   /**
+   * Internal property that holds the name of the property which contains the
+   * entity's primary key.
+   *
+   * @var string
+   */
+  protected $_id = NULL;
+
+  /**
    * An instance of the Backend factory used to create this object, passed in
    * to the constructor. If this entity needs to spawn more entities, then it
    * should reuse this backend object to do so.
@@ -605,6 +627,18 @@ abstract class VersioncontrolEntity implements VersioncontrolEntityInterface {
    * @var VersioncontrolBackend
    */
   protected $backend;
+
+  /**
+   * Default options to be appended to the $options argument that is used by
+   * all entities to determine C(R)UD behavior.
+   *
+   * @var array
+   */
+  protected $defaultCrudOptions = array(
+    'update' => array(),
+    'insert' => array(),
+    'delete' => array(),
+  );
 
   public function __construct($backend = NULL) {
     if ($backend instanceof VersioncontrolBackend) {
@@ -614,6 +648,10 @@ abstract class VersioncontrolEntity implements VersioncontrolEntityInterface {
       $backends = versioncontrol_get_backends();
       $this->backend = reset($backends);
     }
+  }
+
+  public function save($options = array()) {
+    return isset($this->{$this->_id}) ? $this->insert($options = array()) : $this->update($options = array());
   }
 
   /**
@@ -638,15 +676,25 @@ abstract class VersioncontrolEntity implements VersioncontrolEntityInterface {
   }
 
   /**
-   * Attach this entity's data to a query that will insert it into the database.
+   * Default, empty implementation of backendInsert().
    *
-   * This method is separated out to avoid code duplication between insert &
-   * update queries, as well as making it possible to build up large queries
-   * rather than issuing lots of small, single insert queries.
-   *
-   * @param Query $query
+   * Overridden by backends as needed to decorate the new entity insertion
+   * process.
    */
-  abstract public function buildSave(&$query);
+  protected function backendInsert($options) {}
+
+  /**
+   * Default, empty implementation of backendUpdate().
+   *
+   * Overridden by backends as needed to decorate the existing entity update
+   * process.
+   */
+  protected function backendUpdate($options) {}
+
+  /**
+   * Default, empty implementation of backendDelete().
+   */
+  protected function backendDelete($options) {}
 
   //ArrayAccess interface implementation FIXME soooooooo deprecated
   public function offsetExists($offset) {
