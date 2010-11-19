@@ -69,13 +69,6 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
   public $author;
 
   /**
-   * The repository where this operation occurs.
-   *
-   * @var VersioncontrolRepository
-   */
-  public $repository;
-
-  /**
    * The type of the operation - one of the
    * VERSIONCONTROL_OPERATION_{COMMIT,BRANCH,TAG} constants.
    *

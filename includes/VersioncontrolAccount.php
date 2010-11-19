@@ -31,13 +31,6 @@ abstract class VersioncontrolAccount extends VersioncontrolEntity {
   public $repo_id;
 
   /**
-   * Repo user id
-   *
-   * @var VersioncontrolRepository
-   */
-  public $repository;
-
-  /**
    * Return the most accurate guess on what the VCS username for a Drupal user
    * might look like in the repository's account.
    *
