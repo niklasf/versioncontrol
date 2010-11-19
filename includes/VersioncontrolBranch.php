@@ -64,7 +64,7 @@ class VersioncontrolBranch extends VersioncontrolEntity {
    */
   public function loadCommits($ids = array(), $conditions = array(), $options = array()) {
     $conditions['branches'] = array($this->label_id);
-    return $this->backend->loadCommits($ids, $conditions, $options);
+    return $this->backend->loadEntities('operation', $ids, $conditions, $options);
   }
 
   public function update($options = array()) {
