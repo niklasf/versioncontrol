@@ -351,6 +351,8 @@ function commitlog_operations_filtered_page($constraint_name, $constraint_value)
 function commitlog_operations_page($type = NULL, $argument = NULL) {
   // TODO: Add CSS?
   // TODO: Preprocess functions to assign our own templates to these views?
+  $path = drupal_get_path('module','commitlog');
+  drupal_add_css($path .'/commitlog.css', 'module');
   if ($type == 'author' && !is_null($argument)) {
     $output = views_embed_view('commitlog_author_commits', 'default', $argument);
   }
