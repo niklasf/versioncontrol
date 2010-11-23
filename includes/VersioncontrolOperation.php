@@ -320,7 +320,6 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    *   by calling versioncontrol_get_access_errors().
    */
   protected function hasWriteAccess($operation, $item_revisions) {
-    $operation->fill();
 
     // If we can't determine this operation's repository,
     // we can't really allow the operation in the first place.
