@@ -237,7 +237,7 @@ function versioncontrol_account_page($vcs_accounts, $url_repo_id = NULL, $url_us
   foreach ($vcs_accounts as $key => $vcs_account) {
     // The caller (menu system) ensures that there is only one uid.
     $uid = $vcs_account->uid;
-    if (isset($url_repo_id) && $vcs_account->repository->repo_id != $url_repo_id) {
+    if (isset($url_repo_id) && $vcs_account->repo_id != $url_repo_id) {
       unset($vcs_accounts[$key]);
       continue; // disregard repositories that don't match the URL constraints
     }
@@ -245,7 +245,7 @@ function versioncontrol_account_page($vcs_accounts, $url_repo_id = NULL, $url_us
       unset($vcs_accounts[$key]);
       continue; // disregard usernames that don't match the URL constraints
     }
-    $any_repo_id = $vcs_account->repository->repo_id;
+    $any_repo_id = $vcs_account->repo_id;
     $selected_usernames[] = $vcs_account->vcs_username;
   }
 

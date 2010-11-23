@@ -491,7 +491,7 @@ function versioncontrol_private_account_access($vcs_accounts, $account = NULL) {
 function versioncontrol_user_accounts_title_callback($accounts) {
   $repo_ids = array();
   foreach ($accounts as $account) {
-    $repo_ids[] = $account->repository->repo_id;
+    $repo_ids[] = $account->repo_id;
   }
   $repositories = versioncontrol_repository_load_multiple($repo_ids);
   $vcses = array();
