@@ -100,76 +100,6 @@ define('VERSIONCONTROL_ITEM_DIRECTORY_DELETED', 4);
 define('VERSIONCONTROL_FORM_CREATE', FALSE);
 
 /**
- * Implementation of hook_autoload_info().
- *
- * Tell the autoload module where all our class files are. Now, no more hairy
- * include problems!
- */
-function versioncontrol_autoload_info() {
-  $items = array();
-
-  // Add classes in self-named files
-  $selfnamed = array(
-    'VersioncontrolAccount',
-    'VersioncontrolBackend',
-    'VersioncontrolBranch',
-    'VersioncontrolItem',
-    'VersioncontrolOperation',
-    'VersioncontrolOperationCache',
-    'VersioncontrolRepository',
-    'VersioncontrolTag',
-  );
-  foreach ($selfnamed as $name) {
-    $items[$name] = array(
-      'file' => "includes/$name.php",
-    );
-  }
-
-  // Add mushed together interfaces.inc
-  $interfaces = array(
-    'VersioncontrolItemParallelItems',
-    'VersioncontrolItemDirectoryContents',
-    'VersioncontrolItemExportFile',
-    'VersioncontrolItemExportDirectory',
-    'VersioncontrolItemGetFileAnnotation',
-    'VersioncontrolRepositoryGetItem',
-    'VersioncontrolRepositoryImportExport',
-  );
-
-  foreach ($interfaces as $name) {
-    $items[$name] = array(
-      'file' => "includes/interfaces.inc",
-    );
-  }
-
-  // Add controllers.inc contents
-  $controllers = array(
-    'VersioncontrolEntityController',
-    'VersioncontrolRepositoryController',
-    'VersioncontrolAccountController',
-    'VersioncontrolTagController',
-    'VersioncontrolBranchController',
-    'VersioncontrolOperationController',
-    'VersioncontrolItemController',
-    'VersioncontrolEntityInterface',
-    'VersioncontrolEntity',
-  );
-
-  foreach ($controllers as $name) {
-    $items[$name] = array(
-      'file' => "includes/controllers.inc",
-    );
-  }
-
-  // Add special cases
-  $items['VersioncontrolRepositoryUrlHandler'] = array(
-    'file' => 'includes/VersioncontrolRepository.php',
-  );
-
-  return $items;
-}
-
-/**
  * Implementation of hook_flush_caches().
  *
  * Triggers backend mode determination.
@@ -234,16 +164,7 @@ function versioncontrol_user($type, &$edit, &$user, $category = NULL) {
 function versioncontrol_menu() {
   // FIXME this is hacky; it forces autoload to rebuild its cache to ensure
   // everything is up-to-date, since we need it to be for this function.
-  if (function_exists('autoload_get_lookup')) {
-    // for autoload 1.x
-    autoload_get_lookup(TRUE);
-  }
-  else {
-    // autoload 2.x branch
-    autoload_registry_update();
-  }
-
-
+  autoload_registry_update();
 
   $items = array();
 
