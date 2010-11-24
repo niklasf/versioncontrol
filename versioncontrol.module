@@ -421,7 +421,7 @@ function versioncontrol_user_accounts_title_callback($accounts) {
   }
   if (count($vcses) == 1) {
     $repo = array_shift($repositories);
-    return check_plain($repo->backend->name);
+    return check_plain($repo->getBackend()->name);
   }
   return t('Repository accounts');
 }
@@ -623,7 +623,8 @@ function versioncontrol_fetch_source_items($repository, &$items) {
     // FIXME this should pass through the factory (VersioncontrolBackend::buildEntity()),
     // but since we're getting rid of this whole 'source items' thing anyway,
     // just gonna make this note since the whole function will be going away.
-    $item = new $repository->backend->classes['item'](
+    $item_backend = $repository->getBackend();
+    $item = new $backend->classes['item'](
       $item_revision->type,
       $item_revision->path,
       $item_revision->revision,

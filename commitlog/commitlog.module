@@ -1099,12 +1099,13 @@ function theme_commitlog_operation_items($operation, $operation_items, $format =
 }
 
 function theme_commitlog_item($repository, $item, $path_override = NULL, $format = 'html') {
-  if (!isset($repository->backend)) {
+  $backend = $repository->getBackend();
+  if (!isset($backend)) {
     return '';
   }
 
   $has_atomic_commits = FALSE;
-  if (in_array(VERSIONCONTROL_CAPABILITY_ATOMIC_COMMITS, $repository->backend->capabilities)) {
+  if (in_array(VERSIONCONTROL_CAPABILITY_ATOMIC_COMMITS, $backend->capabilities)) {
     $has_atomic_commits = TRUE;
   }
 

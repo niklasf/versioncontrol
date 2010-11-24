@@ -532,7 +532,7 @@ function versioncontrol_admin_account_export_display_form(&$form_state, $reposit
 
   $form['data'] = array(
     '#type' => 'textarea',
-    '#title' => t('@vcs account data', array('@vcs' => $repository->backend->name)),
+    '#title' => t('@vcs account data', array('@vcs' => $repository->getBackend()->name)),
     '#description' => t('The exported account data. You can copy this to the config file that contains the @vcs accounts.', array('@vcs' => $backend['name'])),
     '#default_value' => $data,
     '#cols' => 70,

@@ -650,6 +650,10 @@ abstract class VersioncontrolEntity implements VersioncontrolEntityInterface {
     }
   }
 
+  public function getBackend() {
+    return $this->backend;
+  }
+
   public function save($options = array()) {
     return isset($this->{$this->_id}) ? $this->insert($options = array()) : $this->update($options = array());
   }

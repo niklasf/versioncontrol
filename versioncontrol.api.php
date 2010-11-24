@@ -270,7 +270,7 @@ function hook_versioncontrol_write_access($operation, $operation_items) {
     $error_message = t(
 "** ERROR: no Drupal user matches !vcs user '!user'.
 ** Please contact a !vcs administrator for help.",
-      array('!vcs' => $operation->repository->backend->name, '!user' => $operation->committer)
+      array('!vcs' => $operation->repository->getBackend()->name, '!user' => $operation->committer)
     );
     return array($error_message); // disallow the commit with an explanation
   }

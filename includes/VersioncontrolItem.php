@@ -429,7 +429,7 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
     }
 
     $revision = '';
-    if (in_array(VERSIONCONTROL_CAPABILITY_DIRECTORY_REVISIONS, $this->repository->backend->capabilities)) {
+    if (in_array(VERSIONCONTROL_CAPABILITY_DIRECTORY_REVISIONS, $this->backend->capabilities)) {
       $revision = $this->revision;
     }
 

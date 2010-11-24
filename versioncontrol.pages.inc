@@ -300,7 +300,7 @@ function versioncontrol_account_list_form(&$form_state, $accounts) {
         $rows[] = array(
           $repo_name,
           $formatted_username,
-          l(t('Edit @vcs account', array('@vcs' => $repositories[$repo_id]->backend->name)),
+          l(t('Edit @vcs account', array('@vcs' => $repositories[$repo_id]->getBackend()->name)),
             'user/'. $uid .'/edit/versioncontrol/'. $repo_id .'/'. drupal_urlencode($username)
           ),
         );
@@ -331,7 +331,7 @@ function versioncontrol_account_list_form(&$form_state, $accounts) {
 function versioncontrol_account_edit_form(&$form_state, $uid, $repository, $vcs_username) {
   $form = array();
   $create_account = ($vcs_username === VERSIONCONTROL_FORM_CREATE);
-  $vcs_name = $repository->backend->name;
+  $vcs_name = $repository->getBackend()->name;
 
   $user = ($uid === VERSIONCONTROL_REGISTER_DEMO) ? FALSE : user_load($uid);
 
@@ -395,7 +395,7 @@ function versioncontrol_account_edit_form(&$form_state, $uid, $repository, $vcs_
         'uid' => $uid,
         'repository' => $repository,
       );
-      $vcs_account = $repository->backend->buildEntity('account', $data);
+      $vcs_account = $repository->getBackend()->buildEntity('account', $data);
       // Have a nice default value for the new VCS username.
       $vcs_username = $vcs_account->usernameSuggestion($user);
     }
@@ -475,7 +475,7 @@ function versioncontrol_account_edit_form_validate($form, &$form_state) {
       'uid' => $uid,
       'repository' => $repository,
     );
-    $vcs_account = $repository->backend->buildEntity('account', $data);
+    $vcs_account = $repository->getBackend()->buildEntity('account', $data);
     if (!$vcs_account->isUsernameValid($username)) {
       form_set_error('account_name',
         t('The specified @vcs username is invalid.', array('@vcs' => $vcs_name))
@@ -526,7 +526,7 @@ function versioncontrol_account_edit_form_submit($form, &$form_state) {
       'uid' => $uid,
       'repository' => $repository,
     );
-    $vcs_account = $repository->backend->buildEntity('account', $data);
+    $vcs_account = $repository->getBackend()->buildEntity('account', $data);
     $vcs_account->additional_data = $additional_data;
     $vcs_account->insert();
     $message = drupal_set_message(t(

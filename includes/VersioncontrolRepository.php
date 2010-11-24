@@ -80,7 +80,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
    *
    * @var VersioncontrolBackend
    */
-  public $backend;
+  protected $backend;
 
   /**
    * An array of VersioncontrolEntityController objects used to spawn more
@@ -107,6 +107,10 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
       $backends = versioncontrol_get_backends();
       $this->backend = reset($backends);
     }
+  }
+
+  public function getBackend() {
+    return $this->backend;
   }
 
   /**
