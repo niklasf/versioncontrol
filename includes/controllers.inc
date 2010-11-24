@@ -655,7 +655,7 @@ abstract class VersioncontrolEntity implements VersioncontrolEntityInterface {
   }
 
   public function save($options = array()) {
-    return isset($this->{$this->_id}) ? $this->insert($options = array()) : $this->update($options = array());
+    return isset($this->{$this->_id}) ? $this->update($options) : $this->insert($options);
   }
 
   /**
