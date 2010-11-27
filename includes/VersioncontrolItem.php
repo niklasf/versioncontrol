@@ -78,6 +78,12 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
   public $line_changes_removed;
 
   /**
+   * The type of the item. Either
+   * VERSIONCONTROL_ITEM_{FILE,DIRECTORY,FILE_DELETED,DIRECTORY_DELETED}.
+   */
+  public $type;
+
+  /**
    * FIXME: ?
    */
   private static $successor_action_priority = array(
