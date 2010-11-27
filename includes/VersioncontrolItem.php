@@ -716,6 +716,10 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
       $this->determineSourceItemRevisionID($options);
     }
 
+    // make sure repo id is set for drupal_write_record()
+    if (empty($this->repo_id)) {
+      $this->repo_id = $this->repository->repo_id;
+    }
     drupal_write_record('versioncontrol_item_revisions', $this, 'item_revision_id');
 
     // Let the backend take action.
@@ -740,7 +744,9 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
     }
 
     // make sure repo id is set for drupal_write_record()
-    $this->repo_id = $this->repository->repo_id;
+    if (empty($this->repo_id)) {
+      $this->repo_id = $this->repository->repo_id;
+    }
     drupal_write_record('versioncontrol_item_revisions', $this);
 
     $this->backendInsert($options);

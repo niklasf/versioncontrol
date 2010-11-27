@@ -76,6 +76,10 @@ class VersioncontrolBranch extends VersioncontrolEntity {
     // Append default options.
     $options += $this->defaultCrudOptions['update'];
 
+    // make sure repo id is set for drupal_write_record()
+    if (empty($this->repo_id)) {
+      $this->repo_id = $this->repository->repo_id;
+    }
     drupal_write_record('versioncontrol_labels', $this, 'label_id');
 
     // Let the backend take action.
@@ -95,6 +99,10 @@ class VersioncontrolBranch extends VersioncontrolEntity {
     // Append default options.
     $options += $this->defaultCrudOptions['insert'];
 
+    // make sure repo id is set for drupal_write_record()
+    if (empty($this->repo_id)) {
+      $this->repo_id = $this->repository->repo_id;
+    }
     drupal_write_record('versioncontrol_labels', $this);
 
     $this->backendInsert($options);
