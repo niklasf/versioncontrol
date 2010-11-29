@@ -22,13 +22,6 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
   public $vc_op_id;
 
   /**
-   * Who actually perform the change on the repository.
-   *
-   * @var string
-   */
-  public $committer;
-
-  /**
    * The time when the operation was performed, given as
    * Unix timestamp. (For commits, this is the time when the revision
    * was committed, whereas for branch/tag operations it is the time
@@ -61,12 +54,35 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
   public $message;
 
   /**
+   * The Drupal user id of the operation author, or 0 if no Drupal user
+   * could be associated to the author.
+   *
+   * @var int
+   */
+  public $author_uid;
+
+  /**
+   * The Drupal user id of the operation committer, or 0 if no Drupal user
+   * could be associated to the author.
+   *
+   * @var int
+   */
+  public $committer_uid;
+
+  /**
    * The system specific VCS username of the user who executed this
    * operation(aka who write the change)
    *
    * @var string
    */
   public $author;
+
+  /**
+   * Who actually perform the change on the repository.
+   *
+   * @var string
+   */
+  public $committer;
 
   /**
    * The type of the operation - one of the
@@ -91,14 +107,6 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    * @var array
    */
   public $labels = array();
-
-  /**
-   * The Drupal user id of the operation author, or 0 if no Drupal user
-   * could be associated to the author.
-   *
-   * @var int
-   */
-  public $uid;
 
   /**
    * An array of VersioncontrolItem objects affected by this commit.

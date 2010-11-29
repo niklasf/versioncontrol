@@ -931,7 +931,7 @@ function versioncontrol_account_status_versioncontrol_entity_account_insert($vcs
     // the caller doesn't know anything about this module.
     $additional_data = array(
       'status_data' => array(
-        'uid' => $vcs_account->uid,
+        'uid' => $vcs_account->committer_uid,
         'repo_id' => $vcs_account->repo_id,
         'motivation' => 'Inserted programmatically.',
         'status' => VERSIONCONTROL_ACCOUNT_STATUS_APPROVED,

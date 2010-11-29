@@ -201,16 +201,7 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_argument_date',
     ),
   );
-  $data['versioncontrol_operations']['uid'] = array(
-    'title' => t('User'),
-    'help' => t('The user that did the operation'),
-    'relationship' => array(
-      'base'  => 'users',
-      'base field' => 'uid',
-      'handler' => 'views_handler_relationship',
-      'label' => t('User'),
-    ),
-  );
+
   $data['versioncontrol_operations']['author'] = array(
     'title'    => t('Author'),
     'help'     => t('The Operation Author'),
@@ -227,6 +218,18 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
+
+  $data['versioncontrol_operations']['author_uid'] = array(
+    'title' => t('User'),
+    'help' => t('The user that did the operation'),
+    'relationship' => array(
+      'base'  => 'users',
+      'base field' => 'uid',
+      'handler' => 'views_handler_relationship',
+      'label' => t('User'),
+    ),
+  );
+
   $data['versioncontrol_operations']['committer'] = array(
     'title'    => t('Commiter'),
     'help'     => t('The Operation Commiter'),
@@ -243,6 +246,18 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
+
+  $data['versioncontrol_operations']['committer_uid'] = array(
+    'title' => t('User'),
+    'help' => t('The user that did the operation'),
+    'relationship' => array(
+      'base'  => 'users',
+      'base field' => 'uid',
+      'handler' => 'views_handler_relationship',
+      'label' => t('User'),
+    ),
+  );
+
   $data['versioncontrol_operations']['revision'] = array(
     'title'    => t('Revision'),
     'help'     => t('The Operation Revision Identifier'),

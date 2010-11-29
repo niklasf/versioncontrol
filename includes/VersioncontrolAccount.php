@@ -85,15 +85,27 @@ abstract class VersioncontrolAccount extends VersioncontrolEntity {
       $this->vcs_username, $this->uid, $repo_id
     );
 
+    // Update operations table.
+    // this is assuming 1-1 relation between accounts and uid's
+    //   1. unassign all uid related operations
+    db_query('update {versioncontrol_operations}
+              set author_uid = 0
+              where author_uid = %d and repo_id = %d',
+              $this->uid, $this->repository->repo_id);
+    db_query('update {versioncontrol_operations}
+              set committer_uid = 0
+              where committer_uid = %d and repo_id = %d',
+              $this->uid, $this->repository->repo_id);
+    //   2. assingn all operations related to repo and vcs username
     db_query("UPDATE {versioncontrol_operations}
-      SET uid = 0
-      WHERE uid = %d AND repo_id = %d",
-      $this->uid, $repo_id);
+              SET author_uid = %d
+              WHERE author = '%s' AND repo_id = %d",
+              $this->uid, $this->vcs_username, $this->repository->repo_id);
+    db_query("UPDATE {versioncontrol_operations}
+              SET committer_uid = %d
+              WHERE committer = '%s' AND repo_id = %d",
+              $this->uid, $this->vcs_username, $this->repository->repo_id);
     // not using data field for now, but backends can
-    db_query("UPDATE {versioncontrol_operations}
-      SET uid = %d
-      WHERE committer = '%s' AND repo_id = %d",
-      $this->uid, $this->vcs_username, $repo_id);
 
     // Let the backend take action.
     $this->backendUpdate($options);
@@ -124,10 +136,13 @@ abstract class VersioncontrolAccount extends VersioncontrolEntity {
     $this->backendInsert($options);
 
     // Update the operations table.
-    // FIXME differentiate author and commiter
     db_query("UPDATE {versioncontrol_operations}
-              SET uid = %d
+              SET author_uid = %d
               WHERE author = '%s' AND repo_id = %d",
+              $this->uid, $this->vcs_username, $this->repository->repo_id);
+    db_query("UPDATE {versioncontrol_operations}
+              SET committer_uid = %d
+              WHERE committer = '%s' AND repo_id = %d",
               $this->uid, $this->vcs_username, $this->repository->repo_id);
 
     // Everything's done, invoke the hook.
@@ -147,9 +162,13 @@ abstract class VersioncontrolAccount extends VersioncontrolEntity {
     $options += $this->defaultCrudOptions['delete'];
 
     // Update the operations table.
-    db_query('UPDATE {versioncontrol_operations}
-              SET uid = 0
-              WHERE uid = %d AND repo_id = %d',
+    db_query('update {versioncontrol_operations}
+              set author_uid = 0
+              where author_uid = %d and repo_id = %d',
+              $this->uid, $this->repository->repo_id);
+    db_query('update {versioncontrol_operations}
+              set committer_uid = 0
+              where committer_uid = %d and repo_id = %d',
               $this->uid, $this->repository->repo_id);
 
     db_delete('versioncontrol_accounts')

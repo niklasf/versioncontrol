@@ -46,14 +46,6 @@ function versioncontrol_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'uid' => array(
-        'description' =>
-          'The {users}.uid for the Drupal user corresponding to the VCS-specific username in {versioncontrol_operations}.username, if such an association can be found. 0 otherwise. (The account associations are retrieved from the {versioncontrol_accounts} table.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
       'author' => array(
         'description' => 'VCS specific username of the user who is the original author of this operation. For centralized version control systems this and committer are the same.',
         'type' => 'varchar',
@@ -61,12 +53,28 @@ function versioncontrol_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      'author_uid' => array(
+        'description' =>
+          'The {users}.uid for the Drupal user who authored this commit, corresponding to the value in {versioncontrol_operations}.author. If no such association can be found, then 0.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'committer' => array(
         'description' => 'VCS specific username of the user who executed this operation. For distributed version control systems, this should be the author, not the committer. For centralized version control systems this and author are the same.',
         'type' => 'varchar',
         'length' => 64,
         'not null' => TRUE,
         'default' => '',
+      ),
+      'committer_uid' => array(
+        'description' =>
+          'The {users}.uid for the Drupal user who made this commit (but perhaps was not the author), corresponding to the value in {versioncontrol_operations}.committer. If no such association can be found, then 0.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
       ),
       'revision' => array(
         'description' =>
@@ -87,9 +95,10 @@ function versioncontrol_schema() {
       'type' => array('type'),
       'repo_id' => array('repo_id'),
       'date' => array('date'),
-      'uid' => array('uid'),
       'author' => array('author'),
+      'author_uid' => array('author_uid'),
       'committer' => array('committer'),
+      'committer_uid' => array('committer_uid'),
       'revision' => array('revision'),
     ),
     'primary key' => array('vc_op_id'),
@@ -792,5 +801,36 @@ function versioncontrol_update_6306() {
 
   db_drop_table($ret, 'versioncontrol_source_items');
 
+  return $ret;
+}
+
+/* Allow independent uid mappings for both author and committer data.
+ *
+ * @return array
+ */
+function versioncontrol_update_6307() {
+  $ret = array();
+  $author_uid_spec = array(
+    'description' =>
+      'The {users}.uid for the Drupal user who authored this commit, corresponding to the value in {versioncontrol_operations}.author. If no such association can be found, then 0.',
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  $committer_uid_spec = array(
+    'description' =>
+      'The {users}.uid for the Drupal user who made this commit (but perhaps was not the author), corresponding to the value in {versioncontrol_operations}.committer. If no such association can be found, then 0.',
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+  );
+
+  db_add_field($ret, 'versioncontrol_operations', 'committer_uid', $committer_uid_spec);
+  db_change_field($ret, 'versioncontrol_operations', 'uid', 'author_uid', $author_uid_spec);
+
+  // Safe initialization that'll get some good values in for the committer uid.
+  db_query('UPDATE {versioncontrol_operations} SET committer_uid = author_uid WHERE (committer = author OR committer = "")');
   return $ret;
 }
