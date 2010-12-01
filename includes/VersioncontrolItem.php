@@ -712,8 +712,8 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
     // Append default options.
     $options += $this->defaultCrudOptions['update'];
 
-    if ($options['source item update']) {
-      $this->determineSourceItemRevisionID($options);
+    if (!empty($options['source item update'])) {
+      $this->determineSourceItemRevisionID();
     }
 
     // make sure repo id is set for drupal_write_record()
@@ -740,7 +740,7 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
     $options += $this->defaultCrudOptions['insert'];
 
     if (empty($this->source_item_revision_id)) {
-      $this->determineSourceItemRevisionID($options);
+      $this->determineSourceItemRevisionID();
     }
 
     // make sure repo id is set for drupal_write_record()
@@ -762,10 +762,10 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
    *
    * // FIXME this is colosally hacky right now. right now it just inserts if the data is available, there is ZERO discovery
    */
-  protected function determineSourceItemRevisionID($options) {
+  protected function determineSourceItemRevisionID() {
     if ($this->sourceItem instanceof VersioncontrolItem) {
       if (!isset($this->sourceItem->item_revision_id)) {
-        $this->sourceItem->insert($options);
+        $this->sourceItem->insert();
       }
       $this->source_item_revision_id = $this->sourceItem->item_revision_id;
     }

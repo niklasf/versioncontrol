@@ -149,7 +149,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
     drupal_write_record('versioncontrol_operations', $this);
 
     if (!empty($options['nested'])) {
-      $this->insertNested($options);
+      $this->insertNested();
     }
 
     $this->backendInsert($options);
@@ -159,12 +159,12 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
     return $this;
   }
 
-  protected function insertNested($options) {
+  protected function insertNested() {
     foreach ($this->itemRevisions as $item) {
       if (!isset($item->vc_op_id)) {
         $item->vc_op_id = $this->vc_op_id;
       }
-      $item->insert($options);
+      $item->insert(array('source item update' => TRUE));
     }
   }
 
@@ -184,7 +184,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
     drupal_write_record('versioncontrol_operations', $this, 'vc_op_id');
 
     if (!empty($options['nested'])) {
-      $this->updateNested($options);
+      $this->updateNested();
     }
 
     $this->backendUpdate($options);
@@ -194,9 +194,9 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
     return $this;
   }
 
-  protected function updateNested($options) {
+  protected function updateNested() {
     foreach ($this->itemRevisions as $item) {
-      $item->save($options);
+      $item->save(array('source item update' => TRUE));
     }
   }
 
