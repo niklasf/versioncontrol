@@ -206,7 +206,7 @@ function versioncontrol_views_data() {
     'title'    => t('Author'),
     'help'     => t('The Operation Author'),
     'field'    => array(
-      'handler' => 'views_handler_field',
+      'handler' => 'versioncontrol_handler_field_operation_author',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -553,6 +553,10 @@ function versioncontrol_views_handlers() {
       'versioncontrol_handler_field_operation_revision' => array(
         'parent' => 'views_handler_field',
       ),
+      'versioncontrol_handler_field_operation_author' => array(
+        'parent' => 'views_handler_field',
+      ),
+      // filter handlers
       'versioncontrol_handler_filter_operation_type' => array(
         'parent' => 'views_handler_filter_in_operator',
       ),
