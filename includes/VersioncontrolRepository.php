@@ -501,7 +501,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
         $this->pluginInstances['author_mapper'] = FALSE;
       }
       else {
-        $this->pluginInstances['author_mapper'] = $this->getPluginClass('author_mapper', 'user_mapping_method', 'mapper');
+        $this->pluginInstances['author_mapper'] = $this->getPluginClass('author_mapper', 'user_mapping_methods', 'mapper');
       }
     }
     return $this->pluginInstances['author_mapper'];
@@ -514,7 +514,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
         $this->pluginInstances['committer_mapper'] = $this->getAuthorMapper();
       }
       else {
-        $this->pluginInstances['committer_mapper'] = $this->getPluginClass('committer_mapper', 'user_mapping_method', 'mapper');
+        $this->pluginInstances['committer_mapper'] = $this->getPluginClass('committer_mapper', 'user_mapping_methods', 'mapper');
       }
     }
 
