@@ -1105,3 +1105,27 @@ function _versioncontrol_get_string_presets() {
 
   return $presets;
 }
+
+/**
+ * Implementation of ctools hook_ctools_plugin_directory().
+ */
+function versioncontrol_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'versioncontrol') {
+    return "includes/plugins/$plugin";
+  }
+}
+
+/**
+ * Load the names of all 'user_mapping_methods' for use at forms.
+ */
+function versioncontrol_user_mapping_methods_get_names() {
+  ctools_include('plugins');
+
+  $names = array();
+  foreach (ctools_get_plugins('versioncontrol', 'user_mapping_methods') as $name => $plugin) {
+    $names[$name] = $plugin['title'];
+  }
+
+  asort($names);
+  return $names;
+}

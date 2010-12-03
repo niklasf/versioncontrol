@@ -61,8 +61,7 @@ class VersioncontrolAccountStatusTestCase extends VersioncontrolTestCase {
     $this->drupalPost('admin/project/versioncontrol-repositories/add-test', $repo_edit, t('Save repository'));
 
     // get the created repo
-    $found_repositories = $this->testBackend->loadEntities('repo', array(), array('name' => array($repo_edit['repo_name'])));
-    $repo = array_shift($found_repositories);
+    $repo = $this->testBackend->loadEntity('repo', array(), array('name' => array($repo_edit['repo_name'])));
     $this->assertTrue(!is_null($repo), t('Repository found in database.'));
 
     // visit the repository edit form again, and make sure those texts still exist in the same text fields

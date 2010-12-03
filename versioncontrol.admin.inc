@@ -620,6 +620,35 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
     '#maxlength' => 255,
   );
 
+  $text = t('Versioncontrol can map commit activity in this repository to user accounts. These options allow you to select the logic that should be used to perform the mapping between Drupal users and raw VCS data.');
+  $text .= '<br/><br/>';
+  $text .= t('Versioncontrol internally allows for both "authors" and "committers" to be tracked on each commit, so you can choose distinct mapping logic for each.');
+
+  $form['user_mapping'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('User mapping'),
+    '#description' => $text,
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#weight' => 5,
+  );
+
+  $form['user_mapping']['author_mapper'] = array(
+    '#type' => 'radios',
+    '#title' => t('Author mapping'),
+    '#description' => t('The mapping logic to be used for "author" data. All VCSes have some sort of author field.'),
+    '#default_value' => $repository_exists ? $repository->plugins['author_mapper'] : 0,
+    '#options' => array(0 => t('None (no mapping)')) + versioncontrol_user_mapping_methods_get_names(),
+  );
+
+  $form['user_mapping']['committer_mapper'] = array(
+    '#type' => 'radios',
+    '#title' => t('Committer mapping'),
+    '#description' => t('The mapping logic to be used for "committer" data. Only some VCSes distinguish between author and committer. It is usually best to have this use the same plugin as the author mapper, especially if using "None."'),
+    '#default_value' => $repository_exists ? $repository->plugins['committer_mapper'] : 0,
+    '#options' => array(0 => t('Use author mapping plugin')) + versioncontrol_user_mapping_methods_get_names(),
+  );
+
   if ($repository_exists && isset($repository->data['versioncontrol']['registration_message'])) {
     $current_registration_message = $repository->data['versioncontrol']['registration_message'];
   }
@@ -633,7 +662,7 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
     '#title' => t('Account registration'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#weight' => 1,
+    '#weight' => 10,
   );
   $form['account_registration']['authorization_method'] = array(
     '#type' => 'select',
@@ -668,7 +697,7 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
       '#title' => t('Commit restrictions'),
       '#collapsible' => TRUE,
      '#collapsed' => TRUE,
-      '#weight' => 6,
+      '#weight' => 10,
     );
     $form['commit_restrictions']['allow_unauthorized_access'] = array(
       '#type' => 'checkbox',
@@ -691,7 +720,7 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
     '#description' =>  t('These URLs will be used to add links to item and commit displays such as the commit log.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#weight' => 10,
+    '#weight' => 15,
   );
   $form['repository_urls']['commit_view'] = array(
     '#type' => 'textfield',
@@ -786,6 +815,10 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
     $repository->name                 = $form_state['values']['repo_name'];
     $repository->root                 = $form_state['values']['root'];
     $repository->authorization_method = $form_state['values']['authorization_method'];
+    $repository->plugins              = array(
+      'author_mapper' => $form_state['values']['author_mapper'],
+      'committer_mapper' => $form_state['values']['committer_mapper'],
+    );
   }
   else {
     $backends = versioncontrol_get_backends();
@@ -795,8 +828,12 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
       'root' => $form_state['values']['root'],
       'authorization_method' => $form_state['values']['authorization_method'],
       'backend' => $backends[$form['#vcs']],
+      'plugins' => array(
+        'author_mapper' => $form_state['values']['author_mapper'],
+        'committer_mapper' => $form_state['values']['committer_mapper'],
+      ),
     );
-     $repository = $backends[$form['#vcs']]->buildEntity('repo', $repository);
+    $repository = $backends[$form['#vcs']]->buildEntity('repo', $repository);
   }
 
   // We also provide a 'data' array where other modules can put their own

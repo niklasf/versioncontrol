@@ -218,3 +218,27 @@ interface VersioncontrolRepositoryImportExport {
   public function exportAccounts($accounts);
 
 }
+
+interface VersioncontrolUserMapperInterface {
+  /**
+   * Map the author of the passed VersioncontrolOperation object to a Drupal
+   * uid, or FALSE if no uid mapping could be made.
+   *
+   * @param VersioncontrolOperation $commit
+   *   The commit to be mapped.
+   * @return mixed
+   *   Either a uid (int), or FALSE if the mapping failed.
+   */
+  public function mapAuthor(VersioncontrolOperation $commit);
+
+  /**
+   * Map the committer of the passed VersioncontrolOperation object to a Drupal
+   * uid, or FALSE if no uid mapping could be made.
+   *
+   * @param VersioncontrolOperation $commit
+   *   The commit to be mapped.
+   * @return mixed
+   *   Either a uid (int), or FALSE if the mapping failed.
+   */
+  public function mapCommitter(VersioncontrolOperation $commit);
+}

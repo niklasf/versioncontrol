@@ -47,7 +47,7 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     $magic_modules = $this->determineBackends();
     // load crucial required modules in addition to requested ones.
     $arg_modules = func_get_args();
-    $modules = array_merge(array('autoload', 'dbtng', 'views', 'versioncontrol'), $arg_modules, $magic_modules);
+    $modules = array_merge(array('autoload', 'dbtng', 'ctools', 'views', 'versioncontrol'), $arg_modules, $magic_modules);
     call_user_func_array(array('VersioncontrolTestCase', 'parent::setUp'), $modules);
 
     if (!($this->useBackends & (self::BACKENDS_NONE))) {

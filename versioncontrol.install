@@ -357,6 +357,13 @@ function versioncontrol_schema() {
         'not null' => TRUE,
         'serialize' => TRUE,
       ),
+      'plugins' => array(
+        'description' => t('The list of ctools plugins associated with this repository.'),
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE,
+        'serialize' => TRUE,
+      ),
     ),
     'unique keys' => array(
       'name' => array('name'),
@@ -804,7 +811,8 @@ function versioncontrol_update_6306() {
   return $ret;
 }
 
-/* Allow independent uid mappings for both author and committer data.
+/**
+ * Allow independent uid mappings for both author and committer data.
  *
  * @return array
  */
@@ -832,5 +840,22 @@ function versioncontrol_update_6307() {
 
   // Safe initialization that'll get some good values in for the committer uid.
   db_query('UPDATE {versioncontrol_operations} SET committer_uid = author_uid WHERE (committer = author OR committer = "")');
+  return $ret;
+}
+
+/**
+ * Add 'plugins' column to {versioncontrol_repositories}.
+ */
+function versioncontrol_update_6308() {
+  $ret = array();
+  $plugins = array(
+    'description' => 'The list of ctools plugins associated with this repository.',
+    'type' => 'text',
+    'size' => 'medium',
+    'not null' => TRUE,
+    'serialize' => TRUE,
+  );
+  db_add_field($ret, 'versioncontrol_repositories', 'plugins', $plugins);
+  // FIXME add array('user mapping' => 'some_plugin') as default
   return $ret;
 }

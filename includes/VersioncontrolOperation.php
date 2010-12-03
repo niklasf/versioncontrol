@@ -116,8 +116,8 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
   public $itemRevisions = array();
 
   protected $defaultCrudOptions = array(
-    'update' => array('nested' => TRUE),
-    'insert' => array('nested' => TRUE),
+    'update' => array('nested' => TRUE, 'map users' => FALSE),
+    'insert' => array('nested' => TRUE, 'map users' => FALSE),
     'delete' => array('nested' => TRUE),
   );
 
@@ -133,6 +133,37 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
     return $this->backend->loadEntities('item', $ids, $conditions, $options);
   }
 
+  public function mapUsers() {
+    $this->mapAuthor();
+    $this->mapCommitter();
+  }
+
+  /**
+   * Perform the mapping between Drupal users and this commit's author.
+   */
+  public function mapAuthor() {
+    if ($mapper = $this->repository->getAuthorMapper()) {
+      $uid = $mapper->mapAuthor($this);
+      $this->author_uid = empty($uid) ? 0 : $uid;
+    }
+    else {
+      $this->author_uid = 0;
+    }
+  }
+
+  /**
+   * Perform the mapping between Drupal users and this commit's committer.
+   */
+  public function mapCommitter() {
+    if ($mapper = $this->repository->getCommitterMapper()) {
+      $uid = $mapper->mapCommitter($this);
+      $this->committer_uid = empty($uid) ? 0 : $uid;
+    }
+    else {
+      $this->committer_uid = 0;
+    }
+  }
+
   public function insert($options = array()) {
     if (!empty($this->vc_op_id)) {
       // This is supposed to be a new commit, but has a vc_op_id already.
@@ -141,6 +172,10 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
 
     // Append default options.
     $options += $this->defaultCrudOptions['insert'];
+
+    if ($options['map users']) {
+      $this->mapUsers();
+    }
 
     // make sure repo id is set for drupal_write_record()
     if (empty($this->repo_id)) {
@@ -176,6 +211,10 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
 
     // Append default options.
     $options += $this->defaultCrudOptions['update'];
+
+    if ($options['map users']) {
+      $this->mapUsers();
+    }
 
     // make sure repo id is set for drupal_write_record()
     if (empty($this->repo_id)) {

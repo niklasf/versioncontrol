@@ -93,6 +93,24 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
 
   protected $built = FALSE;
 
+  /**
+   * An array describing the plugins that will be used for this repository.
+   *
+   * The current plugin types(array keys) are:
+   * - author_mapper
+   * - committer_mapper
+   *
+   * @var array
+   */
+  public $plugins = array();
+
+  /**
+   * An array of plugin instances (instanciated plugin objects).
+   *
+   * @var array
+   */
+  protected $pluginInstances = array();
+
   protected $defaultCrudOptions = array(
     'update' => array('nested' => TRUE),
     'insert' => array('nested' => TRUE),
@@ -130,6 +148,9 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     }
     if (!empty($this->data) && is_string($this->data)) {
       $this->data = unserialize($this->data);
+    }
+    if (!empty($this->plugins) && is_string($this->plugins)) {
+      $this->plugins = unserialize($this->plugins);
     }
     $this->built = TRUE;
   }
@@ -445,6 +466,61 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     }
     return NULL;
   }
+
+  /**
+   * Get an instantiated plugin object based on a requested plugin slot, and the
+   * plugin this repository object has assigned to that slot.
+   *
+   * Internal function - other methods should provide a nicer public-facing
+   * interface. This method exists primarily to reduce code duplication involved
+   * in ensuring error handling and sound loading of the plugin.
+   */
+  protected function getPluginClass($plugin_slot, $plugin_type, $class_type) {
+    ctools_include('plugins');
+
+    if (empty($this->plugins[$plugin_slot])) {
+      throw new Exception("Attempted to get plugin in slot '$plugin_slot', but no plugin has been assigned to that slot on this repository.", E_STRICT);
+      return FALSE;
+    }
+    $plugin_name = $this->plugins[$plugin_slot];
+
+    $plugin = ctools_get_plugins('versioncontrol', $plugin_type, $plugin_name);
+    if (!is_array($plugin)) {
+      throw new Exception("Attempted to get a plugin of type '$plugin_type' named '$plugin_name', but no such plugin could be found.", E_WARNING);
+      return FALSE;
+    }
+
+    $class_name = ctools_plugin_get_class($plugin, $class_type);
+    if (!class_exists($class_name)) {
+      throw new Exception("Plugin '$plugin_name' of type '$plugin_type' does not contain a valid class name in handler slot '$class_type'", E_WARNING);
+      return FALSE;
+    }
+
+    return new $class_name();
+  }
+
+  public function getAuthorMapper() {
+    if (!isset($this->pluginInstances['author_mapper'])) {
+      // if no plugin is set, simply
+      $this->pluginInstances['author_mapper'] = $this->getPluginClass('author_mapper', 'user_mapping_method', 'mapper');
+    }
+    return $this->pluginInstances['author_mapper'];
+  }
+
+  public function getCommitterMapper() {
+    if (!isset($this->pluginInstances['committer_mapper'])) {
+      // If nothing is set for the committer mapper plugin, reuse the author one
+      if (empty($this->plugins['committer_mapper'])) {
+        $this->pluginInstances['committer_mapper'] = $this->getAuthorMapper();
+      }
+      else {
+        $this->pluginInstances['committer_mapper'] = $this->getPluginClass('committer_mapper', 'user_mapping_method', 'mapper');
+      }
+    }
+
+    return $this->pluginInstances['committer_mapper'];
+  }
+
 
   //ArrayAccess interface implementation FIXME soooooooo deprecated
   public function offsetExists($offset) {
