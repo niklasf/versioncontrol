@@ -501,8 +501,13 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
 
   public function getAuthorMapper() {
     if (!isset($this->pluginInstances['author_mapper'])) {
-      // if no plugin is set, simply
-      $this->pluginInstances['author_mapper'] = $this->getPluginClass('author_mapper', 'user_mapping_method', 'mapper');
+      // if no plugin is set, just directly register FALSE for the instance
+      if (empty($this->plugins['author_mapper'])) {
+        $this->pluginInstances['author_mapper'] = FALSE;
+      }
+      else {
+        $this->pluginInstances['author_mapper'] = $this->getPluginClass('author_mapper', 'user_mapping_method', 'mapper');
+      }
     }
     return $this->pluginInstances['author_mapper'];
   }
