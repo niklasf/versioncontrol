@@ -262,8 +262,11 @@ function versioncontrol_views_data() {
     'title'    => t('Revision'),
     'help'     => t('The Operation Revision Identifier'),
     'field'    => array(
-      'handler' => 'views_handler_field',
+      'handler' => 'versioncontrol_handler_field_operation_revision',
       'click sortable' => TRUE,
+      'additional fields' => array(
+        'vcs' => array('table' => 'versioncontrol_repositories', 'field' => 'vcs'),
+      ),
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -475,8 +478,11 @@ function versioncontrol_views_data() {
     'title' => t("Revision ID"),
     'help' => t("The revision identifier for this item"),
     'field' => array(
-      'handler' => 'views_handler_field',
+      'handler' => 'versioncontrol_handler_field_operation_revision',
       'click sortable' => TRUE,
+      'additional fields' => array(
+        'vcs' => array('table' => 'versioncontrol_repositories', 'field' => 'vcs'),
+      ),
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -551,6 +557,9 @@ function versioncontrol_views_handlers() {
         'parent' => 'views_handler_field',
       ),
       'versioncontrol_handler_field_operation_type' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'versioncontrol_handler_field_operation_revision' => array(
         'parent' => 'views_handler_field',
       ),
       'versioncontrol_handler_filter_operation_type' => array(

@@ -11,9 +11,8 @@
  */
 function commitlog_views_default_views() {
   $views = array();
-  /*
-   * View 'commitlog_author_commits'
-   */
+
+  // View 'commitlog_author_commits'
   $view = new view;
   $view->name = 'commitlog_author_commits';
   $view->description = 'VersionControl Commits By Author';
@@ -133,8 +132,8 @@ function commitlog_views_default_views() {
         'suffix' => '',
         'target' => '',
         'help' => '',
-        'trim' => 1,
-        'max_length' => '10',
+        'trim' =>0,
+        'max_length' => '',
         'word_boundary' => 0,
         'ellipsis' => 0,
         'strip_tags' => 0,
@@ -363,6 +362,7 @@ function commitlog_views_default_views() {
   ));
   $views[$view->name] = $view;
 
+  // View 'commitlog_commit_items'
   $view = new view;
   $view->name = 'commitlog_commit_items';
   $view->description = 'VersionControl Commit Items';
@@ -445,8 +445,8 @@ function commitlog_views_default_views() {
         'suffix' => '',
         'target' => '',
         'help' => '',
-        'trim' => 1,
-        'max_length' => '7',
+        'trim' => 0,
+        'max_length' => '',
         'word_boundary' => 0,
         'ellipsis' => 0,
         'html' => 0,
@@ -566,9 +566,7 @@ function commitlog_views_default_views() {
   ));
   $views[$view->name] = $view;
 
-  /*
-   * View 'commitlog_global_commits'
-   */
+  // View 'commitlog_global_commits'
   $view = new view;
   $view->name = 'commitlog_global_commits';
   $view->description = 'Commitlog Global Commit Log';
@@ -688,8 +686,8 @@ function commitlog_views_default_views() {
         'suffix' => '',
         'target' => '',
         'help' => '',
-        'trim' => 1,
-        'max_length' => '7',
+        'trim' => 0,
+        'max_length' => '',
         'word_boundary' => 0,
         'ellipsis' => 0,
         'html' => 0,
@@ -816,9 +814,7 @@ function commitlog_views_default_views() {
   ));
   $views[$view->name] = $view;
 
-  /*
-   * View 'commitlog_repository_commits'
-   */
+  // View 'commitlog_repository_commits'
   $view = new view;
   $view->name = 'commitlog_repository_commits';
   $view->description = 'A per-repository commit log.';
@@ -907,8 +903,8 @@ function commitlog_views_default_views() {
         'suffix' => '',
         'target' => '',
         'help' => '',
-        'trim' => 1,
-        'max_length' => '7',
+        'trim' => 0,
+        'max_length' => '',
         'word_boundary' => 0,
         'ellipsis' => 0,
         'html' => 0,
@@ -1112,9 +1108,7 @@ function commitlog_views_default_views() {
   ));
   $views[$view->name] = $view;
 
-  /*
-   * View 'commitlog_user_commits'
-   */
+  // View 'commitlog_user_commits'
   $view = new view;
   $view->name = 'commitlog_user_commits';
   $view->description = 'A per-user commit log.';
@@ -1203,8 +1197,8 @@ function commitlog_views_default_views() {
         'suffix' => '',
         'target' => '',
         'help' => '',
-        'trim' => 1,
-        'max_length' => '7',
+        'trim' => 0,
+        'max_length' => '',
         'word_boundary' => 0,
         'ellipsis' => 0,
         'html' => 0,

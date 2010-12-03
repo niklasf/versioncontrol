@@ -801,7 +801,7 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
    *   results can be the same for both versions.
    */
   public function formatRevisionIdentifier($format = 'full') {
-    return $this->repository->formatRevisionIdentifier($this->revision);
+    return $this->backend->formatRevisionIdentifier($this->revision, $format);
   }
 
   /**

@@ -372,12 +372,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   }
 
   /**
-   * Get the user-visible version of a revision identifier (for an operation or
-   * an item), as plaintext. By default, this function simply returns $revision.
-   *
-   * Version control backends can, however, choose to implement their own version
-   * of this function, which for example makes it possible to cut the SHA-1 hash
-   * in distributed version control systems down to a readable length.
+   * Convinience method to call backend analogue.
    *
    * @param $revision
    *   The unformatted revision, as given in $operation->revision
@@ -388,7 +383,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
    *   be the same for both versions.
    */
   public function formatRevisionIdentifier($revision, $format = 'full') {
-    return $revision;
+    return $this->backend->formatRevisionIdentifier($revision, $format);
   }
 
   /**

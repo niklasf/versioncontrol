@@ -193,4 +193,28 @@ abstract class VersioncontrolBackend {
     }
     return FALSE;
   }
+
+  /**
+   * Get the user-visible version of a commit identifier a.k.a.
+   * 'revision', as plaintext. By default, this function returns the
+   * operation's revision if that property exists, or its vc_op_id
+   * identifier as fallback.
+   *
+   * Version control backends can, however, choose to implement their
+   * own version of this function, which for example makes it possible
+   * to cut the SHA-1 hash in distributed version control systems down
+   * to a readable length.
+   *
+   * @param $revision
+   *   The unformatted revision, as given in $operation->revision
+   *   or $item->revision (or the respective table columns for those values).
+   *
+   * @param $format
+   *   Either 'full' for the original version, or 'short' for a more compact form.
+   *   If the commit identifier doesn't need to be shortened, the results can
+   *   be the same for both versions.
+   */
+  public function formatRevisionIdentifier($revision, $format = 'full') {
+    return $revision;
+  }
 }

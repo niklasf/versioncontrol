@@ -446,15 +446,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
   }
 
   /**
-   * Get the user-visible version of a commit identifier a.k.a.
-   * 'revision', as plaintext. By default, this function returns the
-   * operation's revision if that property exists, or its vc_op_id
-   * identifier as fallback.
-   *
-   * Version control backends can, however, choose to implement their
-   * own version of this function, which for example makes it possible
-   * to cut the SHA-1 hash in distributed version control systems down
-   * to a readable length.
+   * Convinience method to call backend analogue one.
    *
    * @param $format
    *   Either 'full' for the original version, or 'short' for a more compact form.
@@ -462,10 +454,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    *   be the same for both versions.
    */
   public function formatRevisionIdentifier($format = 'full') {
-    if (empty($this->revision)) {
-      return '#'. $this->vc_op_id;
-    }
-    return $this->repository->formatRevisionIdentifier($this->revision, $format);
+    return $this->backend->formatRevisionIdentifier($this->revision, $format);
   }
 
   /**
