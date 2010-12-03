@@ -856,6 +856,5 @@ function versioncontrol_update_6308() {
     'serialize' => TRUE,
   );
   db_add_field($ret, 'versioncontrol_repositories', 'plugins', $plugins);
-  // FIXME add array('user mapping' => 'some_plugin') as default
   return $ret;
 }
