@@ -20,7 +20,6 @@ class versioncontrol_handler_field_repository_update_method extends views_handle
 
   function render($values) {
     $update_methods = versioncontrol_get_backends($values->{$this->backend_alias})->update_methods;
-    // TODO: Add fetch now link!
     return check_plain($update_methods[$values->{$this->field_alias}]);
   }
 }

@@ -11,7 +11,6 @@ class versioncontrol_handler_filter_operation_type extends views_handler_filter_
   
   function get_value_options() {
     require_once drupal_get_path('module', 'versioncontrol') . '/includes/VersioncontrolOperation.php';
-
     $this->value_options = versioncontrol_operation_types();
   } 
 }

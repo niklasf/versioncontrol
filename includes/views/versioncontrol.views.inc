@@ -421,14 +421,6 @@ function versioncontrol_views_data() {
       'field' => 'vc_op_id',
     ),
   );
-  /*
-  $data['versioncontrol_operation_labels']['label_id'] = array(
-    'title' => t('Label List'),
-    'help' => t('A list of labels this operation affected'),
-    'field' => array(
-    ),
-  );
-  */
   $data['versioncontrol_operation_labels']['action'] = array(
     //TODO: What is this again?
     'title' => t("Op Label Action"),
@@ -438,7 +430,6 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_field_numeric',
     ),
   );
-
 
   // VersionControl Item Revisions
   $data['versioncontrol_item_revisions']['table']['group'] = t("VersionControl Item Revisions");
@@ -573,6 +564,5 @@ function versioncontrol_views_handlers() {
       ),
     ),
   );
-
   return $ret;
 }

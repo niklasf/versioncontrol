@@ -349,8 +349,6 @@ function commitlog_operations_filtered_page($constraint_name, $constraint_value)
  *   The argument with which to filter the view.  This is used as the first argument in the view in question.
  */
 function commitlog_operations_page($type = NULL, $argument = NULL) {
-  // TODO: Add CSS?
-  // TODO: Preprocess functions to assign our own templates to these views?
   $path = drupal_get_path('module','commitlog');
   drupal_add_css($path .'/commitlog.css', 'module');
   if ($type == 'author' && !is_null($argument)) {
