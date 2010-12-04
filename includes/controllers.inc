@@ -455,7 +455,6 @@ class VersioncontrolAccountController extends VersioncontrolEntityController {
   }
 
   protected function modifyReturn($entities) {
-    // TODO implement the authorization stuff here...if at all.
     // by now, return the same
     return $entities;
   }
