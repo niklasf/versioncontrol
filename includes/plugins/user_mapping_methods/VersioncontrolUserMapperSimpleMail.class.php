@@ -16,7 +16,7 @@ class VersioncontrolUserMapperSimpleMail implements VersioncontrolUserMapperInte
   }
 
   public function map($email) {
-    $uid = db_result(db_query("SELECT uid FROM {users} WHERE mail = '%s'"));
+    $uid = db_result(db_query("SELECT uid FROM {users} WHERE mail = '%s'", $email));
     return empty($uid) ? FALSE : $uid;
   }
 }
