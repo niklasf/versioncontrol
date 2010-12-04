@@ -499,9 +499,6 @@ class VersioncontrolOperationController extends VersioncontrolEntityController {
     // The conditions passed in for Operations have special composition, and
     // require their own handling.
     foreach ($conditions as $type => $value) {
-      // FIXME this is a huge, horrendous, overengineered list of things that
-      // mostly are obsolete thanks to Views. keeping them all in here for now,
-      // but each should be either filled out or removed as this evolves.
       switch ($type) {
         case 'vcs':
           $this->attachCondition($query, $type, $value, $this->addRepositoriesTable($query));
@@ -512,16 +509,6 @@ class VersioncontrolOperationController extends VersioncontrolEntityController {
           $this->attachCondition($query, 'label_id', $value, $this->addLabelsTable($query));
           break;
 
-        case 'types': // XX
-        case 'labels':
-        case 'paths':
-        case 'message': // XX
-        case 'item_revision_ids':
-        case 'item_revisions':
-        case 'vc_op_ids': // XX
-        case 'uids': // XX
-        case 'usernames':
-        case 'user_relation':
         default:
           $this->attachCondition($query, $type, $value);
       }
