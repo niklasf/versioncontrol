@@ -2,5 +2,6 @@ name = "Version Control Test"
 description = "Support module for Version Control core tests."
 package = Testing
 dependencies[] = versioncontrol
+files[] = versioncontrol_test.inc
 version = VERSION
 core = 6.x

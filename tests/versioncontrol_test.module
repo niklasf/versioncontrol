@@ -14,32 +14,3 @@ function versioncontrol_test_versioncontrol_backends() {
     'test' => new VersioncontrolTestBackend()
   );
 }
-
-/**
- * Implementation of hook_autoload_info().
- */
-function versioncontrol_test_autoload_info() {
-  return array(
-    'VersioncontrolTestAccount' => array(
-      'file' => 'versioncontrol_test.inc',
-    ),
-    'VersioncontrolTestBackend' => array(
-      'file' => 'versioncontrol_test.inc',
-    ),
-    'VersioncontrolTestItem' => array(
-      'file' => 'versioncontrol_test.inc',
-    ),
-    'VersioncontrolTestOperation' => array(
-      'file' => 'versioncontrol_test.inc',
-    ),
-    'VersioncontrolTestRepository' => array(
-      'file' => 'versioncontrol_test.inc',
-    ),
-    'VersioncontrolTestTag' => array(
-      'file' => 'versioncontrol_test.inc',
-    ),
-    'VersioncontrolTestBranch' => array(
-      'file' => 'versioncontrol_test.inc',
-    ),
-  );
-}
