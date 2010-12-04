@@ -447,7 +447,7 @@ class VersioncontrolAccountController extends VersioncontrolEntityController {
       foreach ($raw_accounts_per_repo as $repo_id => $raw_account) {
         $id = "$uid-$repo_id";
         // load the repository object
-        $raw_account->repository = $this->backends[$raw_account->vcs]->loadEntity('repo', $repo_id);
+        $raw_account->repository = $this->backends[$raw_account->vcs]->loadEntity('repo', array($repo_id));
         $almost_built[$id] = $raw_account;
       }
     }
