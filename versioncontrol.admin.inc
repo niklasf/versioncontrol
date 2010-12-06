@@ -430,15 +430,15 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
     '#title' => t('Author mapping'),
     '#description' => t('The mapping logic to be used for "author" data. All VCSes have some sort of author field.'),
     '#default_value' => $repository_exists ? $repository->plugins['author_mapper'] : 0,
-    '#options' => array(0 => t('None (no mapping)')) + versioncontrol_user_mapping_methods_get_names(),
+    '#options' => array(0 => '<em>' . t('None (no mapping)') . '</em>')  + versioncontrol_user_mapping_methods_get_names(),
   );
 
   $form['user_mapping']['committer_mapper'] = array(
     '#type' => 'radios',
     '#title' => t('Committer mapping'),
-    '#description' => t('The mapping logic to be used for "committer" data. Only some VCSes distinguish between author and committer. It is usually best to have this use the same plugin as the author mapper, especially if using "None."'),
+    '#description' => t('The mapping logic to be used for "committer" data. Only some VCSes distinguish between author and committer. For most use cases, it is recommended best to set this to use the same plugin as for author mapping, especially if using "None (No mapping)" for author mapping.'),
     '#default_value' => $repository_exists ? $repository->plugins['committer_mapper'] : 0,
-    '#options' => array(0 => t('Use author mapping plugin')) + versioncontrol_user_mapping_methods_get_names(),
+    '#options' => array(0 => '<em>' . t('Use Author mapping plugin') . '</em>') + versioncontrol_user_mapping_methods_get_names(),
   );
 
   if ($repository_exists && isset($repository->data['versioncontrol']['registration_message'])) {
