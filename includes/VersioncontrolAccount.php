@@ -31,37 +31,6 @@ abstract class VersioncontrolAccount extends VersioncontrolEntity {
   public $repo_id;
 
   /**
-   * Return the most accurate guess on what the VCS username for a Drupal user
-   * might look like in the repository's account.
-   *
-   * @param $user
-   *  The Drupal user who wants to register an account.
-   */
-  public function usernameSuggestion($user) {
-    return strtr(drupal_strtolower($user->name),
-      array(' ' => '', '@' => '', '.' => '', '-' => '', '_' => '', '.' => '')
-    );
-  }
-
-  /**
-   * Determine if the account repository allows a username to exist.
-   *
-   * @param $username
-   *  The username to check. It is passed by reference so if the username is
-   *  valid but needs minor adaptions (such as cutting away unneeded parts) then
-   *  it the backend can modify it before returning the result.
-   *
-   * @return
-   *   TRUE if the username is valid, FALSE if not.
-   */
-  public function isUsernameValid(&$username) {
-    if (!preg_match('/^[a-zA-Z0-9]+$/', $username)) {
-      return FALSE;
-    }
-    return TRUE;
-  }
-
-  /**
    * Update a VCS user account in the database, and call the necessary
    * module hooks. The account repository and uid must stay the same values as
    * the one given on account creation, whereas vcs_username and

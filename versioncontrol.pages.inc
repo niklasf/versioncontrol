@@ -397,7 +397,7 @@ function versioncontrol_account_edit_form(&$form_state, $uid, $repository, $vcs_
       );
       $vcs_account = $repository->getBackend()->buildEntity('account', $data);
       // Have a nice default value for the new VCS username.
-      $vcs_username = $vcs_account->usernameSuggestion($user);
+      $vcs_username = $repository->getBackend()->usernameSuggestion($user);
     }
 
     if ($admin_access) { // the admin version
@@ -476,7 +476,7 @@ function versioncontrol_account_edit_form_validate($form, &$form_state) {
       'repository' => $repository,
     );
     $vcs_account = $repository->getBackend()->buildEntity('account', $data);
-    if (!$vcs_account->isUsernameValid($username)) {
+    if (!$repository->getBackend()->isUsernameValid($username)) {
       form_set_error('account_name',
         t('The specified @vcs username is invalid.', array('@vcs' => $vcs_name))
       );

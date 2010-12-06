@@ -34,6 +34,14 @@ class VersioncontrolFakeBackend extends VersioncontrolBackend {
     );
   }
 
+  /**
+   * Overwrite
+   */
+  function isUsernameValid(&$username) {
+    // Continuing the email-style username example from above.
+    return valid_email_address($username);
+  }
+
 }
 
 class VersioncontrolFakeRepository extends VersioncontrolRepository implements VersioncontrolRepositoryGetItem {
@@ -82,14 +90,6 @@ class VersioncontrolFakeAccount extends VersioncontrolAccount {
     // operations), even though it might need to be replaced by or
     // amended with the full name on page display.
     return $user->mail;
-  }
-
-  /**
-   * Overwrite
-   */
-  function isUsernameValid(&$username) {
-    // Continuing the email-style username example from above.
-    return valid_email_address($username);
   }
 
   /**

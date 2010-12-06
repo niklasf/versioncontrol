@@ -217,4 +217,37 @@ abstract class VersioncontrolBackend {
   public function formatRevisionIdentifier($revision, $format = 'full') {
     return $revision;
   }
+
+  /**
+   * Return the most accurate guess on what the VCS username for a Drupal user
+   * might look like in the repository's account.
+   *
+   * @param $user
+   *  The Drupal user who wants to register an account.
+   */
+  public function usernameSuggestion($user) {
+    return strtr(drupal_strtolower($user->name),
+      array(' ' => '', '@' => '', '.' => '', '-' => '', '_' => '', '.' => '')
+    );
+  }
+
+  /**
+   * Determine if the vcs_username is valid for this backend.
+   *
+   * @param $vcs_username
+   *  The vcs_username to check. It is passed by reference so if the
+   *  vcs_username is valid but needs minor adaptions (such as cutting
+   *  away unneeded parts) then it the backend can modify it before
+   *  returning the result.
+   *
+   * @return
+   *   TRUE if the username is valid, FALSE if not.
+   */
+  public function isUsernameValid(&$username) {
+    if (!preg_match('/^[a-zA-Z0-9]+$/', $username)) {
+      return FALSE;
+    }
+    return TRUE;
+  }
+
 }
