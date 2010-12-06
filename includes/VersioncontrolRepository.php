@@ -354,24 +354,6 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   protected function backendDelete($options) {}
 
   /**
-   * Export a repository's authenticated accounts to the version control system's
-   * password file format.
-   *
-   * FIXME this is TOTALLY broken, it calls itself.
-   * @param $repository
-   *   The repository array of the repository whose accounts should be exported.
-   *
-   * @return
-   *   The plaintext result data which could be written into the password file
-   *   as is.
-   *
-   */
-  public function exportAccounts() {
-    $accounts = $this->loadAccounts();
-    return $repository->exportAccounts($accounts);
-  }
-
-  /**
    * Convinience method to call backend analogue.
    *
    * @param $revision

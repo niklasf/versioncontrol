@@ -265,39 +265,6 @@ function versioncontrol_menu() {
     'weight' => 0,
   );
 
-  // former !$may_cache
-  /// TODO: Backend specific stuff was done in !$may_cache, as it once
-  ///       screwed up after activating a new backend in admin/build/modules.
-  ///       Make sure this works now.
-  // TODO (sdb): this should all be reworked using a version of the loader that
-  // takes additional arguments for implementation checking.
-  foreach (versioncontrol_get_backends() as $vcs => $backend) {
-    // we need to check and interface, so create an empty repo here
-    if (is_subclass_of($backend->classesEntities['repo'], 'VersioncontrolRepositoryImportExport')) {
-      $items['admin/project/versioncontrol-accounts/import'] = array(
-        'title' => 'Import',
-        'description' => 'Import an existing set of VCS user accounts.',
-        'page arguments' => array('versioncontrol_admin_account_import_form'),
-        'type' => MENU_LOCAL_TASK,
-        'weight' => 2,
-      ) + $admin;
-      $items['admin/project/versioncontrol-accounts/export'] = array(
-        'title' => 'Export',
-        'description' => 'Export VCS user accounts of a specific repository.',
-        'page arguments' => array('versioncontrol_admin_account_export_form'),
-        'type' => MENU_LOCAL_TASK,
-        'weight' => 3,
-      ) + $admin;
-      $items['admin/project/versioncontrol-accounts/export/%versioncontrol_repository'] = array(
-        'title' => 'Export',
-        'page callback' => 'versioncontrol_admin_account_export_page',
-        'page arguments' => array(4),
-        'type' => MENU_CALLBACK,
-      ) + $admin;
-    }
-  }
-  // end former !$may_cache
-
   // Account registration and editing pages for the regular user.
   $items['versioncontrol/register'] = array(
     'title' => 'Get commit access',
