@@ -99,6 +99,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
    * The current plugin types(array keys) are:
    * - author_mapper
    * - committer_mapper
+   * - auth_handler
    *
    * @var array
    */
@@ -474,6 +475,19 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     }
 
     return new $class_name();
+  }
+
+  public function getAuthHandler() {
+    if (!isset($this->pluginInstances['auth_handler'])) {
+      // If no plugin is set, use the free-for-all plugin
+      if (empty($this->plugins['auth_handler'])) {
+        // FIXME temporarily writing to a db-recorded field like this is very hacky
+        $this->plugins['auth_handler'] = 'ffa';
+      }
+      $this->pluginInstances['auth_handler'] = $this->getPluginClass('auth_handler', 'vcs_auth', 'handler');
+      $this->pluginInstances['auth_handler']->setRepository($this);
+    }
+    return $this->pluginInstances['auth_handler'];
   }
 
   public function getAuthorMapper() {

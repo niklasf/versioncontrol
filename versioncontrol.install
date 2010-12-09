@@ -402,6 +402,115 @@ function versioncontrol_schema() {
     'primary key' => array('uid', 'repo_id'),
   );
 
+  $schema['versioncontrol_auth_account'] = array(
+    'description' => 'ACL table, used by the VersioncontrolAuthHandlerMappedAccounts family of plugins, that stores ACL data on a per-uid/per-repo basis.',
+    'fields' => array(
+      'uid' => array(
+        'description' => 'Foreign key to {users}.uid; uniquely identifies a Drupal user to whom this ACL data applies.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'repo_id' => array(
+        'description' => 'Foreign key to {versioncontrol_repositories}.repo_id; identifies the repository to which this ACL data applies.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'access' => array(
+        'type' => 'int',
+        'description' => 'Base, global access to the repository. 0 indicates no access (disabled/inactive account; acts as a global deny), 1 indicates some level of access, 2 indicates global access (overrides granular access).',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'branch_create' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to create branches in the repository.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'branch_update' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to update/write to any branch in the repository. 1 is global access, 0 defers to individual branch perms.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'branch_delete' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to delete any branch in the repository. 1 is global access, 0 defers to individual branch perms.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'tag_create' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to create tags in the repository.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'tag_update' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to update/modify any tag in the repository. 1 is global access, 0 defers to individual tag perms.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'tag_delete' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to delete tags in the repository. 0 is no access, 1 is some access, 2 can delete all tags.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('repo_id', 'uid'),
+  );
+  $schema['versioncontrol_auth_account_label'] = array(
+    'description' => '',
+    'fields' => array(
+      'uid' => array(
+        'description' => 'Foreign key to {users}.uid; uniquely identifies a Drupal user to whom this ACL data applies.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'repo_id' => array(
+        'description' => 'Foreign key to {versioncontrol_repositories}.repo_id; identifies the repository to which this ACL data applies.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'label_id' => array(
+        'description' => 'Foreign key to {versioncontrol_labels}.label_id; identifies the label (branch or tag) to which this ACL data applies.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'label_update' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to update/modify this label.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'label_delete' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to delete this label.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('repo_id', 'uid', 'label_id'),
+    'indexes' => array(
+      'label_id' => array('label_id'),
+    ),
+  );
+
   return $schema;
 }
 
@@ -855,5 +964,130 @@ function versioncontrol_update_6308() {
     'serialize' => TRUE,
   );
   db_add_field($ret, 'versioncontrol_repositories', 'plugins', $plugins);
+  return $ret;
+}
+
+/**
+ * Remove the defunct versioncontrol_accounts table and replace it with ones
+ * driven by auth plugins, specifically the
+ * VersioncontrolAuthHandlerMappedAccounts family of plugins.
+ */
+function versioncontrol_update_6309() {
+  $ret = array();
+
+  $account_table = array(
+    'description' => 'ACL table, used by the VersioncontrolAuthHandlerMappedAccounts family of plugins, that stores ACL data on a per-uid/per-repo basis.',
+    'fields' => array(
+      'uid' => array(
+        'description' => 'Foreign key to {users}.uid; uniquely identifies a Drupal user to whom this ACL data applies.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'repo_id' => array(
+        'description' => 'Foreign key to {versioncontrol_repositories}.repo_id; identifies the repository to which this ACL data applies.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'access' => array(
+        'type' => 'int',
+        'description' => 'Base, global access to the repository. 0 indicates no access (disabled/inactive account; acts as a global deny), 1 indicates some level of access, 2 indicates global access (overrides granular access).',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'branch_create' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to create branches in the repository.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'branch_update' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to update/write to any branch in the repository. 1 is global access, 0 defers to individual branch perms.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'branch_delete' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to delete any branch in the repository. 1 is global access, 0 defers to individual branch perms.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'tag_create' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to create tags in the repository.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'tag_update' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to update/modify any tag in the repository. 1 is global access, 0 defers to individual tag perms.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'tag_delete' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to delete tags in the repository. 0 is no access, 1 is some access, 2 can delete all tags.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('repo_id', 'uid'),
+  );
+
+  db_create_table($ret, 'versioncontrol_auth_account', $account_table);
+
+  $auth_label_table = array(
+    'description' => '',
+    'fields' => array(
+      'uid' => array(
+        'description' => 'Foreign key to {users}.uid; uniquely identifies a Drupal user to whom this ACL data applies.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'repo_id' => array(
+        'description' => 'Foreign key to {versioncontrol_repositories}.repo_id; identifies the repository to which this ACL data applies.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'label_id' => array(
+        'description' => 'Foreign key to {versioncontrol_labels}.label_id; identifies the label (branch or tag) to which this ACL data applies.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'label_update' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to update/modify this label.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'label_delete' => array(
+        'type' => 'int',
+        'description' => 'Grant user access to delete this label.',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('repo_id', 'uid', 'label_id'),
+    'indexes' => array(
+      'label_id' => array('label_id'),
+    ),
+  );
+
+  db_create_table($ret, 'versioncontrol_auth_account_label', $auth_label_table);
+
   return $ret;
 }

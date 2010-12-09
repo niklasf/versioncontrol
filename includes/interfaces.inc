@@ -148,7 +148,7 @@ interface VersioncontrolRepositoryGetItem {
    *        repository/path/revision combination is always unique, so no
    *        additional information is needed.
    *   - 'label': A label array with at least 'name' and 'type' elements
-   *        filled in. If a label is provided, it should be incorporated
+   *        filled in. If a label is specified, it should be incorporated
    *        into the result item as 'selected_label' (see return value
    *        docs), and will cause the most recent item on the label to
    *        be fetched. If the label includes an additional 'date'
@@ -203,4 +203,112 @@ interface VersioncontrolUserMapperInterface {
    *   Either a uid (int), or FALSE if the mapping failed.
    */
   public function mapCommitter(VersioncontrolOperation $commit);
+}
+
+interface VersioncontrolAuthHandlerInterface {
+  public function setRepository(VersioncontrolRepository $repository);
+
+  /**
+   * Determine whether the specified user has any access at all to the
+   * repository.
+   *
+   * @param int $uid
+   *   The uid of the Drupal user to be checked.
+   *
+   * @return bool
+   *   Boolean indicating access approved (TRUE) or denied (FALSE)
+   */
+  public function authAccess($uid);
+
+  /**
+   * Determine whether the specified user has access to create new branches in
+   * the repository.
+   *
+   * @param int $uid
+   *   The uid of the Drupal user to be checked.
+   *
+   * @return bool
+   *   Boolean indicating access approved (TRUE) or denied (FALSE)
+   */
+  public function authBranchCreate($uid);
+
+  /**
+   * Determine whether the specified user has access to delete the specified
+   * branch in the repository.
+   *
+   * @param int $uid
+   *   The uid of the Drupal user to be checked.
+   * @param VersioncontrolBranch $branch
+   *   The VersioncontrolBranch object representing the branch against which
+   *   authorization checks should be made.
+   *
+   * @return bool
+   *   Boolean indicating access approved (TRUE) or denied (FALSE)
+   */
+  public function authBranchDelete($uid, VersioncontrolBranch $branch);
+
+  /**
+   * Determine whether the specified user has access to write to the specified
+   * branch in the repository.
+   *
+   * @param int $uid
+   *   The uid of the Drupal user to be checked.
+   * @param VersioncontrolBranch $branch
+   *   The VersioncontrolBranch object representing the branch against which
+   *   authorization checks should be made.
+   *
+   * @return bool
+   *   Boolean indicating access approved (TRUE) or denied (FALSE)
+   */
+  public function authBranchUpdate($uid, VersioncontrolBranch $branch);
+
+  /**
+   * Determine whether the specified user has access to create new tags in the
+   * repository.
+   *
+   * @param int $uid
+   *   The uid of the Drupal user to be checked.
+   * @return bool
+   *   Boolean indicating access approved (TRUE) or denied (FALSE)
+   */
+  public function authTagCreate($uid);
+
+  /**
+   * Determine whether the specified user has access to delete the specified
+   * tag in the repository.
+   *
+   * @param int $uid
+   *   The uid of the Drupal user to be checked.
+   * @param VersioncontrolTag $tag
+   *   The VersioncontrolTag object representing the tag against which
+   *   authorization checks should be made.
+   *
+   * @return bool
+   *   Boolean indicating access approved (TRUE) or denied (FALSE)
+   */
+  public function authTagDelete($uid, VersioncontrolTag $tag);
+
+  /**
+   * Determine whether the specified user has access to update or modify
+   * the specified tag in the repository.
+   *
+   * @param int $uid
+   *   The uid of the Drupal user to be checked.
+   * @param VersioncontrolTag $tag
+   *   The VersioncontrolTag object representing the tag against which
+   *   authorization checks should be made.
+   *
+   * @return bool
+   *   Boolean indicating access approved (TRUE) or denied (FALSE)
+   */
+  public function authTagUpdate($uid, VersioncontrolTag $tag);
+
+  /**
+   * Retrieve any errors messages that have been enqueued during auth checking.
+   *
+   * Most of the authorization methods will enqueue messages to indicate the
+   * reason for rejecting access. These messages may be useful for logging, or
+   * to provide as feedback to the user.
+   */
+  public function getErrorMessages();
 }
