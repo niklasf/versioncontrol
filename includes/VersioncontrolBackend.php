@@ -152,11 +152,17 @@ abstract class VersioncontrolBackend {
    *
    * Convenience function that helps simplify other code which is only
    * interested in loading a single object. All parameters pass straight through
-   * to @see VersioncontrolBackend::loadEntities().
+   * to @see VersioncontrolBackend::loadEntities(), with the exception of the
+   * $ids parameter, which is normalized to an array as an additional
+   * convenience for callers.
    *
    * @return VersioncontrolEntity
    */
   public function loadEntity($controller, $ids = array(), $conditions = array(), $options = array()) {
+    // Normalize the $ids parameter to an array, further convenience for callers
+    if (!is_array($ids)) {
+      $ids = array($ids);
+    }
     $results = $this->loadEntities($controller, $ids, $conditions, $options);
     // Pop the first item off the result set and return it.
     return reset($results);

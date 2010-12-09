@@ -636,8 +636,23 @@ abstract class VersioncontrolEntity implements VersioncontrolEntityInterface {
     }
   }
 
+  /**
+   *
+   * @return VersioncontrolBackend
+   */
   public function getBackend() {
     return $this->backend;
+  }
+
+  /**
+   *
+   * @return VersioncontrolRepository
+   */
+  public function getRepository() {
+    if (empty($this->repository) || !($this->repository instanceof VersioncontrolRepository)) {
+      $this->repository = $this->backend->loadEntity('repo', $this->repo_id);
+    }
+    return $this->repository;
   }
 
   public function save($options = array()) {
