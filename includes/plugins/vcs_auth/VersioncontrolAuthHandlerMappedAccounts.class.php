@@ -23,10 +23,6 @@
  *    update/write to branches.
  *  - 'tag_update': permission indicating whether the user has access to update
  *    or write to tags.
- *  - 'branch_update': permission indicating whether the user has access to
- *    update/write to branches.
- *  - 'tag_update': permission indicating whether the user has access to update
- *    or write to tags.
  *  - 'branch_delete': permission indicating whether the user has access to
  *    delete branches.
  *  - 'tag_delete': permission indicating whether the user has access to delete
