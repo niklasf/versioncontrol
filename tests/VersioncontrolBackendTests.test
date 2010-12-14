@@ -18,7 +18,7 @@ class VersioncontrolBackendBaseUnitTest extends VersioncontrolTestCase {
     return array(
       'name' => t('Backend base unit tests'),
       'description' => t('Low-level tests on VC Backend objects.'),
-      'group' => t('Version Control'),
+      'group' => t('Version Control API'),
     );
   }
 

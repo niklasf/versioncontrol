@@ -19,7 +19,7 @@ class VersioncontrolRepositoryUnitTestingTestCase extends VersioncontrolTestCase
       // FIXME
       'name' => t('Repository class unit tests'),
       'description' => t('Unit tests for the VersioncontrolRepository class.'),
-      'group' => t('Version Control'),
+      'group' => t('Version Control API'),
     );
   }
 

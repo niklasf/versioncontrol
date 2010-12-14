@@ -15,9 +15,9 @@ class VersioncontrolRepositoryManagementTestCase extends VersioncontrolTestCase 
    */
   public static function getInfo() {
     return array(
-      'name' => t('Version Control Repository Management functional testing'),
+      'name' => t('Repository Management functional testing'),
       'description' => t('Functional test for Repository management.'),
-      'group' => t('Version Control'),
+      'group' => t('Version Control API'),
     );
   }
 

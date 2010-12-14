@@ -18,9 +18,9 @@ class VersioncontrolAccountAuthPlugin extends VersioncontrolTestCase {
    */
   public static function getInfo() {
     return array(
-      'name' => t('Versioncontrol account authentication plugin testing'),
+      'name' => t('Account authentication plugin testing'),
       'description' => t("Test the base 'account' auth plugin's CRUD and authorization logic."),
-      'group' => t('Version Control'),
+      'group' => t('Version Control API'),
     );
   }
 

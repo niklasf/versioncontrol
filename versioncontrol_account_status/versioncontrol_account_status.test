@@ -19,9 +19,9 @@ class VersioncontrolAccountStatusTestCase extends VersioncontrolTestCase {
    */
   public static function getInfo() {
     return array(
-      'name' => t('Version Control Account Status functional testing'),
+      'name' => t('Account Status functional testing'),
       'description' => t('Functional test for account status module.'),
-      'group' => t('Version Control'),
+      'group' => t('Version Control Account status'),
     );
   }
 
