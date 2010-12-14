@@ -148,7 +148,7 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
       'auth_handler' => 'ffa',
     );
 
-    $data = array_merge_recursive($default_data, $data);
+    $data += $default_data;
     foreach ($default_plugins as $plugin_slot => $default_plugin) {
       if (empty($data['plugins'][$plugin_slot])) {
         $data['plugins'][$plugin_slot] = $default_plugin;
