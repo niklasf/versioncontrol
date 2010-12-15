@@ -206,7 +206,32 @@ function versioncontrol_views_data() {
     'title'    => t('Author'),
     'help'     => t('The Operation Author'),
     'field'    => array(
-      'handler' => 'versioncontrol_handler_field_operation_author',
+      'handler' => 'versioncontrol_handler_field_operation_person',
+      'click sortable' => TRUE,
+      'additional fields' => array(
+        'person_uid' => array('table' => 'versioncontrol_operations', 'field' => 'author_uid'),
+      ),
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+  );
+
+  $data['versioncontrol_operations']['attribution'] = array(
+    'title'    => t('Atribution'),
+    'help'     => t('The operation author(and the committer if it is different than the author)'),
+    'field'    => array(
+      'handler' => 'versioncontrol_handler_field_operation_attribution',
+      'real field' => 'author_uid',
+      'additional fields' => array(
+        'committer_uid', 'author', 'committer'
+      ),
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -234,7 +259,11 @@ function versioncontrol_views_data() {
     'title'    => t('Commiter'),
     'help'     => t('The Operation Commiter'),
     'field'    => array(
-      'handler' => 'views_handler_field',
+      'handler' => 'versioncontrol_handler_field_operation_person',
+      'click sortable' => TRUE,
+      'additional fields' => array(
+        'person_uid' => array('table' => 'versioncontrol_operations', 'field' => 'committer_uid'),
+      ),
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -553,8 +582,11 @@ function versioncontrol_views_handlers() {
       'versioncontrol_handler_field_operation_revision' => array(
         'parent' => 'views_handler_field',
       ),
-      'versioncontrol_handler_field_operation_author' => array(
+      'versioncontrol_handler_field_operation_person' => array(
         'parent' => 'views_handler_field',
+      ),
+      'versioncontrol_handler_field_operation_attribution' => array(
+        'parent' => 'versioncontrol_handler_field_operation_person',
       ),
       // filter handlers
       'versioncontrol_handler_filter_operation_type' => array(

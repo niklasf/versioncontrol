@@ -648,8 +648,8 @@ function commitlog_views_default_views() {
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
-    'author' => array(
-      'label' => 'Author',
+    'attribution' => array(
+      'label' => '',
       'alter' => array(
         'alter_text' => 0,
         'text' => '',
@@ -665,16 +665,16 @@ function commitlog_views_default_views() {
         'max_length' => '',
         'word_boundary' => 1,
         'ellipsis' => 1,
-        'strip_tags' => 0,
         'html' => 0,
+        'strip_tags' => 0,
       ),
       'empty' => '',
       'hide_empty' => 0,
       'empty_zero' => 0,
       'exclude' => 1,
-      'id' => 'author',
+      'id' => 'attribution',
       'table' => 'versioncontrol_operations',
-      'field' => 'author',
+      'field' => 'attribution',
       'relationship' => 'none',
     ),
     'vc_op_id' => array(
@@ -775,7 +775,7 @@ function commitlog_views_default_views() {
     'nothing' => array(
       'label' => '',
       'alter' => array(
-        'text' => '<div class="commit-global">Commit <strong>[revision]</strong> by <a class="author-link"  href="#"> [author]</a> [date]</div>',
+        'text' => '<div class="commit-global">Commit <strong>[revision]</strong> [attribution] [date]</div>',
         'make_link' => 0,
         'path' => '#',
         'link_class' => 'global-author',
