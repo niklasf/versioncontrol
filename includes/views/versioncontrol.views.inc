@@ -524,8 +524,7 @@ function versioncontrol_views_data() {
     'title' => t('Action'),
     'help' => t('The action performed on this item'),
     'field' => array(
-      //TODO: Action field
-      'handler' => 'views_handler_field_generic',
+      'handler' => 'versioncontrol_handler_field_item_revision_action',
     ),
   );
   $data['versioncontrol_item_revisions']['line_changes_added'] = array(
@@ -587,6 +586,9 @@ function versioncontrol_views_handlers() {
       ),
       'versioncontrol_handler_field_operation_attribution' => array(
         'parent' => 'versioncontrol_handler_field_operation_person',
+      ),
+      'versioncontrol_handler_field_item_revision_action' => array(
+        'parent' => 'views_handler_field',
       ),
       // filter handlers
       'versioncontrol_handler_filter_operation_type' => array(

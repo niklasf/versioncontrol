@@ -324,6 +324,19 @@ function versioncontrol_operation_types() {
   );
 }
 
+function versioncontrol_revision_actions() {
+  return array(
+    VERSIONCONTROL_ACTION_ADDED => t('Added'),
+    VERSIONCONTROL_ACTION_MODIFIED => t('Modified'),
+    VERSIONCONTROL_ACTION_MOVED => t('Renamed'),
+    VERSIONCONTROL_ACTION_COPIED => t('Copied'),
+    VERSIONCONTROL_ACTION_MERGED => t('Merged'),
+    VERSIONCONTROL_ACTION_DELETED => t('Removed'),
+    VERSIONCONTROL_ACTION_REPLACED => t('Replaced'),
+    VERSIONCONTROL_ACTION_OTHER => t('Other'),
+  );
+}
+
 /**
  * Custom access callback, determining if the current user (or the one given
  * in @p $account, if set) is permitted to administer version control system
