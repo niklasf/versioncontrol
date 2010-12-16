@@ -518,7 +518,7 @@ function hook_versioncontrol_is_account_authorized($repository, $uid) {
 
 /**
  * Unset filtered accounts before they are even attempted to be displayed
- * on the account list ("admin/project/versioncontrol-accounts").
+ * on the account list ("admin/content/versioncontrol-accounts").
  * You'll most probably use this in conjunction with an additional filter
  * form element that is added to the account filter form
  * ($form['#id'] == 'versioncontrol-account-filter-form') with form_alter().

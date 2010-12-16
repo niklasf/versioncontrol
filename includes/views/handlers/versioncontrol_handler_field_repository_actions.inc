@@ -21,11 +21,11 @@ class versioncontrol_handler_field_repository_actions extends views_handler_fiel
     $links = array(
       array(
         'title' => t('Edit'),
-        'href' => 'admin/project/versioncontrol-repositories/edit/'. $values->{$this->field_alias},
+        'href' => 'admin/content/versioncontrol-repositories/edit/'. $values->{$this->field_alias},
       ),
       array(
         'title' => t('Delete'),
-        'href' => 'admin/project/versioncontrol-repositories/delete/'. $values->{$this->field_alias},
+        'href' => 'admin/content/versioncontrol-repositories/delete/'. $values->{$this->field_alias},
       ),
     );
     return theme('links', $links);

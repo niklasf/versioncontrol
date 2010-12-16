@@ -101,7 +101,7 @@ function versioncontrol_fakevcs_versioncontrol_alter_repository_list($vcs, $repo
         break;
       case VERSIONCONTROL_FAKEVCS_UPDATE_CRON:
         $rows_by_repo_id[$repo_id][] = t('logs (!fetch)', array(
-          '!fetch' => l(t('fetch now'), 'admin/project/versioncontrol-repositories/update/'. $repo_id)
+          '!fetch' => l(t('fetch now'), 'admin/content/versioncontrol-repositories/update/'. $repo_id)
         ));
         break;
       default:

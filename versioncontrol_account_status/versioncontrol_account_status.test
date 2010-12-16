@@ -58,7 +58,7 @@ class VersioncontrolAccountStatusTestCase extends VersioncontrolTestCase {
       // do not use default for this because html saved to db is translate to literals(ej. &lt; instead of <)
       'versioncontrol_account_status_motivation_description' => $motivation_desc,
     );
-    $this->drupalPost('admin/project/versioncontrol-repositories/add-test', $repo_edit, t('Save repository'));
+    $this->drupalPost('admin/content/versioncontrol-repositories/add-test', $repo_edit, t('Save repository'));
 
     // get the created repo
     $repo = $this->testBackend->loadEntity('repo', array(), array('name' => array($repo_edit['repo_name'])));

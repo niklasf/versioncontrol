@@ -265,7 +265,7 @@ function versioncontrol_account_page($vcs_accounts, $url_repo_id = NULL, $url_us
 }
 
 /**
- * Form callback for "admin/project/versioncontrol-accounts" and
+ * Form callback for "admin/content/versioncontrol-accounts" and
  * (in certain cases) "user/%versioncontrol_user_accounts/edit/versioncontrol":
  * Show a list of VCS accounts to the admin or the user.
  *
@@ -560,7 +560,7 @@ function versioncontrol_account_edit_form_submit($form, &$form_state) {
   }
 
   $form_state['redirect'] = versioncontrol_admin_access()
-    ? 'admin/project/versioncontrol-accounts'
+    ? 'admin/content/versioncontrol-accounts'
     : 'user/'. $uid .'/edit/versioncontrol/'. $repository->repo_id
         .'/'. drupal_urlencode($vcs_username);
 }

@@ -23,14 +23,14 @@ class versioncontrol_handler_field_repository_manual_fetch extends views_handler
     if (empty($is_locked)) {
       $link = array(
         'title' => t('Fetch logs'),
-        'href' => 'admin/project/versioncontrol-repositories/fetch/' . $values->{$this->repo_alias},
+        'href' => 'admin/content/versioncontrol-repositories/fetch/' . $values->{$this->repo_alias},
       );
       return theme('links', array($link));
     }
     else {
       $link = array(
         'title' => t('Break lock'),
-        'href' => 'admin/project/versioncontrol-repositories/clearlock/' . $values->{$this->repo_alias},
+        'href' => 'admin/content/versioncontrol-repositories/clearlock/' . $values->{$this->repo_alias},
       );
       $output = theme('links', array($link));
       return  t('Repo is locked.') . "($output)";

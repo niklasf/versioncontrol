@@ -36,14 +36,14 @@ class VersioncontrolRepositoryManagementTestCase extends VersioncontrolTestCase 
   public function testAddRepository() {
     // check missing name
     $edit = array();
-    $this->drupalPost('admin/project/versioncontrol-repositories/add-test', $edit, t('Save repository'));
+    $this->drupalPost('admin/content/versioncontrol-repositories/add-test', $edit, t('Save repository'));
     $this->assertText('Repository name field is required.', t('Name field required texfield behaves correctly.'));
 
     // create a minimal repo
     $edit = array(
       'repo_name' => 'Test repo ' . $this->randomName(),
     );
-    $this->drupalPost('admin/project/versioncontrol-repositories/add-test', $edit, t('Save repository'));
+    $this->drupalPost('admin/content/versioncontrol-repositories/add-test', $edit, t('Save repository'));
 
     // Confirm that the repository has been created, and then query the repo name.
     $this->assertRaw(t('The %repository repository has been added.', array('%repository' => $edit['repo_name'])), t('Repository successfully created.'));
@@ -56,7 +56,7 @@ class VersioncontrolRepositoryManagementTestCase extends VersioncontrolTestCase 
     $edit = array(
       'repo_name' => 'Test repo ' . $this->randomName(),
     );
-    $this->drupalPost('admin/project/versioncontrol-repositories/add-test', $edit, t('Save repository'));
+    $this->drupalPost('admin/content/versioncontrol-repositories/add-test', $edit, t('Save repository'));
     $this->clickLink(t('Delete'));
     $this->drupalPost($this->url, array(), t('Delete'));
 
@@ -71,7 +71,7 @@ class VersioncontrolRepositoryManagementTestCase extends VersioncontrolTestCase 
     $original = array(
       'repo_name' => 'Test repo ' . $this->randomName(),
     );
-    $this->drupalPost('admin/project/versioncontrol-repositories/add-test', $original, t('Save repository'));
+    $this->drupalPost('admin/content/versioncontrol-repositories/add-test', $original, t('Save repository'));
 
     // edit the repo
     $this->clickLink(t('Edit'));

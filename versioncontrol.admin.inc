@@ -13,7 +13,7 @@
  */
 
 /**
- * Form callback for "admin/project/versioncontrol-settings/general":
+ * Form callback for "admin/settings/versioncontrol-settings/general":
  * Provide a form for settings of Version Control API itself.
  */
 function versioncontrol_admin_settings(&$form_state) {
@@ -84,7 +84,7 @@ function versioncontrol_admin_settings_submit($form, &$form_state) {
 
 
 /**
- * Form callback for "admin/project/versioncontrol-accounts":
+ * Form callback for "admin/content/versioncontrol-accounts":
  * A list of accounts with filtering possibilities.
  *
  * TODO Completely reimplement in Views.
@@ -335,7 +335,7 @@ function versioncontrol_versioncontrol_filter_accounts(&$accounts) {
 }
 
 /**
- * Form callback for "admin/project/versioncontrol-repositories":
+ * Form callback for "admin/content/versioncontrol-repositories":
  * A simple list of repositories, sorted by version control system.
  */
 function versioncontrol_admin_repository_list(&$form_state) {
@@ -355,8 +355,8 @@ function versioncontrol_admin_repository_list(&$form_state) {
 
 /**
  * Form callback for
- * 'admin/project/versioncontrol-repositories/edit/%versioncontrol_repository'
- * and "admin/project/versioncontrol-repositories/add-$vcs":
+ * 'admin/content/versioncontrol-repositories/edit/%versioncontrol_repository'
+ * and "admin/content/versioncontrol-repositories/add-$vcs":
  * Provide a form to edit or add a repository.
  *
  * @param $repository
@@ -372,7 +372,7 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
   $repository_exists = ($repository !== VERSIONCONTROL_FORM_CREATE);
 
   if (!$repository_exists && !isset($backends[$vcs])) {
-    drupal_goto('admin/project/versioncontrol-repositories');
+    drupal_goto('admin/content/versioncontrol-repositories');
     // drupal_goto() calls exit() so script execution ends right here
   }
 
@@ -659,12 +659,12 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
     )));
   }
 
-  $form_state['redirect'] = 'admin/project/versioncontrol-repositories';
+  $form_state['redirect'] = 'admin/content/versioncontrol-repositories';
 }
 
 
 /**
- * Form callback for 'admin/project/versioncontrol-repositories/delete/%versioncontrol_repository':
+ * Form callback for 'admin/content/versioncontrol-repositories/delete/%versioncontrol_repository':
  * Provide a form to confirm deletion of a repository.
  */
 function versioncontrol_admin_repository_delete_confirm(&$form_state, $repository) {
@@ -673,7 +673,7 @@ function versioncontrol_admin_repository_delete_confirm(&$form_state, $repositor
 
   $form = confirm_form($form,
     t('Are you sure you want to delete %name?', array('%name' => $repository['name'])),
-    !empty($_GET['destination']) ? $_GET['destination'] : 'admin/project/versioncontrol-repositories',
+    !empty($_GET['destination']) ? $_GET['destination'] : 'admin/content/versioncontrol-repositories',
     t('Mind that by deleting the repository, all associated data such as commits and account associations will be deleted as well.'),
     t('Delete'), t('Cancel')
   );
@@ -689,7 +689,7 @@ function versioncontrol_admin_repository_delete_confirm_submit($form, &$form_sta
   drupal_set_message(t('The %repository repository has been deleted.', array(
     '%repository' => $repository['name'],
   )));
-  $form_state['redirect'] = 'admin/project/versioncontrol-repositories';
+  $form_state['redirect'] = 'admin/content/versioncontrol-repositories';
 }
 
 function versioncontrol_admin_repository_clearlock_confirm(&$form_state, $repository) {
@@ -697,7 +697,7 @@ function versioncontrol_admin_repository_clearlock_confirm(&$form_state, $reposi
   $form_state['backend'] = $repository->vcs;
 
   $question = t('Are you sure you want to clear the lock on this repository?');
-  $path = 'admin/project/versioncontrol-repositories';
+  $path = 'admin/content/versioncontrol-repositories';
   $description = t('Locks protect repositories while log fetches are being run. Breaking this lock could result in multiple fetches running in parallel, which will cause irrecoverable data inconsistencies.');
   $yes = t('Clear Lock');
   $no = t('Cancel');
@@ -711,7 +711,7 @@ function versioncontrol_admin_repository_clearlock_confirm_submit($form, &$form_
 
   $repository->locked = FALSE;
   $repository->update();
-  $form_state['redirect'] = 'admin/project/versioncontrol-repositories';
+  $form_state['redirect'] = 'admin/content/versioncontrol-repositories';
 }
 
 function versioncontrol_admin_repository_fetch_confirm(&$form_state, $repository) {
@@ -719,7 +719,7 @@ function versioncontrol_admin_repository_fetch_confirm(&$form_state, $repository
   $form_state['backend'] = $repository->vcs;
 
   $question = t('Are you sure you want to fetch logs from this repository?');
-  $path = 'admin/project/versioncontrol-repositories';
+  $path = 'admin/content/versioncontrol-repositories';
   $description = t('Manually triggering a log fetch from this repository will attempt to fully synchronize database-stored data with all the latest changes in the repository. It <em>should</em> be non-destructive.');
   $yes = t('Fetch logs');
   $no = t('Cancel');
@@ -732,5 +732,5 @@ function versioncontrol_admin_repository_fetch_confirm_submit($form, &$form_stat
   $repository = $backend->loadEntity('repo', array($form_state['repo_id']));
 
   $repository->fetchLogs();
-  $form_state['redirect'] = 'admin/project/versioncontrol-repositories';
+  $form_state['redirect'] = 'admin/content/versioncontrol-repositories';
 }

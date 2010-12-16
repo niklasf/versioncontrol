@@ -174,42 +174,27 @@ function versioncontrol_menu() {
     'file' => 'versioncontrol.admin.inc',
   );
 
-  // If Version Control API is used without the Project module,
-  // we need to define our own version of /admin/project
-  // so the rest of our admin pages all work.
-  if (!module_exists('project')) {
-    $items['admin/project'] = array(
-      'title' => 'Project administration',
-      'description' => 'Administrative interface for project management and related modules.',
-      'position' => 'left',
-      'weight' => 3,
-      'page callback' => 'system_admin_menu_block_page',
-      'access arguments' => array('administer site configuration'),
-      'file' => 'system.admin.inc',
-      'file path' => drupal_get_path('module', 'system'),
-    );
-  }
-
-  $items['admin/project/versioncontrol-settings'] = array(
-    'title' => 'Version control settings',
+  $items['admin/settings/versioncontrol-settings'] = array(
+    'title' => 'Version Control settings',
     'description' => 'Configure settings for Version Control API and related modules.',
     'page arguments' => array('versioncontrol_admin_settings'),
     'type' => MENU_NORMAL_ITEM,
   ) + $admin;
-  $items['admin/project/versioncontrol-settings/general'] = array(
+  
+  $items['admin/settings/versioncontrol-settings/general'] = array(
     'title' => 'General',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -1,
   );
 
-  $items['admin/project/versioncontrol-repositories'] = array(
-    'title' => 'VCS repositories',
-    'description' => 'Define and configure what version control repositories are connected to your site, and how to integrate each repository with repository browser tools such as ViewVC or WebSVN.',
+  $items['admin/content/versioncontrol-repositories'] = array(
+    'title' => 'VCS Repositories',
+    'description' => 'Define and manage the Version Control repositories known to your site.',
     'page arguments' => array('versioncontrol_admin_repository_list'),
   ) + $admin;
 
   $weight = 1;
-  $items['admin/project/versioncontrol-repositories/list'] = array(
+  $items['admin/content/versioncontrol-repositories/list'] = array(
     'title' => 'List',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => $weight,
@@ -220,7 +205,7 @@ function versioncontrol_menu() {
   ///       screwed up after activating a new backend in admin/build/modules.
   ///       Make sure this works now.
   foreach (versioncontrol_get_backends() as $vcs => $backend) {
-    $items['admin/project/versioncontrol-repositories/add-'. $vcs] = array(
+    $items['admin/content/versioncontrol-repositories/add-'. $vcs] = array(
       'title' => 'Add @vcs repository',
       'title arguments' => array('@vcs' => $backend->name),
       'page arguments' => array('versioncontrol_admin_repository_edit',
@@ -232,34 +217,34 @@ function versioncontrol_menu() {
   }
   // end former !$may_cache
 
-  $items['admin/project/versioncontrol-repositories/edit/%versioncontrol_repository'] = array(
+  $items['admin/content/versioncontrol-repositories/edit/%versioncontrol_repository'] = array(
     'title' => 'Edit repository',
     'page arguments' => array('versioncontrol_admin_repository_edit', 4),
     'type' => MENU_CALLBACK,
   ) + $admin;
-  $items['admin/project/versioncontrol-repositories/delete/%versioncontrol_repository'] = array(
+  $items['admin/content/versioncontrol-repositories/delete/%versioncontrol_repository'] = array(
     'title' => 'Delete repository',
     'page arguments' => array('versioncontrol_admin_repository_delete_confirm', 4),
     'type' => MENU_CALLBACK,
   ) + $admin;
-  $items['admin/project/versioncontrol-repositories/clearlock/%versioncontrol_repository'] = array(
+  $items['admin/content/versioncontrol-repositories/clearlock/%versioncontrol_repository'] = array(
     'title' => 'Clear lock',
     'page arguments' => array('versioncontrol_admin_repository_clearlock_confirm', 4),
     'type' => MENU_CALLBACK,
   ) + $admin;
-  $items['admin/project/versioncontrol-repositories/fetch/%versioncontrol_repository'] = array(
+  $items['admin/content/versioncontrol-repositories/fetch/%versioncontrol_repository'] = array(
     'title' => 'Fetch logs',
     'page arguments' => array('versioncontrol_admin_repository_fetch_confirm', 4),
     'type' => MENU_CALLBACK,
   ) + $admin;
 
-  $items['admin/project/versioncontrol-accounts'] = array(
+  $items['admin/content/versioncontrol-accounts'] = array(
     'title' => 'VCS accounts',
     'description' => 'Manage associations of Drupal users to VCS user accounts.',
     'page arguments' => array('versioncontrol_admin_account_list_form'),
     'type' => MENU_NORMAL_ITEM,
   ) + $admin;
-  $items['admin/project/versioncontrol-accounts/list'] = array(
+  $items['admin/content/versioncontrol-accounts/list'] = array(
     'title' => 'List',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
