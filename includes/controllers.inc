@@ -468,7 +468,7 @@ class VersioncontrolBranchController extends VersioncontrolEntityController {
   protected $idKey = 'label_id';
 
   protected function buildQueryConditions(&$query, $ids, $conditions) {
-    parent::buildQueryConditions(&$query, $ids, $conditions);
+    parent::buildQueryConditions($query, $ids, $conditions);
     $this->attachCondition($query, 'type', VERSIONCONTROL_LABEL_BRANCH);
     return $query;
   }
@@ -480,7 +480,7 @@ class VersioncontrolTagController extends VersioncontrolEntityController {
   protected $idKey = 'label_id';
 
   protected function buildQueryConditions(&$query, $ids, $conditions) {
-    parent::buildQueryConditions(&$query, $ids, $conditions);
+    parent::buildQueryConditions($query, $ids, $conditions);
     $this->attachCondition($query, 'type', VERSIONCONTROL_LABEL_TAG);
     return $query;
   }
