@@ -82,6 +82,8 @@ abstract class VersioncontrolEntityController {
    *   modules to define a callback that can be fired at the very end of the
    *   querybuilding process to perform additional modifications.
    * @return mixed
+   *   A list of entities stored in database, or the corresponding
+   *   output of this controller modifyReturn() overwrite.
    */
   public function load($ids = array(), $conditions = array(), $options = array()) {
     $entities = array();
