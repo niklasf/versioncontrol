@@ -561,6 +561,8 @@ interface VersioncontrolEntityInterface extends ArrayAccess {
   public function build($args = array());
   public function save($options = array());
 
+  public function getBackend();
+
   /**
    * Insert a new entity into the database, then invoke relevant hooks, if any.
    */

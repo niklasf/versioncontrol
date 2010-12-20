@@ -19,6 +19,15 @@ abstract class VersioncontrolBackend {
   public $name;
 
   /**
+   * The machine name of the backend. This value is used in
+   * {versioncontrol_repositories}.vcs, and ubiquitously elsewhere in the code
+   * to refer to the backend.
+   *
+   * @var string
+   */
+  public $type = '';
+
+  /**
    * A short description of the backend, if possible not longer than
    * one or two sentences.
    *
@@ -47,7 +56,7 @@ abstract class VersioncontrolBackend {
   /**
    * An array of the default views for use in the Versioncontorl API interfaces.
    */
-  public $views = array();
+  public $defaultViews = array();
 
   /**
    * An array of the update methods available for this backend.
@@ -79,12 +88,7 @@ abstract class VersioncontrolBackend {
       'branch'    => 'VersioncontrolBranch',
       'tag'       => 'VersioncontrolTag',
     );
-    $this->views += array(
-      'repositories' => 'versioncontrol_repositories',
-      'global commit view' => 'versioncontrol_global_commits',
-      'repository commits' => 'versioncontrol_repository_commits',
-      'user commit view' => 'versioncontrol_user_commits',
-    );
+
     $this->update_methods += array(
       0 => t('Automatic log retrieval.'),
       1 => t('Use external script to insert data.'),
@@ -180,25 +184,6 @@ abstract class VersioncontrolBackend {
    *   The type of entity being loaded.
    */
   public function augmentEntitySelectQuery($query, $entity_type) {}
-
-  /**
-   * Retrieves the appropriate views module view for this backend.
-   *
-   * Versioncontrol allows backends to customize the views used for the admin
-   * interface.  This method gets the appopriate one for this backend.
-   *
-   * @param $type
-   *   The type of view we are returning (eg. Repositories) 
-   *
-   * @return
-   *   The name of the view to be used.
-   */
-  public function getViewName($type) {
-    if (isset($this->views[$type])) {
-      return $this->views[$type];
-    }
-    return FALSE;
-  }
 
   /**
    * Get the user-visible version of a commit identifier a.k.a.

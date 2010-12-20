@@ -511,6 +511,32 @@ function versioncontrol_schema() {
     ),
   );
 
+  $schema['versioncontrol_views_sets'] = array(
+    'description' => 'System names of views to be used for particular views sets, per-backend, as configured in the UI. Settings stored here will override those specified by backends, if any.',
+    'fields' => array(
+      'views_set' => array(
+        'description' => 'The string identifying this view set, as defined in implementations of hook_versioncontrol_views_sets().',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+      ),
+      'vcs' => array(
+        'description' => 'Unique string identifier of the backend, e.g. "cvs", "svn" or "git".',
+        'type' => 'varchar',
+        'length' => 8,
+        'not null' => TRUE,
+      ),
+      'view_name' => array(
+        'description' => 'The system name of the view to be used for this set/backend combination.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('views_set', 'vcs'),
+  );
+
   return $schema;
 }
 
@@ -1089,5 +1115,39 @@ function versioncontrol_update_6309() {
 
   db_create_table($ret, 'versioncontrol_auth_account_label', $auth_label_table);
 
+  return $ret;
+}
+
+function versioncontrol_update_6310() {
+  $ret = array();
+
+  $schema = array(
+    'description' => 'System names of views to be used for particular views sets, per-backend, as configured in the UI. Settings stored here will override those specified by backends, if any.',
+    'fields' => array(
+      'views_set' => array(
+        'description' => 'The string identifying this view set, as defined in implementations of hook_versioncontrol_views_sets().',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+      ),
+      'vcs' => array(
+        'description' => 'Unique string identifier of the backend, e.g. "cvs", "svn" or "git".',
+        'type' => 'varchar',
+        'length' => 8,
+        'not null' => TRUE,
+      ),
+      'view_name' => array(
+        'description' => 'The system name of the view to be used for this set/backend combination.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('views_set', 'vcs'),
+  );
+
+  db_create_table($ret, 'versioncontrol_views_sets', $schema);
+  
   return $ret;
 }

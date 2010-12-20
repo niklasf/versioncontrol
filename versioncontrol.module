@@ -180,12 +180,18 @@ function versioncontrol_menu() {
     'page arguments' => array('versioncontrol_admin_settings'),
     'type' => MENU_NORMAL_ITEM,
   ) + $admin;
-  
+
   $items['admin/settings/versioncontrol-settings/general'] = array(
     'title' => 'General',
     'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -1,
   );
+
+  $items['admin/settings/versioncontrol-settings/views-sets'] = array(
+    'title' => 'Views sets',
+    'description' => 'Configure the sets of Views used by Version Control API and related modules.',
+    'page arguments' => array('versioncontrol_admin_views_sets_edit'),
+    'type' => MENU_LOCAL_TASK,
+  ) + $admin;
 
   $items['admin/content/versioncontrol-repositories'] = array(
     'title' => 'VCS Repositories',
@@ -1036,6 +1042,70 @@ function versioncontrol_user_autocomplete($repo_id, $string = '') {
   drupal_json($matches);
 }
 
+function versioncontrol_get_views_sets() {
+  $sets = &ctools_static('versioncontrol_views_sets_assembled', array());
+  $db_set_data = &ctools_static('versioncontrol_views_sets_db_data', array());
+
+  // Only build the set list if it's empty.
+  if (empty($sets)) {
+    ctools_include('plugins');
+    // get all the site-specific settings stored in the db
+    $result = db_select('versioncontrol_views_sets', 'base')
+      ->fields('base')
+      ->execute();
+
+    // Store the db-retrieved data in a static var; we need to source it later.
+    foreach ($result as $row) {
+      if (empty($db_set_data[$row->views_set])) {
+        $db_set_data[$row->views_set] = array();
+      }
+      $db_set_data[$row->views_set][$row->vcs] = $row->view_name;
+    }
+
+    // Grab all available views set plugins.
+    $plugins = ctools_get_plugins('versioncontrol', 'views_sets');
+    foreach ($plugins as $plugin_name => $plugin_definition) {
+      $class = ctools_plugin_get_class($plugin_definition, 'handler');
+      $sets[$plugin_name] = new $class();
+    }
+
+    $backends = versioncontrol_get_backends();
+
+    // Process each set.
+    foreach ($sets as $set_name => $handler) {
+      $set = array();
+
+      // Process each backend.
+      foreach ($backends as $vcs => $backend) {
+        // Attach defaults set by the backends themselves, if they exist.
+        if (!empty($backend->defaultViews[$set_name])) {
+          $set[$vcs] = $backend->defaultViews[$set_name];
+        }
+        // Allow hook implementors to specify defaults, too.
+        if (!empty($set_info['default views'][$vcs])) {
+          $set[$vcs] = $set_info['default views'][$vcs];
+        }
+      }
+
+      // Merge the db values overtop of all defaults
+      if (!empty($db_set_data[$set_name])) {
+        $set = array_merge($set, $db_set_data[$set_name]);
+      }
+
+      $handler->setSet($set);
+    }
+  }
+
+  return $sets;
+}
+
+function versioncontrol_get_views_set($set) {
+  $sets = versioncontrol_get_views_sets();
+  if (!empty($sets[$set])) {
+    return $sets[$set];
+  }
+  return FALSE;
+}
 
 /**
  * Return preset values for strings that are used in the user interface.

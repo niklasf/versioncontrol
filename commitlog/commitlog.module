@@ -71,6 +71,15 @@ function commitlog_views_api() {
 }
 
 /**
+ * Implementation of ctools hook_ctools_plugin_directory().
+ */
+function commitlog_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'versioncontrol') {
+    return "includes/plugins/$plugin";
+  }
+}
+
+/**
  * Page callback for the 'commitlog' family of menu paths.
  *
  * @param $type

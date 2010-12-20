@@ -7,6 +7,8 @@
  */
 
 class VersioncontrolTestBackend extends VersioncontrolBackend {
+  public $type = 'test';
+  
   public function __construct() {
     $this->name = 'API Test';
     $this->description = t('TestVCS backend for Version Control API.');

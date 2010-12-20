@@ -15,6 +15,7 @@ files[] = includes/VersioncontrolTag.php
 files[] = includes/interfaces.inc
 files[] = includes/controllers.inc
 files[] = includes/VersioncontrolRepository.php
+files[] = includes/views_sets.inc
 package = Version Control
 core = 6.x
 php = 5.2

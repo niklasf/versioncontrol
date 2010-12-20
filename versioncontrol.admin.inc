@@ -82,6 +82,155 @@ function versioncontrol_admin_settings_submit($form, &$form_state) {
   }
 }
 
+function versioncontrol_admin_views_sets_edit(&$form_state) {
+  ctools_include('dependent');
+  $form = array();
+
+  $form['info'] = array(
+    '#type' => 'markup',
+    '#value' => t("This form allows you to manage Version Control API's Views sets. When a user requests a page with Views-driven VCAPI data, VCAPI uses this system to pick a backend-specific view (if appropriate). Backend-specific views always contain richer data than their generic cross-backend counterparts."),
+  );
+
+  // get the assembled set plugin objects & ensure other statics are populated
+  $sets = versioncontrol_get_views_sets();
+  // get the statics, but only copies, no need to write to them now
+  $set_infos = ctools_get_plugins('versioncontrol', 'views_sets');
+  $db_set_data = ctools_static('versioncontrol_views_sets_db_data', array());
+  $all_views = drupal_map_assoc(array_keys(views_get_all_views()));
+  $base_options = array('' => t('Select a view')) + $all_views;
+  $backends = versioncontrol_get_backends();
+
+  foreach ($set_infos as $set_name => $info) {
+    $set = $sets[$set_name];
+    $form['set_infos'] = array(
+      '#type' => 'value',
+      '#value' => $set_infos,
+    );
+    // Create a fieldset for each set.
+    $form[$set_name] = array(
+      '#type' => 'fieldset',
+      '#title' => $info['title'],
+      '#description' => $info['description'],
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#tree' => TRUE,
+    );
+
+    $form[$set_name]['base'] = array(
+      '#type' => 'textfield',
+      '#disabled' => TRUE,
+      '#title' => t('Base view'),
+      '#description' => t('The base view is a fallback. It is only used if no other view is appropriate.'),
+      '#default_value' => $set->getBaseView(),
+    );
+
+    foreach ($backends as $vcs => $backend) {
+      $current_view = $from_db = $from_backend = $from_owner = $from_base = FALSE;
+      if (!empty($db_set_data[$set_name][$vcs])) {
+        $current_view = $default_selected_view = $db_set_data[$set_name][$vcs];
+        $from_db = TRUE;
+      }
+      else {
+        $default_selected_view = '';
+      }
+
+      // Init the from description to the base view.
+      $from_description = t("No other default was specified, so the base view, <em>'!view_name'</em>, will act as the default.", array('!view_name' => $set->getBaseView()));
+
+      if (!empty($backend->defaultViews[$set_name])) {
+        $current_view = $from_db ? $current_view : $backend->defaultViews[$set_name];
+        $from_description = t("The view <em>'!view_name'</em> has been specified by the backend as the default view for this set.", array('!view_name' => $current_view));
+      }
+
+      $set_default_views = $set->getDefaultViews();
+      if (!empty($set_default_views[$vcs])) {
+        $current_view = $from_db ? $current_view : $set_default_views[$vcs];
+        $from_description = t("The view <em>'!view_name'</em> has been specified by the module implementing the set as the default view for this set.", array('!view_name' => $current_view));
+      }
+
+      if (empty($current_view)) {
+        // if $current_view still isn't set, the base view is king
+        $current_view = $set->getBaseView();
+      }
+
+      if (empty($base_options[$current_view])) {
+        drupal_set_message("Unknown view '$current_view' currently assigned for backend '$vcs' on set '$set_name'. Attempting to use this set will cause nasty errors.", 'error');
+      }
+
+      $form[$set_name][$vcs] = array(
+        '#type' => 'fieldset',
+        '#title' => $backend->name,
+        '#collapsible' => FALSE,
+        '#collapsed' => FALSE,
+        '#tree' => TRUE,
+      );
+
+      $form[$set_name][$vcs]['default'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Use the default view for this backend.'),
+        '#description' => $from_description,
+        '#default_value' => !$from_db,
+        '#id' => "$set_name-$vcs-default",
+      );
+
+      $form[$set_name][$vcs]['override'] = array(
+        '#type' => 'select',
+        '#title' => t('Select a view'),
+        '#options' => $base_options,
+        '#default_value' => $default_selected_view,
+        '#process' => array('ctools_dependent_process'),
+        '#dependency' => array("$set_name-$vcs-default" => array(0)),
+      );
+    }
+  }
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save views sets'),
+  );
+
+  return $form;
+}
+
+function versioncontrol_admin_views_sets_edit_validate($form, &$form_state) {
+  $backends = versioncontrol_get_backends();
+  foreach ($form_state['values']['set_infos'] as $set_name => $info) {
+    foreach ($backends as $vcs => $backend) {
+      $values = $form_state['values'][$set_name][$vcs];
+      if (empty($values['default']) && empty($values['override'])) {
+        // If bypassing the default, a view must be selected.
+        form_error($form[$set_name][$vcs]['override'], 'If not using the default view, a view must be selected.');
+      }
+    }
+  }
+}
+
+function versioncontrol_admin_views_sets_edit_submit($form, &$form_state) {
+  // Clear the table.
+  db_delete('versioncontrol_views_sets')->execute();
+  $backends = versioncontrol_get_backends();
+
+  $query = db_insert('versioncontrol_views_sets')->fields(array('views_set', 'vcs', 'view_name'));
+  $do_insert = FALSE;
+  // $backends = versioncontrol_get_backends();
+  foreach ($form_state['values']['set_infos'] as $set_name => $info) {
+    foreach ($backends as $vcs => $backend) {
+      $values = $form_state['values'][$set_name][$vcs];
+      if (empty($values['default'])) {
+        $do_insert = TRUE;
+        $query->values(array($set_name, $vcs, $values['override']));
+      }
+    }
+  }
+
+  if ($do_insert) {
+    // Only do the insert if we actually have some values to save.
+    $query->execute();
+  }
+
+  ctools_static_reset('versioncontrol_views_sets_assembled');
+  ctools_static_reset('versioncontrol_views_sets_db_data');
+}
 
 /**
  * Form callback for "admin/content/versioncontrol-accounts":
@@ -341,13 +490,14 @@ function versioncontrol_versioncontrol_filter_accounts(&$accounts) {
 function versioncontrol_admin_repository_list(&$form_state) {
   $form = array();
   $backends = versioncontrol_get_backends();
+  $set = versioncontrol_get_views_set('repositories_admin');
   foreach ($backends as $vcs => $backend) {
     $title = t('@vcs repositories', array('@vcs' => $backend->name));
     $form[$vcs] = array(
       '#value' => '<h4>'. $title .'</h4>',
     );
     $form[$vcs . '_repositories'] = array(
-      '#value' => views_embed_view($backend->getViewName('repositories'), 'default', $vcs),
+      '#value' => views_embed_view($set->getViewNameByBackend($backend), 'default', $vcs),
     );
   }
   return $form;
