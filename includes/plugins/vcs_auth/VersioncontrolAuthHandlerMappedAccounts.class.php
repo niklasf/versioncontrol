@@ -324,9 +324,11 @@ class VersioncontrolAuthHandlerMappedAccounts implements VersioncontrolAuthHandl
       throw new Exception('Cannot save auth data without a repository to attach to.', E_ERROR);
     }
     db_delete('versioncontrol_auth_account')
-      ->condition('repo_id', $this->repository->repo_id);
+      ->condition('repo_id', $this->repository->repo_id)
+      ->execute();
     db_delete('versioncontrol_auth_account_label')
-      ->condition('repo_id', $this->repository->repo_id);
+      ->condition('repo_id', $this->repository->repo_id)
+      ->execute();
 
     // Prepare values
     $base_values = array();
