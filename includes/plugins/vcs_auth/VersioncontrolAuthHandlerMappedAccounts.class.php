@@ -279,7 +279,7 @@ class VersioncontrolAuthHandlerMappedAccounts implements VersioncontrolAuthHandl
   }
 
   /**
-   * Set the permissons on this repository for the specified user.
+   * Set the permissions on this repository for the specified user.
    *
    * @param int $uid
    *   The uid to which the permissions data should be assigned.
@@ -289,6 +289,16 @@ class VersioncontrolAuthHandlerMappedAccounts implements VersioncontrolAuthHandl
    */
   public function setUserData($uid, $data) {
     $this->userData[$uid] = $data;
+  }
+
+  /**
+   * Remove all permissions for a user. No data will be saved for this user.
+   *
+   * @param int $uid
+   *   The uid for which permissions will be unset.
+   */
+  public function deleteUserData($uid) {
+    unset($this->userData[$uid]);
   }
 
   /**
