@@ -309,6 +309,9 @@ interface VersioncontrolAuthHandlerInterface {
    * Most of the authorization methods will enqueue messages to indicate the
    * reason for rejecting access. These messages may be useful for logging, or
    * to provide as feedback to the user.
+   *
+   * @return array
+   *   Array of strings with the messages.
    */
   public function getErrorMessages();
 }

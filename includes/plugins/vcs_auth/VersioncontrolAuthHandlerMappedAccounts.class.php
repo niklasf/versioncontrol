@@ -193,27 +193,40 @@ class VersioncontrolAuthHandlerMappedAccounts implements VersioncontrolAuthHandl
     $base = $this->baseAuth($uid);
     if ($base == self::DENY) {
       // Zero access, deny.
+      $this->errors[] = t('User does not have access to create branches on this repository.');
       return FALSE;
     }
     else if ($base == self::ALL) {
       // User has super cow powers, say yes.
       return TRUE;
     }
-
-    return $this->userData[$uid]['branch_create'] == self::GRANT;
+    $access = $this->userData[$uid]['branch_create'] == self::GRANT;
+    if (!$access) {
+      $this->errors[] = t('User does not have access to create branches on this repository.');
+    }
+    return $access;
   }
 
   public function authBranchDelete($uid, VersioncontrolBranch $branch) {
-    return $this->authLabel($uid, $branch, 'delete');
+    $access = $this->authLabel($uid, $branch, 'delete');
+    if (!$access) {
+      $this->errors[] = t('User does not have access to delete branches on this repository.');
+    }
+    return $access;
   }
 
   public function authBranchUpdate($uid, VersioncontrolBranch $branch) {
-    return $this->authLabel($uid, $branch, 'update');
+    $access = $this->authLabel($uid, $branch, 'update');
+    if (!$access) {
+      $this->errors[] = t('User does not have access to update branches on this repository.');
+    }
+    return $access;
   }
   public function authTagCreate($uid) {
     $base = $this->baseAuth($uid);
     if ($base == self::DENY) {
       // Zero access, deny.
+      $this->errors[] = t('User does not have access to create tags on this repository.');
       return FALSE;
     }
     else if ($base == self::ALL) {
@@ -221,13 +234,25 @@ class VersioncontrolAuthHandlerMappedAccounts implements VersioncontrolAuthHandl
       return TRUE;
     }
 
-    return $this->userData[$uid]['tag_create'] == self::GRANT;
+    $access = $this->userData[$uid]['tag_create'] == self::GRANT;
+    if (!$access) {
+      $this->errors[] = t('User does not have access to create tags on this repository.');
+    }
+    return $access;
   }
   public function authTagDelete($uid, VersioncontrolTag $tag) {
-    return $this->authLabel($uid, $tag, 'delete');
+    $access = $this->authLabel($uid, $tag, 'delete');
+    if (!$access) {
+      $this->errors[] = t('User does not have access to delete tags on this repository.');
+    }
+    return $access;
   }
   public function authTagUpdate($uid, VersioncontrolTag $tag) {
-    return $this->authLabel($uid, $tag, 'update');
+    $access = $this->authLabel($uid, $tag, 'update');
+    if (!$access) {
+      $this->errors[] = t('User does not have access to update tags on this repository.');
+    }
+    return $access;
   }
 
   /**

@@ -27,6 +27,6 @@ class VersioncontrolAuthHandlerFFA implements VersioncontrolAuthHandlerInterface
   }
 
   public function getErrorMessages() {
-    return NULL;
+    return array();
   }
 }
