@@ -69,8 +69,9 @@ function drush_versioncontrol_vcapi_parse_logs() {
   // With the repository list assembled, begin log fetching.
   foreach ($repos as $repo) {
     try {
+      drush_log(dt('Beginning synchronization of repository !name', array('!name' => $repo->name)), 'ok');
       $repo->fetchLogs();
-      drush_log(dt('Successfully synchronized repository !name', array('!name' => $repo->name)), 'ok');
+      drush_log(dt('Successfully synchronized repository !name', array('!name' => $repo->name)), 'success');
     }
     catch (Exception $e) {
       drush_set_error('Invalid generic repo class', dt('For repository "!name", a generic VersioncontrolRepository object was loaded instead of a backend-specific object; the generic class cannot be used for log fetching', array('!name' => $repo->name)));
