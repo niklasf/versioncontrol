@@ -131,9 +131,8 @@ abstract class VersioncontrolBackend {
 
     // If we're not building a repo object, snag the repo object and pass it to
     // the object builder.
-    if ($type !== 'repo' && !empty($data->repository) && !empty($data->repo_id)) {
-      $repo = $this->loadEntities('repo', array($data->repo_id));
-      $data->repository = reset($repo);
+    if ($type !== 'repo' && empty($data->repository) && !empty($data->repo_id)) {
+      $data->repository = $this->loadEntity('repo', $data->repo_id);
     }
 
     $obj = new $this->classesEntities[$type]($this);
