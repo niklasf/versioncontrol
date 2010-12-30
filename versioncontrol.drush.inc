@@ -16,6 +16,7 @@ function versioncontrol_drush_command() {
     ),
     'examples' => array(
       'drush vcapi-parse-logs 1,2,repo_name,17' => 'Sequentially fetch repository logs for the the four indicated repositories.',
+      'drush vcapi-parse-logs' => 'Sequentially fetch repository logs for all repositories tracked by the system.',
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
   );
@@ -69,7 +70,7 @@ function drush_versioncontrol_vcapi_parse_logs() {
   foreach ($repos as $repo) {
     try {
       $repo->fetchLogs();
-      drush_log(dt('Successfully parsed all logs from repository !name', array('!name' => $repo->name)), 'ok');
+      drush_log(dt('Successfully synchronized repository !name', array('!name' => $repo->name)), 'ok');
     }
     catch (Exception $e) {
       drush_set_error('Invalid generic repo class', dt('For repository "!name", a generic VersioncontrolRepository object was loaded instead of a backend-specific object; the generic class cannot be used for log fetching', array('!name' => $repo->name)));
