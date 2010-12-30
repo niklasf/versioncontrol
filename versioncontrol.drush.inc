@@ -62,7 +62,7 @@ function drush_versioncontrol_vcapi_parse_logs() {
     }
   }
   else {
-    $repos = versioncontrol_repository_load_multiple();
+    $repos = versioncontrol_repository_load_multiple(FALSE);
   }
 
   // With the repository list assembled, begin log fetching.
