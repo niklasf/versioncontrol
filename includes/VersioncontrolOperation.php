@@ -133,34 +133,51 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
     return $this->backend->loadEntities('item', $ids, $conditions, $options);
   }
 
+  /**
+   * Map author and committer data using the containing repository's mapping
+   * plugin.
+   *
+   * @return bool
+   *   TRUE if either mapping succeeded, FALSE if both failed.
+   */
   public function mapUsers() {
-    $this->mapAuthor();
-    $this->mapCommitter();
+    $succeeded = $this->mapAuthor();
+    $succeeded = $this->mapCommitter() ? TRUE : $succeeded;
   }
 
   /**
    * Perform the mapping between Drupal users and this commit's author.
+   *
+   * @return bool
+   *   TRUE if the mapping succeeded, FALSE otherwise.
    */
   public function mapAuthor() {
     if ($mapper = $this->repository->getAuthorMapper()) {
       $uid = $mapper->mapAuthor($this);
       $this->author_uid = empty($uid) ? 0 : $uid;
+      return TRUE;
     }
     else {
       $this->author_uid = 0;
+      return FALSE;
     }
   }
 
   /**
    * Perform the mapping between Drupal users and this commit's committer.
+   *
+   * @return bool
+   *   TRUE if the mapping succeeded, FALSE otherwise.
    */
   public function mapCommitter() {
     if ($mapper = $this->repository->getCommitterMapper()) {
       $uid = $mapper->mapCommitter($this);
       $this->committer_uid = empty($uid) ? 0 : $uid;
+      return TRUE;
     }
     else {
       $this->committer_uid = 0;
+      return FALSE;
     }
   }
 
