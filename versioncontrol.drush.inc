@@ -26,7 +26,7 @@ function versioncontrol_drush_command() {
       'repositories' => 'A comma-delimited list of repository ids or shortnames. Mixing and matching names and ids is fine.',
     ),
     'options' => array(
-      '--discover' => 'Instead of using the repositories provided in the arguments, derive a list of repositories to update by checking to see which ones have unmapped commits.',
+      '--discover' => 'Instead of using the repositories explicitly provided as arguments, derive a list of repositories to update by checking to see which ones have unmapped commits.',
       '--all' => 'Attempt mapping on all operations, whether or not they have already been mapped. Respects --authors and --committers options.',
       '--authors' => 'Only attempt to map authors.',
       '--committers' => 'Only attempt to map committers.',
@@ -49,6 +49,8 @@ function versioncontrol_drush_help($section) {
   switch ($section) {
     case 'drush:vcapi-parse-logs':
       return dt("This command will fetch all new activity in the repositories listed on the command line. If no repositories are given, log fetching will be triggered on all repositories.");
+    case 'drush:vcapi-map-operations':
+      return dt("This command will attempt to map raw operation author/committer data to known Drupal accounts.");
   }
 }
 
