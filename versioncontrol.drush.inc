@@ -62,7 +62,7 @@ function versioncontrol_drush_help($section) {
  *
  * @param string $repo_args
  */
-function _drush_versioncontrol_parse_repo_arg_list($repo_args) {
+function _drush_versioncontrol_parse_repo_arg_list($repo_args = '') {
   $repo_ids = _convert_csv_to_array($repo_args);
 
   $repos = array();
@@ -87,6 +87,8 @@ function _drush_versioncontrol_parse_repo_arg_list($repo_args) {
   else {
     $repos = versioncontrol_repository_load_multiple(FALSE);
   }
+
+  return $repos;
 }
 
 function drush_versioncontrol_vcapi_parse_logs() {
@@ -97,6 +99,7 @@ function drush_versioncontrol_vcapi_parse_logs() {
     try {
       drush_log(dt('Beginning synchronization of repository !name', array('!name' => $repo->name)), 'ok');
       $repo->fetchLogs();
+      // FIXME this often echoes success even if it didn't work
       drush_log(dt('Successfully synchronized repository !name', array('!name' => $repo->name)), 'success');
     }
     catch (Exception $e) {
@@ -106,9 +109,10 @@ function drush_versioncontrol_vcapi_parse_logs() {
 }
 
 function drush_versioncontrol_vcapi_map_operations() {
+  $repos = array();
   if ($discover = drush_get_option('discover', FALSE)) {
     $ids = db_select('versioncontrol_operations', 'vco')
-      ->fields(array('repo_id'))
+      ->fields('vco', array('repo_id'))
       ->distinct()
       ->where('vco.author_uid = 0 OR vco.committer_uid = 0')
       ->execute()
