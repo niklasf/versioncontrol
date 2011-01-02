@@ -100,6 +100,14 @@ define('VERSIONCONTROL_ITEM_DIRECTORY_DELETED', 4);
 define('VERSIONCONTROL_FORM_CREATE', FALSE);
 
 /**
+ * @name Update methods.
+ */
+//@{
+define('VERSIONCONTROL_UPDATE_LOG_PARSE_ON_CRON', 0);
+define('VERSIONCONTROL_UPDATE_INDEPENDENT_EXTERNAL_SCRIPTS', 1);
+//@}
+
+/**
  * Implementation of hook_flush_caches().
  *
  * Triggers backend mode determination.

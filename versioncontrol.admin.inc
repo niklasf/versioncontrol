@@ -562,6 +562,20 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
     '#maxlength' => 255,
   );
 
+  $form['repository_information']['update_method'] = array(
+    '#type' => 'radios',
+    '#title' => t('Update method'),
+    '#description' => t('The way Version Control API would know about new changes on the tracked VCS.'),
+    '#default_value' => $repository_exists
+                        ? $repository->update_method
+                        : VERSIONCONTROL_UPDATE_LOG_PARSE_ON_CRON,
+    '#weight' => 9,
+    '#options' => array(
+      VERSIONCONTROL_UPDATE_LOG_PARSE_ON_CRON => t('Automatic log retrieval at cron.'),
+      VERSIONCONTROL_UPDATE_INDEPENDENT_EXTERNAL_SCRIPTS => t('Use external script to insert data.'),
+    ),
+  );
+
   $text = t('Versioncontrol can map commit activity in this repository to user accounts. These options allow you to select the logic that should be used to perform the mapping between Drupal users and raw VCS data.');
   $text .= '<br/><br/>';
   $text .= t('Versioncontrol internally allows for both "authors" and "committers" to be tracked on each commit, so you can choose distinct mapping logic for each.');
@@ -757,6 +771,7 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
     $repository->name                 = $form_state['values']['repo_name'];
     $repository->root                 = $form_state['values']['root'];
     $repository->authorization_method = $form_state['values']['authorization_method'];
+    $repository->update_method        = $form_state['values']['update_method'];
     $repository->plugins              = array(
       'author_mapper' => $form_state['values']['author_mapper'],
       'committer_mapper' => $form_state['values']['committer_mapper'],
@@ -769,6 +784,7 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
       'vcs' => $form['#vcs'],
       'root' => $form_state['values']['root'],
       'authorization_method' => $form_state['values']['authorization_method'],
+      'update_method' => $form_state['values']['update_method'],
       'backend' => $backends[$form['#vcs']],
       'plugins' => array(
         'author_mapper' => $form_state['values']['author_mapper'],
