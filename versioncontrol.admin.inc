@@ -371,111 +371,6 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
     '#options' => versioncontrol_auth_handlers_get_names(),
   );
 
-  if ($repository_exists && isset($repository->data['versioncontrol']['registration_message'])) {
-    $current_registration_message = $repository->data['versioncontrol']['registration_message'];
-  }
-  else {
-    $presets = _versioncontrol_get_string_presets();
-    $current_registration_message = $presets['versioncontrol_registration_message_repository'];
-  }
-
-  $form['account_registration'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Account registration'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#weight' => 10,
-  );
-  $form['account_registration']['authorization_method'] = array(
-    '#type' => 'select',
-    '#title' => t('Authorization method'),
-    '#description' => t('Determines the way that users can register an account for this repository.'),
-    '#options' => versioncontrol_get_authorization_methods(),
-    '#default_value' => $repository_exists
-                        ? $repository['authorization_method']
-                        : _versioncontrol_get_fallback_authorization_method(),
-    '#weight' => 0,
-  );
-  $form['account_registration']['repository_messages'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Account registration form strings'),
-    '#description' => t('The following message is shown on the !account-registration-page for this repository.', array('!account-registration-page' => l(t('account registration page'), 'versioncontrol/register/demo/'. $repository['repo_id']))),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-    '#weight' => 2,
-  );
-  $form['account_registration']['repository_messages']['registration_message'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Message to registering users'),
-    '#description' => t('Message to show to users that are in the process of creating an account in this repository.'),
-    '#default_value' => $current_registration_message,
-  );
-
-  $backend_capabilities = $backends[$form['#vcs']]->capabilities;
-
-  if (in_array(VERSIONCONTROL_CAPABILITY_COMMIT_RESTRICTIONS, $backend_capabilities)) {
-  }
-
-  if ($repository_exists) {
-    $repo_urls = $repository->getUrlHandler()->urls;
-  }
-
-  $form['repository_urls'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Repository browser URLs'),
-    '#description' =>  t('These URLs will be used to add links to item and commit displays such as the commit log.'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#weight' => 15,
-  );
-  $form['repository_urls']['commit_view'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Commit view URL'),
-    '#default_value' => isset($repo_urls) ? $repo_urls['commit_view'] : '',
-    '#size' => 40,
-    '#maxlength' => 255,
-    '#description' => t('Enter URL to the commit view web site. Use the %revision variable in the right place to represent the global revision identifier of the commit.'),
-  );
-  $form['repository_urls']['file_log_view'] = array(
-    '#type' => 'textfield',
-    '#title' => t('File log URL'),
-    '#default_value' => isset($repo_urls) ? $repo_urls['file_log_view'] : '',
-    '#size' => 40,
-    '#maxlength' => 255,
-    '#description' => t('Enter URL to the log view of a file in the repository. Use the %path, %revision and %branch variables in the right place to represent the path, revision and branch of the originating version of the file for the log.'),
-  );
-  $form['repository_urls']['file_view'] = array(
-    '#type' => 'textfield',
-    '#title' => t('File content URL'),
-    '#default_value' => isset($repo_urls) ? $repo_urls['file_view'] : '',
-    '#size' => 40,
-    '#maxlength' => 255,
-    '#description' => t('Enter URL to the content view of a file in the repository. Use the %path, %revision and %branch variables in the right place to represent the path, revision and branch of the file.'),
-  );
-  $form['repository_urls']['directory_view'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Directory listing URL'),
-    '#default_value' => isset($repo_urls) ? $repo_urls['directory_view'] : '',
-    '#size' => 40,
-    '#maxlength' => 255,
-    '#description' => t('Enter URL to the file listing of a directory in the repository. Use the %path, %revision and %branch variables in the right place to represent the path, revision and branch of the file.'),
-  );
-  $form['repository_urls']['diff'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Diff URL'),
-    '#default_value' => isset($repo_urls) ? $repo_urls['diff'] : '',
-    '#size' => 40,
-    '#maxlength' => 255,
-    '#description' => t('Enter URL to the diff web site. Use the %path, %new-revision, %old-revision and %branch variables in the right place to represent the file path, old revision and new revision. If the tool supports diffs between wholly different files, you can also use %old-path for the path of the old version of the file.'),
-  );
-  $form['repository_urls']['tracker'] = array('#type' => 'textfield',
-    '#title' => t('Issue tracker URL'),
-    '#default_value' => isset($repo_urls) ? $repo_urls['tracker'] : '',
-    '#size' => 40,
-    '#maxlength' => 255,
-    '#description' => t('Enter URL to link to issues in log messages. Use the %d variable in the right place to represent the issue/case/bug id.'),
-  );
-
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save repository'),
@@ -508,19 +403,12 @@ function versioncontrol_admin_repository_edit_validate($form, &$form_state) {
  * Add or update the repository when the add/edit form is submitted.
  */
 function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
-  $repository_urls = array();
-  $repository_url_keys = array_keys(VersioncontrolRepositoryUrlHandler::getEmpty());
-  foreach ($repository_url_keys as $key) {
-    $repository_urls[$key] = $form_state['values'][$key];
-  }
-
   // Take the existing repository and modify it with the given form values,
   // or construct a new one altogether.
   if (isset($form['#repository'])) {
     $repository = $form['#repository'];
     $repository->name                 = $form_state['values']['repo_name'];
     $repository->root                 = $form_state['values']['root'];
-    $repository->authorization_method = $form_state['values']['authorization_method'];
     $repository->update_method        = $form_state['values']['update_method'];
     $repository->plugins              = array(
       'author_mapper' => $form_state['values']['author_mapper'],
@@ -534,7 +422,6 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
       'name' => $form_state['values']['repo_name'],
       'vcs' => $form['#vcs'],
       'root' => $form_state['values']['root'],
-      'authorization_method' => $form_state['values']['authorization_method'],
       'update_method' => $form_state['values']['update_method'],
       'backend' => $backends[$form['#vcs']],
       'plugins' => array(
@@ -546,13 +433,6 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
     $repository = $backends[$form['#vcs']]->buildEntity('repo', $repository);
   }
 
-  // We also provide a 'data' array where other modules can put their own
-  // per-repository data that doesn't need to be stored in a separate db column.
-  $repository->data['versioncontrol'] = array(
-    'registration_message' => $form_state['values']['registration_message'],
-    'url_handler'          => new VersioncontrolRepositoryUrlHandler($repository, $repository_urls),
-  );
-
   // Let other modules alter the repository array.
   foreach (module_implements('versioncontrol_repository_submit') as $module) {
     $function = $module .'_versioncontrol_repository_submit';
@@ -561,15 +441,11 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
 
   if (!is_null($repository->repo_id)) {
     $repository->update();
-    drupal_set_message(t('The %repository repository has been updated.', array(
-      '%repository' => $repository->name,
-    )));
+    drupal_set_message(t('The %repository repository has been updated.', array('%repository' => $repository->name)));
   }
   else {
     $repository = $repository->insert();
-    drupal_set_message(t('The %repository repository has been added.', array(
-      '%repository' => $repository->name
-    )));
+    drupal_set_message(t('The %repository repository has been added.', array('%repository' => $repository->name)));
   }
 
   $form_state['redirect'] = 'admin/content/versioncontrol-repositories';
