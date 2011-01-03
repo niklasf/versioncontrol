@@ -1322,7 +1322,7 @@ $handler->override_option('block_caching', -1);
     'nothing' => array(
       'label' => '',
       'alter' => array(
-        'text' => '<div class="commit-global">Commit <strong>[revision]</strong> [attribution] [date]</div>',
+        'text' => '<div class="commit-global">Commit <strong>[revision]</strong> [attribution] at [date]</div>',
         'make_link' => 0,
         'path' => '#',
         'link_class' => 'global-author',
