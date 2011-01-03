@@ -1118,6 +1118,11 @@ function versioncontrol_update_6309() {
   return $ret;
 }
 
+/**
+ * Introduce the table for managing VCAPI's views set data.
+ *
+ * @return array
+ */
 function versioncontrol_update_6310() {
   $ret = array();
 
@@ -1148,6 +1153,6 @@ function versioncontrol_update_6310() {
   );
 
   db_create_table($ret, 'versioncontrol_views_sets', $schema);
-  
+
   return $ret;
 }
