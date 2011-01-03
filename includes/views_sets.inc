@@ -120,8 +120,16 @@ abstract class VersioncontrolViewsSetGlobalBase extends VersioncontrolViewsSetBa
 
   protected $view;
 
-  public function __construct() {
-    parent::__construct();
+  public function getViewNameByEntity(VersioncontrolEntityInterface $entity) {
+    return $this->view;
+  }
+
+  public function getViewName() {
+    return $this->view;
+  }
+
+  public function setSet($data) {
+    parent::setSet($data);
 
     if (variable_get('versioncontrol_single_backend_mode', FALSE)) {
       $backends = versioncontrol_get_backends();
@@ -130,13 +138,5 @@ abstract class VersioncontrolViewsSetGlobalBase extends VersioncontrolViewsSetBa
     else {
       $this->view = $this->baseView;
     }
-  }
-
-  public function getViewNameByEntity(VersioncontrolEntityInterface $entity) {
-    return $this->view;
-  }
-
-  public function getViewName() {
-    $this->view;
   }
 }
