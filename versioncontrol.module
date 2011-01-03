@@ -134,6 +134,22 @@ function versioncontrol_theme() {
   $theme['versioncontrol_user_statistics_account'] = array(
     'arguments' => array('user_stats'),
   );
+  $theme['versioncontrol_diffstat'] = array(
+    'arguments' => array('places', 'results'),
+    'file' => 'includes/versioncontrol_theme.inc'
+  );
+  $theme['versioncontrol_diffstat_addition'] = array(
+    'arguments' => array(),
+    'file' => 'includes/versioncontrol_theme.inc'
+  );
+  $theme['versioncontrol_diffstat_removal'] = array(
+    'arguments' => array(),
+    'file' => 'includes/versioncontrol_theme.inc'
+  );
+  $theme['versioncontrol_diffstat_no_op'] = array(
+    'arguments' => array(),
+    'file' => 'includes/versioncontrol_theme.inc'
+  );
   return $theme;
 }
 

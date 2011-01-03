@@ -549,6 +549,14 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_sort',
     ),
   );
+  $data['versioncontrol_item_revisions']['visual_diffstat'] = array(
+    'title' => t('Visual diffstat'),
+    'help' => t('A visual represtation of the stasitics representing the difference between revisions of a file.'),
+    'field' => array(
+      'handler' => 'versioncontrol_handler_field_item_revision_visual_diffstat',
+      'click sortable' => FALSE,
+    ),
+  );
   return $data;
 }
 
@@ -588,6 +596,9 @@ function versioncontrol_views_handlers() {
         'parent' => 'versioncontrol_handler_field_operation_person',
       ),
       'versioncontrol_handler_field_item_revision_action' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'versioncontrol_handler_field_item_revision_visual_diffstat' => array(
         'parent' => 'views_handler_field',
       ),
       // filter handlers
