@@ -224,13 +224,13 @@ function versioncontrol_views_data() {
   );
 
   $data['versioncontrol_operations']['attribution'] = array(
+    'real field' => 'author',
     'title'    => t('Attribution'),
-    'help'     => t('The operation author(and the committer if it is different than the author)'),
+    'help'     => t('The operation author (and committer, if different)'),
     'field'    => array(
       'handler' => 'versioncontrol_handler_field_operation_attribution',
-      'real field' => 'author_uid',
       'additional fields' => array(
-        'committer_uid', 'author', 'committer'
+        'author_uid', 'committer_uid', 'committer',
       ),
     ),
     'sort' => array(
@@ -563,7 +563,7 @@ function versioncontrol_views_data() {
 
 
 /**
- * Implement hook_views_handler().
+ * Implements hook_views_handler().
  *
  * @return array
  */

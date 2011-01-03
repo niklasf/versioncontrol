@@ -7,23 +7,29 @@
  */
 class versioncontrol_handler_field_operation_attribution extends versioncontrol_handler_field_operation_person {
 
+  function pre_render($values) {
+    parent::pre_render($values);
+    // Ensure the author alias is set.
+    $this->aliases['author'] = $this->field_alias;
+  }
+
   function render($values) {
-    $author_uid = $values->versioncontrol_operations_author_uid;
+    $author_uid = $values->{$this->aliases['author_uid']};
     $committer_uid = $values->{$this->aliases['committer_uid']};
 
     // Show only author if they are equal.
     if ($author_uid == $committer_uid) {
-      $this->aliases['person_uid'] = 'versioncontrol_operations_author_uid';
-      $this->field_alias = 'versioncontrol_operations_author';
+      $this->aliases['person_uid'] = $this->aliases['author_uid'];
+      $this->field_alias = $this->aliases['author'];
       return parent::render($values);
     }
 
     // Show both if they are different.
-    $this->aliases['person_uid'] = 'versioncontrol_operations_author_uid';
-    $this->field_alias = 'versioncontrol_operations_author';
+    $this->aliases['person_uid'] = $this->aliases['author_uid'];
+    $this->field_alias = $this->aliases['author'];
     $author = parent::render($values);
-    $this->aliases['person_uid'] = 'versioncontrol_operations_committer_uid';
-    $this->field_alias = 'versioncontrol_operations_committer';
+    $this->aliases['person_uid'] = $this->aliases['committer_uid'];
+    $this->field_alias = $this->aliases['committer'];
     $committer = parent::render($values);
     return t('authored by !author, committed by !committer', array(
       '!author' => $author, '!committer' => $committer));
