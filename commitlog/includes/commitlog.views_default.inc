@@ -1371,7 +1371,7 @@ $handler->override_option('block_caching', -1);
       'hide_empty' => 0,
       'empty_zero' => 0,
       'view' => 'commitlog_commit_items',
-      'display' => 'default',
+      'display' => 'block_2',
       'arguments' => '[vc_op_id]',
       'query_aggregation' => 1,
       'exclude' => 0,
@@ -1426,9 +1426,11 @@ $handler->override_option('block_caching', -1);
   $handler->override_option('cache', array(
     'type' => 'none',
   ));
+  $handler->override_option('use_pager', '1');
   $handler->override_option('style_options', array(
     'grouping' => 'date_1',
   ));
+
   $views[$view->name] = $view;
 
   // View 'commitlog_repository_commits'
