@@ -6,7 +6,7 @@
  * whose functionality is provided by pluggable back-end modules.
  *
  * This file contains the administrative user interface
- * for accounts and repositories.
+ * and repositories.
  *
  * Copyright 2006, 2007 Derek Wright ("dww" , http://drupal.org/user/46549)
  * Copyright 2007, 2008, 2009 by Jakob Petsovits ("jpetso", http://drupal.org/user/56020)
@@ -233,257 +233,6 @@ function versioncontrol_admin_views_sets_edit_submit($form, &$form_state) {
 }
 
 /**
- * Form callback for "admin/content/versioncontrol-accounts":
- * A list of accounts with filtering possibilities.
- *
- * TODO Completely reimplement in Views.
- */
-function versioncontrol_admin_account_list_form(&$form_state) {
-  // Retrieve a list of all repositories with registered VCS accounts.
-  $result = db_query('SELECT DISTINCT repo_id FROM {versioncontrol_accounts}');
-  $repo_ids = array();
-
-  while ($repo_id = db_result($result)) {
-    $repo_ids[] = $repo_id;
-  }
-  $repositories = versioncontrol_repository_load_multiple($repo_ids);
-
-  $filter_form = versioncontrol_admin_account_list_filter_form($form_state, $repositories);
-  $filter_form['#id'] = 'versioncontrol-account-filter-form';
-  drupal_alter('form', $filter_form, $form_state, 'versioncontrol_admin_account_list_filter_form');
-
-  $form = array();
-  $form['filters'] = array_merge($filter_form, array(
-    '#type' => 'fieldset',
-    '#title' => t('Filter'),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-    '#prefix' => '<div class="container-inline">',
-    '#suffix' => '</div>',
-  ));
-
-  // Filter the list of accounts.
-  $accounts = versioncontrol_user_accounts_load_multiple(array(), array(), array('include unauthorized' => TRUE));
-
-  foreach (module_implements('versioncontrol_filter_accounts') as $module) {
-    $function = $module .'_versioncontrol_filter_accounts';
-    $function($accounts);
-  }
-  $accounts = versioncontrol_admin_get_paged_accounts($accounts);
-  $users = array();
-
-  // Retrieve more info for the accounts that survived filtering.
-  foreach ($accounts as $uid => $usernames_by_repository) {
-    $user = user_load($uid);
-    if (!$user) {
-      unset($accounts[$uid]);
-      continue;
-    }
-    $users[$uid] = $user;
-  }
-  if (empty($users)) {
-    $form['empty'] = array(
-      '#type' => 'markup',
-      '#value' => '<p>'. t('No accounts could be found with the current filter settings.') .'</p>',
-    );
-    return $form;
-  }
-
-  // Retrieve total, first and last commits of each user.
-  $statistics = VersioncontrolOperationCache::getInstance()->getStatistics(array(
-    'types' => array(VERSIONCONTROL_OPERATION_COMMIT),
-    'uids' => array_keys($users),
-  ), array(
-    'group_by' => array('uid'),
-  ));
-
-  $total_operations = array();
-  $first_operation_dates = array();
-  $last_operation_dates = array();
-
-  foreach ($statistics as $user_stats) {
-    $total_operations[$user_stats->uid] = $user_stats->total_operations;
-    $first_operation_dates[$user_stats->uid] = t('!time ago', array(
-      '!time' => format_interval(time() - $user_stats->first_operation_date, 1))
-    );
-    $last_operation_dates[$user_stats->uid] = t('!time ago', array(
-      '!time' => format_interval(time() - $user_stats->last_operation_date, 1))
-    );
-    if (module_exists('commitlog')) {
-      $total_operations[$user_stats->uid] =
-        l($total_operations[$user_stats->uid], 'user/'. $user_stats->uid .'/track/code');
-    }
-  }
-
-  // Construct the user account table.
-  $header = array(t('User'), t('Accounts'), t('Commits'), t('First commit'), t('Last commit'));
-  $rows_by_uid = array();
-  foreach ($accounts as $uid => $usernames_by_repository) {
-    $user = $users[$uid];
-
-    // Present a list of all VCS usernames and the repository where they're in.
-    $repo_usernames = array();
-    foreach ($usernames_by_repository as $repo_id => $account) {
-      if (!isset($repositories[$repo_id])) { // happens if the backend isn't loaded
-        continue;
-      }
-      $formatted_username = theme('versioncontrol_account_username',
-        $uid, $account->vcs_username, $repositories[$repo_id],
-        array('prefer_drupal_username' => FALSE)
-      );
-      $repo_name = module_exists('commitlog')
-        ? theme('commitlog_repository', $repositories[$repo_id])
-        : check_plain($repositories[$repo_id]['name']);
-
-      $repo_usernames[] = t('!username in !repository (!edit)', array(
-        '!username' => $formatted_username,
-        '!repository' => $repo_name,
-        '!edit' => l(t('edit'),
-          'user/'. $uid .'/edit/versioncontrol/'. $repo_id .'/'. drupal_urlencode($account->vcs_username)
-        ),
-      ));
-    }
-    $vcs_usernames = empty($repo_usernames)
-      ? t('VCS backend is currently disabled')
-      : theme('item_list', $repo_usernames);
-
-    $rows_by_uid[$uid] = array(
-      theme('username', $user), $vcs_usernames,
-      isset($total_operations[$uid]) ? $total_operations[$uid] : 0,
-      isset($first_operation_dates[$uid]) ? $first_operation_dates[$uid] : t('n/a'),
-      isset($last_operation_dates[$uid]) ? $last_operation_dates[$uid] : t('n/a'),
-    );
-  }
-
-  // Provide a possibility for backends and other modules to modify the list.
-  foreach (module_implements('versioncontrol_alter_account_list') as $module) {
-    $function = $module .'_versioncontrol_alter_account_list';
-    $function($accounts, $repositories, $header, $rows_by_uid);
-  }
-  // We don't want the uids in the final $rows array.
-  $rows = array_values($rows_by_uid);
-
-  // The finished user account list with account filter.
-  $form['accounts'] = array(
-    '#type' => 'markup',
-    '#value' => theme('table', $header, $rows),
-  );
-
-  if ($pager = theme('pager', NULL, variable_get('versioncontrol_admin_account_pager', 20), 0)) {
-    $form['pager'] = array(
-      '#type' => 'markup',
-      '#value' => $pager,
-    );
-  }
-  return $form;
-}
-
-/**
- * Return a subset of the given accounts (10 Drupal users by default, and all
- * of their VCS usernames). Paging is also used by emulating pager_query().
- */
-function versioncontrol_admin_get_paged_accounts($accounts, $element = 0) {
-  global $pager_page_array, $pager_total, $pager_total_items;
-  $page = isset($_GET['page']) ? $_GET['page'] : '';
-  $pager_page_array = explode(',', $page);
-  $page = empty($pager_page_array[$element]) ? 0 : $pager_page_array[$element];
-
-  $limit = variable_get('versioncontrol_admin_account_pager', 20);
-  $i = 0;
-  $paged_accounts = array();
-
-  foreach ($accounts as $uid => $usernames_by_repository) {
-    if ($i >= ($page * $limit) && $i < (($page+1) * $limit)) {
-      $paged_accounts[$uid] = $usernames_by_repository;
-    }
-    ++$i;
-  }
-
-  // Emulate pager_query() in order to get a proper theme('pager').
-  $pager_total_items[$element] = count($accounts);
-  $pager_total[$element] = ceil($pager_total_items[$element] / $limit);
-  $pager_page_array[$element] = max(0, min((int)$pager_page_array[$element], ((int)$pager_total[$element]) - 1));
-
-  return $paged_accounts;
-}
-
-/**
- * A form for filtering accounts which is embedded in the account list page.
- */
-function versioncontrol_admin_account_list_filter_form(&$form_state, $repositories) {
-  $form = array();
-  $repository_names = array(0 => t('All'));
-
-  foreach ($repositories as $repo_id => $repository) {
-    $repository_names[$repo_id] = check_plain($repository['name']);
-  }
-  if (!isset($_SESSION['versioncontrol_filter_repo_id'])) {
-    $_SESSION['versioncontrol_filter_repo_id'] = 0;
-  }
-
-  $form['#id'] = 'versioncontrol-account-filter-form';
-
-  $form['repo_id'] = array(
-    '#type' => 'select',
-    '#title' => t('Repository'),
-    '#options' => $repository_names,
-    '#default_value' => $_SESSION['versioncontrol_filter_repo_id'],
-    '#weight' => 10,
-  );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Filter'),
-    '#submit' => array('versioncontrol_admin_account_list_filter_form_submit'),
-    '#weight' => 100,
-  );
-  return $form;
-}
-
-/**
- * Submit handler for the account filter form.
- */
-function versioncontrol_admin_account_list_filter_form_submit($form, &$form_state) {
-  $_SESSION['versioncontrol_filter_repo_id'] = $form_state['values']['repo_id'];
-}
-
-/**
- * Implementation of hook_versioncontrol_filter_accounts():
- * Unset filtered accounts before they are even attempted to be displayed
- * on the account list.
- *
- * TODO remove, obsoleted by Views
- *
- * @param $accounts
- *   The accounts that would normally be displayed, in the same format as the
- *   return value of versioncontrol_user_accounts_load_multiple(). Entries in
- *   this list may be unset by this filter function.
- */
-function versioncontrol_versioncontrol_filter_accounts(&$accounts) {
-  if (empty($accounts)) {
-    return;
-  }
-  if (!isset($_SESSION['versioncontrol_filter_repo_id'])) {
-    $_SESSION['versioncontrol_filter_repo_id'] = 0;
-  }
-  $filter_repo_id = $_SESSION['versioncontrol_filter_repo_id'];
-
-  if ($filter_repo_id == 0) {
-    return; // Don't change the list if "All" repositories are selected.
-  }
-
-  foreach ($accounts as $uid => $usernames_by_repository) {
-    foreach ($usernames_by_repository as $repo_id => $username) {
-      if ($repo_id != $filter_repo_id) {
-        unset($accounts[$uid][$repo_id]);
-        if (empty($accounts[$uid])) {
-          unset($accounts[$uid]);
-        }
-      }
-    }
-  }
-}
-
-/**
  * Form callback for "admin/content/versioncontrol-repositories":
  * A simple list of repositories, sorted by version control system.
  */
@@ -605,6 +354,23 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
     '#options' => array(0 => '<em>' . t('Use Author mapping plugin') . '</em>') + versioncontrol_user_mapping_methods_get_names(),
   );
 
+  $form['user_authentication'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('User authentication'),
+    '#description' => t('Versioncontrol can authenticate/validate VCS information based on its entities and the user trying to read or write to this repository. If the authentication interface selected here is properly checked from server-side repository hooks, it can properly control access to the repository.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#weight' => 5,
+  );
+
+  $form['user_authentication']['auth_handler'] = array(
+    '#type' => 'radios',
+    '#title' => t('Authentication & access'),
+    '#description' => t('The authentication logic that should govern access to this repository. Note that Version Control API by itself provides very little enforcement of these ACLs. The expectation is that higher-level modules will use the interface.'),
+    '#default_value' => $repository_exists ? $repository->plugins['auth_handler'] : 0,
+    '#options' => versioncontrol_auth_handlers_get_names(),
+  );
+
   if ($repository_exists && isset($repository->data['versioncontrol']['registration_message'])) {
     $current_registration_message = $repository->data['versioncontrol']['registration_message'];
   }
@@ -648,22 +414,6 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
   $backend_capabilities = $backends[$form['#vcs']]->capabilities;
 
   if (in_array(VERSIONCONTROL_CAPABILITY_COMMIT_RESTRICTIONS, $backend_capabilities)) {
-    $form['commit_restrictions'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Commit restrictions'),
-      '#collapsible' => TRUE,
-     '#collapsed' => TRUE,
-      '#weight' => 10,
-    );
-    $form['commit_restrictions']['allow_unauthorized_access'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Allow repository access to unknown or unauthorized committers'),
-      '#description' => 'If this is enabled, users can commit to this repository even if no association of the VCS account to the Drupal user is known (assuming that no other commit restrictions apply). If it is disabled, only known and authorized users may commit. This setting only works if the appropriate pre-commit/pre-branch/pre-tag hook script is set up for this repository.',
-      '#default_value' => $repository_exists
-                          ? $repository->data['versioncontrol']['allow_unauthorized_access']
-                          : FALSE,
-      '#weight' => 0,
-    );
   }
 
   if ($repository_exists) {
@@ -775,6 +525,7 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
     $repository->plugins              = array(
       'author_mapper' => $form_state['values']['author_mapper'],
       'committer_mapper' => $form_state['values']['committer_mapper'],
+      'auth_handler' => $form_state['values']['auth_handler'],
     );
   }
   else {
@@ -789,6 +540,7 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
       'plugins' => array(
         'author_mapper' => $form_state['values']['author_mapper'],
         'committer_mapper' => $form_state['values']['committer_mapper'],
+        'auth_handler' => $form_state['values']['auth_handler'],
       ),
     );
     $repository = $backends[$form['#vcs']]->buildEntity('repo', $repository);
@@ -800,11 +552,6 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
     'registration_message' => $form_state['values']['registration_message'],
     'url_handler'          => new VersioncontrolRepositoryUrlHandler($repository, $repository_urls),
   );
-
-  if (isset($form_state['values']['allow_unauthorized_access'])) {
-    $repository->data['versioncontrol']['allow_unauthorized_access'] =
-      (bool) $form_state['values']['allow_unauthorized_access'];
-  }
 
   // Let other modules alter the repository array.
   foreach (module_implements('versioncontrol_repository_submit') as $module) {

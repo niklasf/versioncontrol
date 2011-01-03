@@ -132,7 +132,7 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
    * @param string $backend_name
    * @param array  $data
    */
-  public function versioncontrolCreateRepository($backend_name = 'test', $data = array()) {
+  public function versioncontrolCreateRepository($backend_name = 'test', $data = array(), $insert=TRUE) {
     static $i = 0;
     $default_data = array(
       'name' => 'test_repo_' . ++$i,
@@ -159,13 +159,15 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     }
     $backend = $this->backends[$backend_name];
     $repo = $backend->buildEntity('repo', $data);
-    $repo->insert();
-    $this->assertTrue(isset($repo->repo_id) && is_numeric($repo->repo_id), t('VersioncontrolRepository::insert() properly populates a new repository object with an integer repo_id.'));
+    if ($insert) {
+      $repo->insert();
+      $this->assertTrue(isset($repo->repo_id) && is_numeric($repo->repo_id), t('VersioncontrolRepository::insert() properly populates a new repository object with an integer repo_id.'));
+    }
 
     return $repo;
   }
 
-  public function versioncontrolCreateLabel($type, $backend_name = 'test', $data = array()) {
+  public function versioncontrolCreateLabel($type, $backend_name = 'test', $data = array(), $insert=TRUE) {
     $default_data = array(
       'name' => $this->randomName(32),
       'data' => array(),
@@ -180,24 +182,30 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
       }
     }
     $label = $backend->buildEntity($type, $data);
-    $label->insert();
+    if ($insert) {
+      $label->insert();
+    }
 
     return $label;
   }
 
-  public function versioncontrolCreateBranch($backend_name = 'test', $data = array()) {
-    $label = $this->versioncontrolCreateLabel('branch', $backend_name, $data);
-    $this->assertTrue(isset($label->label_id) && is_numeric($label->label_id), t('VersioncontrolBranch::insert() properly populates a new repository object with an integer label_id.'));
+  public function versioncontrolCreateBranch($backend_name = 'test', $data = array(), $insert=TRUE) {
+    $label = $this->versioncontrolCreateLabel('branch', $backend_name, $data, $insert);
+    if ($insert) {
+      $this->assertTrue(isset($label->label_id) && is_numeric($label->label_id), t('VersioncontrolBranch::insert() properly populates a new repository object with an integer label_id.'));
+    }
     return $label;
   }
 
-  public function versioncontrolCreateTag($backend_name = 'test', $data = array()) {
-    $label = $this->versioncontrolCreateLabel('tag', $backend_name, $data);
-    $this->assertTrue(isset($label->label_id) && is_numeric($label->label_id), t('VersioncontrolTag::insert() properly populates a new repository object with an integer label_id.'));
+  public function versioncontrolCreateTag($backend_name = 'test', $data = array(), $insert=TRUE) {
+    $label = $this->versioncontrolCreateLabel('tag', $backend_name, $data, $insert);
+    if ($insert) {
+      $this->assertTrue(isset($label->label_id) && is_numeric($label->label_id), t('VersioncontrolTag::insert() properly populates a new repository object with an integer label_id.'));
+    }
     return $label;
   }
 
-  public function versioncontrolCreateOperation($backend_name = 'test', $data = array()) {
+  public function versioncontrolCreateOperation($backend_name = 'test', $data = array(), $insert=TRUE) {
     static $i = 0;
     $name = $this->randomName(7);
     $default_data = array(
@@ -222,13 +230,15 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
       }
     }
     $operation = $backend->buildEntity('operation', $data);
-    $operation->insert();
-    $this->assertTrue(isset($operation->vc_op_id) && is_numeric($operation->vc_op_id), t('VersioncontrolOperation::insert() properly populates a new repository object with an integer vc_op_id.'));
+    if ($insert) {
+      $operation->insert();
+      $this->assertTrue(isset($operation->vc_op_id) && is_numeric($operation->vc_op_id), t('VersioncontrolOperation::insert() properly populates a new repository object with an integer vc_op_id.'));
+    }
 
     return $operation;
   }
 
-  public function versioncontrolCreateItem($backend_name = 'test', $data = array()) {
+  public function versioncontrolCreateItem($backend_name = 'test', $data = array(), $insert=TRUE) {
     static $i = 0;
     $default_data = array(
       'path' => sprintf('/%s/%s.inc', $this->randomName(4), $this->randomName(4)),
@@ -253,8 +263,10 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
       $data['vc_op_id'] = $operation->vc_op_id;
     }
     $item = $backend->buildEntity('item', $data);
-    $item->insert();
-    $this->assertTrue(isset($item->item_revision_id) && is_numeric($item->item_revision_id), t('VersioncontrolItem::insert() properly populates a new repository object with an integer item_revision_id.'));
+    if ($insert) {
+      $item->insert();
+      $this->assertTrue(isset($item->item_revision_id) && is_numeric($item->item_revision_id), t('VersioncontrolItem::insert() properly populates a new repository object with an integer item_revision_id.'));
+    }
 
     return $item;
   }

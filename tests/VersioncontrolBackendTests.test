@@ -31,7 +31,7 @@ class VersioncontrolBackendBaseUnitTest extends VersioncontrolTestCase {
     // As soon as the backend is initialized, the base class should have a bunch
     // of classes declared on it and available for factory operations. Check.
     // This also has the effect of ensuring autoload declarations are in place.
-    $types = array('repo', 'account', 'operation', 'item', 'branch', 'tag');
+    $types = array('repo', 'operation', 'item', 'branch', 'tag');
     foreach ($this->backends as $backend) { // Iterate over all available backends.
       foreach ($types as $type) { // Iterate over each entity type.
         $this->assertTrue(isset($backend->classesEntities[$type]), "$backend->name backend declares an entity class for type '$type'", 'PHP');

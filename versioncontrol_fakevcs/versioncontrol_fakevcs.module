@@ -76,43 +76,6 @@ function versioncontrol_fakevcs_operation($op, $operation, $operation_items) {
 }
 
 /**
- * Implementation of [versioncontrol_backend]_account():
- * Manage (insert, update or delete) additional FakeVCS user account data
- * in the database.
- *
- * @param $op
- *   Either 'insert' when the account is in the process of being created,
- *   or 'update' when username or VCS specific data change,
- *   or 'delete' if it will be deleted after this function has been called.
- * @param $uid
- *   The Drupal user id corresponding to the VCS account.
- * @param $username
- *   The VCS specific username (a string).
- * @param $repository
- *   The repository where the user has its VCS account.
- * @param $additional_data
- *   An array of additional author information.
- */
-function versioncontrol_fakevcs_account($op, $uid, $username, $repository, $additional_data = array()) {
-  // we need an example for this hook, since the one here is now
-  // implemented through account class method overrides
-  // VersioncontrolFakeAccount::_{insert,update,delete}()
-  // Probably a non-backend module fits better for implement it.
-  $fakevcs_specific = $additional_data['fakevcs_specific'];
-
-  switch ($op) {
-    case 'insert':
-      break;
-
-    case 'update':
-      break;
-
-    case 'delete':
-      break;
-  }
-}
-
-/**
  * Implementation of [versioncontrol_backend]_repository():
  * Manage (insert, update or delete) additional FakeVCS repository data
  * in the database.

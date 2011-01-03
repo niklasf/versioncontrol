@@ -1,7 +1,7 @@
 <?php
 
 $plugin = array(
-  'title' => t('Free For All (unrestricted write access)'),
+  'title' => t('Account (restricted write access)'),
   'handler' => array(
     'class' => 'VersioncontrolAuthHandlerMappedAccounts',
   ),

@@ -226,11 +226,14 @@ interface VersioncontrolAuthHandlerInterface {
    *
    * @param int $uid
    *   The uid of the Drupal user to be checked.
+   * @param VersioncontrolBranch $branch
+   *   The VersioncontrolBranch object representing the branch against which
+   *   authorization checks should be made.
    *
    * @return bool
    *   Boolean indicating access approved (TRUE) or denied (FALSE)
    */
-  public function authBranchCreate($uid);
+  public function authBranchCreate($uid, VersioncontrolBranch $branch);
 
   /**
    * Determine whether the specified user has access to delete the specified
@@ -268,10 +271,14 @@ interface VersioncontrolAuthHandlerInterface {
    *
    * @param int $uid
    *   The uid of the Drupal user to be checked.
+   * @param VersioncontrolTag $tag
+   *   The VersioncontrolTag object representing the tag against which
+   *   authorization checks should be made.
+   *
    * @return bool
    *   Boolean indicating access approved (TRUE) or denied (FALSE)
    */
-  public function authTagCreate($uid);
+  public function authTagCreate($uid, VersioncontrolTag $tag);
 
   /**
    * Determine whether the specified user has access to delete the specified

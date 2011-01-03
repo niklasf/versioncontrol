@@ -107,7 +107,7 @@ class VersioncontrolAccountAuthPlugin extends VersioncontrolTestCase {
   }
 
   public function testMappedAccountsAuthPluginCrud() {
-    foreach ($this->repos as $repo) {
+    foreach ($this->repos as $backend_machine_name => $repo) {
       // Manually instantiate the plugin for the create portion
       $class_name = ctools_plugin_load_class('versioncontrol', 'vcs_auth', 'account', 'handler');
       $authplug = new $class_name();
@@ -148,8 +148,10 @@ class VersioncontrolAccountAuthPlugin extends VersioncontrolTestCase {
       // global
       $this->assertTrue($authplug->authAccess($super_user->uid), 'global auth validate correctly');
       // branches
-      $this->assertFalse($authplug->authBranchCreate($super_user->uid), 'branch create validate correctly');
-      $this->assertFalse($authplug->authTagCreate($super_user->uid), 'tag create validate correctly');
+      $test_branch = $this->versioncontrolCreateBranch($backend_machine_name, array(), FALSE);
+      $this->assertFalse($authplug->authBranchCreate($super_user->uid, $test_branch), 'branch create validate correctly');
+      $test_tag = $this->versioncontrolCreateTag($backend_machine_name, array(), FALSE);
+      $this->assertFalse($authplug->authTagCreate($super_user->uid, $test_tag), 'tag create validate correctly');
       $this->assertTrue($authplug->authBranchUpdate($super_user->uid, $this->branches[$repo->repo_id][0]), 'granular branch update validate correctly');
       $this->assertTrue($authplug->authBranchDelete($super_user->uid, $this->branches[$repo->repo_id][0]), 'granular branch delete validate correctly');
       $this->assertTrue($authplug->authBranchUpdate($super_user->uid, $this->branches[$repo->repo_id][1]), 'granular branch update validate correctly');

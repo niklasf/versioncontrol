@@ -19,7 +19,6 @@ class VersioncontrolTestBackend extends VersioncontrolBackend {
     );
     $this->classesEntities = array(
       'repo'      => 'VersioncontrolTestRepository',
-      'account'   => 'VersioncontrolTestAccount',
       'operation' => 'VersioncontrolTestOperation',
       'item'      => 'VersioncontrolTestItem',
       'branch'    => 'VersioncontrolTestBranch',
@@ -30,9 +29,6 @@ class VersioncontrolTestBackend extends VersioncontrolBackend {
 }
 
 class VersioncontrolTestRepository extends VersioncontrolRepository {
-}
-
-class VersioncontrolTestAccount extends VersioncontrolAccount {
 }
 
 class VersioncontrolTestOperation extends VersioncontrolOperation {

@@ -140,10 +140,6 @@ function versioncontrol_views_data() {
       'left_field' => 'repo_id',
       'field' => 'repo_id',
     ),
-    'versioncontrol_accounts' => array(
-      'left_field' => 'repo_id',
-      'field' => 'repo_id',
-    ),
   );
 
   // VersionControl Operations
@@ -341,43 +337,6 @@ function versioncontrol_views_data() {
     'left_field' => 'uid',
       'field'      => 'uid',
       'type'       => 'inner',
-  );
-
-  // VersionControl Accounts
-  $data['versioncontrol_accounts']['table']['group'] = t("VersionControl Accounts");
-  $data['versioncontrol_accounts']['table']['base'] = array(
-    'field' => 'uid',
-    'title' => t('VersionControl Accounts'),
-    'help'  => t('The VersionControl accounts held by users.'),
-  );
-  $data['versioncontrol_accounts']['table']['join'] = array(
-    'user' => array(
-      'left_field' => 'uid',
-      'field' => 'uid',
-    ),
-    'versioncontrol_repositories' => array(
-      'left_field' => 'repo_id',
-      'field' => 'repo_id',
-    ),
-  );
-  $data['versioncontrol_accounts']['vcs_username'] = array(
-    'title' => t('Versioncontrol Name'),
-    'help' => t('The username of the committer, as known by the VCS.'),
-    'field' => array(
-      'handler' => 'views_handler_field',
-      'click sortable' => TRUE,
-    ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
-    ),
-    'argument' => array(
-      'handler' => 'views_handler_argument_string',
-    ),
-  );
-  $data['users']['table']['join']['versioncontrol_accounts'] = array(
-    'left_field' => 'uid',
-    'field' => 'uid',
-    'type' => 'inner',
   );
 
   // VersionControl Labels

@@ -5,7 +5,6 @@ dependencies[] = autoload
 dependencies[] = dbtng
 dependencies[] = ctools
 dependencies[] = views
-files[] = includes/VersioncontrolAccount.php
 files[] = includes/VersioncontrolBackend.php
 files[] = includes/VersioncontrolBranch.php
 files[] = includes/VersioncontrolItem.php

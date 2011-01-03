@@ -227,16 +227,13 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     return $this->backend->loadEntities('operation', $ids, $conditions, $options);
   }
 
-  public function loadAccounts($ids = array(), $conditions = array(), $options = array()) {
-    $conditions['repo_id'] = $this->repo_id;
-    return $this->backend->loadEntities('account', $ids, $conditions, $options);
-  }
-
   /**
    * Return TRUE if the account is authorized to commit in the actual
    * repository, or FALSE otherwise. Only call this function on existing
    * accounts or uid 0, the return value for all other
    * uid/repository combinations is undefined.
+   *
+   * FIXME deprecate this in favour of a plugin implementation.
    *
    * @param $uid
    *   The user id of the checked account.
@@ -319,8 +316,8 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
 
   /**
    * Delete a repository from the database, and call the necessary hooks.
-   * Together with the repository, all associated commits and accounts are
-   * deleted as well.
+   * Together with the repository, all associated commits are deleted as
+   * well.
    */
   public function delete($options = array()) {
     // Append default options.
@@ -336,10 +333,6 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
       }
       foreach ($this->loadCommits() as $commit) {
         $commit->delete();
-      }
-      // FIXME accounts are changing significantly, this will need to, too
-      foreach ($this->loadAccounts() as $account) {
-        $account->delete();
       }
     }
 
@@ -380,69 +373,6 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
         );
     }
     return $this->data['versioncontrol']['url_handler'];
-  }
-
-  /**
-   * Retrieve the Drupal user id for a given VCS username.
-   *
-   * @param $username
-   *   The VCS specific username (a string) corresponding to the Drupal
-   *   user.
-   * @param $include_unauthorized
-   *   If FALSE (which is the default), this function does not return
-   *   accounts that are pending, queued, disabled, blocked, or otherwise
-   *   non-approved. If TRUE, all accounts are returned, regardless of
-   *   their status.
-   *
-   * @return
-   *   The Drupal user id that corresponds to the given username and
-   *   repository, or NULL if no Drupal user could be associated to
-   *   those.
-   */
-  public function getAccountUidForUsername($username, $include_unauthorized = FALSE) {
-    $result = db_query("SELECT uid, repo_id
-      FROM {versioncontrol_accounts}
-      WHERE vcs_username = '%s' AND repo_id = %d",
-      $username, $this->repo_id);
-
-    while ($account = db_fetch_object($result)) {
-      // Only include approved accounts, except in case the caller said otherwise.
-      if ($include_unauthorized || $this->isAccountAuthorized($account->uid)) {
-        return $account->uid;
-      }
-    }
-    return NULL;
-  }
-
-  /**
-   * Retrieve the VCS username for the Drupal user id.
-   *
-   * @param $uid
-   *   The Drupal user id corresponding to the VCS account.
-   * @param $include_unauthorized
-   *   If FALSE (which is the default), this function does not return
-   *   accounts that are pending, queued, disabled, blocked, or otherwise
-   *   non-approved. If TRUE, all accounts are returned, regardless of
-   *   their status.
-   *
-   * @return
-   *   The VCS username (a string) that corresponds to the given Drupal
-   *   user and repository, or NULL if no VCS account could be associated
-   *   to those.
-   */
-  function getAccountUsernameForUid($uid, $include_unauthorized = FALSE) {
-    $result = db_query('SELECT uid, username, repo_id
-      FROM {versioncontrol_accounts}
-      WHERE uid = %d AND repo_id = %d',
-      $uid, $this->repo_id);
-
-    while ($account = db_fetch_object($result)) {
-      // Only include approved accounts, except in case the caller said otherwise.
-      if ($include_unauthorized || $this->isAccountAuthorized($account->uid)) {
-        return $account->vcs_username;
-      }
-    }
-    return NULL;
   }
 
   /**

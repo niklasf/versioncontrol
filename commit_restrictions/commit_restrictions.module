@@ -9,86 +9,98 @@
  */
 
 /**
- * Implementation of hook_form_alter(): Add commit restriction settings
- * to the add/edit repository form of the Version Control API module.
+ * Implementation of hook_form_FORM_ID_alter().
  */
-function commit_restrictions_form_alter(&$form, &$form_state, $form_id) {
-  if ($form['#id'] == 'versioncontrol-repository-form') {
-    $backends = versioncontrol_get_backends();
-    $backend_capabilities = $backends[$form['#vcs']]->capabilities;
-    $restrictions = array();
+function commit_restrictions_form_versioncontrol_repository_form_alter(&$form, &$form_state) {
+  // Add commit restriction settings to the add/edit repository form
 
-    if (isset($form['#repository']) && !empty($form['#repository']['data']['commit_restrictions'])) {
-      $restrictions = $form['#repository']['data']['commit_restrictions'];
-    }
+  $backends = versioncontrol_get_backends();
+  $backend_capabilities = $backends[$form['#vcs']]->capabilities;
+  $restrictions = array();
 
-    if (in_array(VERSIONCONTROL_CAPABILITY_COMMIT_RESTRICTIONS, $backend_capabilities)) {
-      $form['commit_restrictions']['allowed_paths'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Freely accessible paths'),
-        '#description' => t('A space-separated list of PHP regular expressions for directories or files that will always be granted commit access to everyone, no matter what other commit restrictions are imposed. Example: "@.*\.(po|pot)$@ @^/contributions/(docs|sandbox|tricks)/@"'),
-        '#default_value' => isset($restrictions['allowed_paths'])
-          ? implode(' ', $restrictions['allowed_paths'])
-          : '',
-        '#size' => 60,
-        '#weight' => 10,
-      );
-      $form['commit_restrictions']['deny_undefined_paths'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Deny access to all other paths'),
-        '#description' => t('If this is enabled, no paths other than the ones given above will be granted commit access, except if there is an exception that specifically allows the commit to happen.'),
-        '#default_value' => isset($restrictions['deny_undefined_paths'])
-          ? FALSE
-          : $restrictions['deny_undefined_paths'],
-        '#weight' => 11,
-      );
-      $form['commit_restrictions']['forbidden_paths'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Forbidden paths'),
-        '#description' => t('A space-separated list of PHP regular expressions for directories or files that will be denied access to everyone, except if there is an exception that specifically allows the commit to happen. Example: "@^/contributions/profiles.*(?&lt;!\.profile|\.txt)$@ @^.*\.(gz|tgz|tar|zip)$@"'),
-        '#default_value' => isset($restrictions['forbidden_paths'])
-          ? implode(' ', $restrictions['forbidden_paths'])
-          : '',
-        '#size' => 60,
-        '#weight' => 12,
-      );
-    }
-    if (in_array(VERSIONCONTROL_CAPABILITY_BRANCH_TAG_RESTRICTIONS, $backend_capabilities)) {
-      $form['branch_tag_restrictions'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Branch and tag restrictions'),
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-        '#weight' => 7,
-      );
-      $form['branch_tag_restrictions']['valid_branch_tag_paths'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Allowed paths for branches and tags'),
-        '#description' => t('A space-separated list of PHP regular expressions for directories or files where it will be possible to create branches and tags. If empty, branches and tags may be created anywhere in the repository. Example: "@^(/[^/]+)?/(modules|themes|theme-engines|docs|translations)/@"'),
-        '#default_value' => isset($restrictions['valid_branch_tag_paths'])
-          ? implode(' ', $restrictions['valid_branch_tag_paths'])
-          : '',
-        '#size' => 60,
-      );
-      $form['branch_tag_restrictions']['valid_branches'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Valid branches'),
-        '#description' => t('A space-separated list of PHP regular expressions for allowed branch names. If empty, all branch names will be allowed. Example: "@^HEAD$@ @^DRUPAL-5(--[2-9])?$@ @^DRUPAL-6--[1-9]$@"'),
-        '#default_value' => isset($restrictions['valid_branches'])
-          ? implode(' ', $restrictions['valid_branches'])
-          : '',
-        '#size' => 60,
-      );
-      $form['branch_tag_restrictions']['valid_tags'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Valid tags'),
-        '#description' => t('A space-separated list of PHP regular expressions for allowed tag names. If empty, all tag names will be allowed. Example: "@^DRUPAL-[56]--(\d+)-(\d+)(-[A-Z0-9]+)?$@"'),
-        '#default_value' => isset($restrictions['valid_tags'])
-          ? implode(' ', $restrictions['valid_tags'])
-          : '',
-        '#size' => 60,
-      );
-    }
+  if (isset($form['#repository']) && !empty($form['#repository']->data['commit_restrictions'])) {
+    $restrictions = $form['#repository']->data['commit_restrictions'];
+  }
+
+  $backend_can_restrict_commits = in_array(VERSIONCONTROL_CAPABILITY_COMMIT_RESTRICTIONS, $backend_capabilities);
+  $backend_can_restrict_tags    = in_array(VERSIONCONTROL_CAPABILITY_BRANCH_TAG_RESTRICTIONS, $backend_capabilities);
+
+  if ($backend_can_restrict_commits || $backend_can_restrict_tags) {
+    $form['commit_restrictions'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Commit restrictions'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#weight' => 10,
+    );
+  }
+
+  if ($backend_can_restrict_commits) {
+    $form['commit_restrictions']['allowed_paths'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Freely accessible paths'),
+      '#description' => t('A space-separated list of PHP regular expressions for directories or files that will always be granted commit access to everyone, no matter what other commit restrictions are imposed. Example: "@.*\.(po|pot)$@ @^/contributions/(docs|sandbox|tricks)/@"'),
+      '#default_value' => isset($restrictions['allowed_paths'])
+      ? implode(' ', $restrictions['allowed_paths'])
+      : '',
+      '#size' => 60,
+      '#weight' => 10,
+    );
+    $form['commit_restrictions']['deny_undefined_paths'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Deny access to all other paths'),
+      '#description' => t('If this is enabled, no paths other than the ones given above will be granted commit access, except if there is an exception that specifically allows the commit to happen.'),
+      '#default_value' => isset($restrictions['deny_undefined_paths'])
+      ? FALSE
+      : $restrictions['deny_undefined_paths'],
+      '#weight' => 11,
+    );
+    $form['commit_restrictions']['forbidden_paths'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Forbidden paths'),
+      '#description' => t('A space-separated list of PHP regular expressions for directories or files that will be denied access to everyone, except if there is an exception that specifically allows the commit to happen. Example: "@^/contributions/profiles.*(?&lt;!\.profile|\.txt)$@ @^.*\.(gz|tgz|tar|zip)$@"'),
+      '#default_value' => isset($restrictions['forbidden_paths'])
+      ? implode(' ', $restrictions['forbidden_paths'])
+      : '',
+      '#size' => 60,
+      '#weight' => 12,
+    );
+  }
+  if ($backend_can_restrict_tags) {
+    $form['branch_tag_restrictions'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Branch and tag restrictions'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#weight' => 7,
+    );
+    $form['branch_tag_restrictions']['valid_branch_tag_paths'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Allowed paths for branches and tags'),
+      '#description' => t('A space-separated list of PHP regular expressions for directories or files where it will be possible to create branches and tags. If empty, branches and tags may be created anywhere in the repository. Example: "@^(/[^/]+)?/(modules|themes|theme-engines|docs|translations)/@"'),
+      '#default_value' => isset($restrictions['valid_branch_tag_paths'])
+      ? implode(' ', $restrictions['valid_branch_tag_paths'])
+      : '',
+      '#size' => 60,
+    );
+    $form['branch_tag_restrictions']['valid_branches'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Valid branches'),
+      '#description' => t('A space-separated list of PHP regular expressions for allowed branch names. If empty, all branch names will be allowed. Example: "@^HEAD$@ @^DRUPAL-5(--[2-9])?$@ @^DRUPAL-6--[1-9]$@"'),
+      '#default_value' => isset($restrictions['valid_branches'])
+      ? implode(' ', $restrictions['valid_branches'])
+      : '',
+      '#size' => 60,
+    );
+    $form['branch_tag_restrictions']['valid_tags'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Valid tags'),
+      '#description' => t('A space-separated list of PHP regular expressions for allowed tag names. If empty, all tag names will be allowed. Example: "@^DRUPAL-[56]--(\d+)-(\d+)(-[A-Z0-9]+)?$@"'),
+      '#default_value' => isset($restrictions['valid_tags'])
+      ? implode(' ', $restrictions['valid_tags'])
+      : '',
+      '#size' => 60,
+    );
   }
 }
 

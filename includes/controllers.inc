@@ -416,52 +416,6 @@ class VersioncontrolRepositoryController extends VersioncontrolEntityController 
   protected function extendData(&$queried_entities) {}
 }
 
-class VersioncontrolAccountController extends VersioncontrolEntityController {
-  protected $entityType = 'account';
-  protected $baseTable = 'versioncontrol_accounts';
-  protected $idKey = 'uid';
-
-  protected function executeQuery(&$query) {
-    $result = $query->execute();
-    if ($this->options['repository'] instanceof VersioncontrolRepository) {
-      return $result->fetchAllAssoc('uid');
-    }
-    else { // No repository specified, create a specially-keyed array
-      $return = array();
-      foreach ($result as $row) {
-        if (!isset($return[$row->uid])) {
-          $return[$row->uid] = array();
-        }
-        $return[$row->uid][$row->repo_id] = $row;
-      }
-      return $return;
-    }
-  }
-
-  protected function buildEntities(&$queried_entities) {
-    // If a repository is attached, the default parent implementation is fine
-    if ($this->options['repository'] instanceof VersioncontrolRepository) {
-      return parent::buildEntities($queried_entities);
-    }
-    // Otherwise we need special handling for our two-level array.
-    $almost_built = array();
-    foreach ($queried_entities as $uid => $raw_accounts_per_repo) {
-      foreach ($raw_accounts_per_repo as $repo_id => $raw_account) {
-        $id = "$uid-$repo_id";
-        // load the repository object
-        $raw_account->repository = $this->backends[$raw_account->vcs]->loadEntity('repo', array($repo_id));
-        $almost_built[$id] = $raw_account;
-      }
-    }
-    return parent::buildEntities($almost_built);
-  }
-
-  protected function modifyReturn($entities) {
-    // by now, return the same
-    return $entities;
-  }
-}
-
 class VersioncontrolBranchController extends VersioncontrolEntityController {
   protected $entityType = 'branch';
   protected $baseTable = 'versioncontrol_labels';

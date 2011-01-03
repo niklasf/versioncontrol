@@ -189,7 +189,7 @@ class VersioncontrolAuthHandlerMappedAccounts implements VersioncontrolAuthHandl
     }
   }
 
-  public function authBranchCreate($uid) {
+  public function authBranchCreate($uid, VersioncontrolBranch $branch) {
     $base = $this->baseAuth($uid);
     if ($base == self::DENY) {
       // Zero access, deny.
@@ -222,7 +222,7 @@ class VersioncontrolAuthHandlerMappedAccounts implements VersioncontrolAuthHandl
     }
     return $access;
   }
-  public function authTagCreate($uid) {
+  public function authTagCreate($uid, VersioncontrolTag $tag) {
     $base = $this->baseAuth($uid);
     if ($base == self::DENY) {
       // Zero access, deny.

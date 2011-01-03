@@ -143,17 +143,3 @@ function versioncontrol_fakevcs_account_form_validate($form, &$form_state) {
     form_set_error('account_password', t('The FakeVCS password you have chosen is too short (it must be at least !min characters long).', array('!min' => VERSIONCONTROL_FAKEVCS_MIN_PASSWORD_LENGTH)));
   }
 }
-
-/**
- * Implementation of hook_versioncontrol_account_submit():
- * Extract account data from the account edit/register form's submitted
- * values, and add it to the @p $additional_data array. Later, that array
- * will be passed to hook_versioncontrol_account() as part of the account
- * insert/update procedure.
- */
-function versioncontrol_fakevcs_versioncontrol_account_submit(&$additional_data, $form, $form_state) {
-  if (!isset($form['#versioncontrol_fakevcs']) || empty($form_state['values']['account_password'])) {
-    return;
-  }
-  $additional_data['fakevcs_specific']['password'] = crypt($form_state['values']['account_password']);
-}

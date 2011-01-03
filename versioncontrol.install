@@ -370,38 +370,6 @@ function versioncontrol_schema() {
     'primary key' => array('repo_id'),
   );
 
-  $schema['versioncontrol_accounts'] = array(
-    'description' =>
-      'Association table of VCS account usernames (in a specific repository) to Drupal user ids. A Drupal user can be associated to multiple VCS accounts. Ideally, multiple VCS accounts per repository should be possible too, but clumsy array data structures and assumptions in the admin interface (elsewhere, too? don\'t know) currently make it necessary to restrict the number of VCS accounts to a maximum of 1 per repository and Drupal user.',
-    'fields' => array(
-      'uid' => array(
-        'description' => 'The {users}.uid of the Drupal user associated with the VCS-specific username in {versioncontrol_accounts}.username.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'repo_id' => array(
-        'description' => 'Foreign key (referring to {versioncontrol_repositories}.repo_id) for the repository that contains the VCS account.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'vcs_username' => array(
-        'description' => 'VCS-specific username of the VCS account associated with the Drupal user in {versioncontrol_accounts}.uid.',
-        'type' => 'varchar',
-        'length' => 64,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-    ),
-    'unique keys' => array(
-      'repo_id_username' => array('repo_id', 'vcs_username'),
-    ),
-    'primary key' => array('uid', 'repo_id'),
-  );
-
   $schema['versioncontrol_auth_account'] = array(
     'description' => 'ACL table, used by the VersioncontrolAuthHandlerMappedAccounts family of plugins, that stores ACL data on a per-uid/per-repo basis.',
     'fields' => array(
@@ -564,7 +532,6 @@ function versioncontrol_uninstall() {
     'versioncontrol_email_address',
     'versioncontrol_registration_message_unauthorized',
     'versioncontrol_registration_message_authorized',
-    'versioncontrol_admin_account_pager',
   );
   foreach ($variables as $variable) {
     variable_del($variable);
@@ -994,8 +961,7 @@ function versioncontrol_update_6308() {
 }
 
 /**
- * Remove the defunct versioncontrol_accounts table and replace it with ones
- * driven by auth plugins, specifically the
+ * Add tables for auth plugins, specifically the
  * VersioncontrolAuthHandlerMappedAccounts family of plugins.
  */
 function versioncontrol_update_6309() {
@@ -1153,6 +1119,23 @@ function versioncontrol_update_6310() {
   );
 
   db_create_table($ret, 'versioncontrol_views_sets', $schema);
+
+  return $ret;
+}
+
+/**
+ * Remove allow_unauthorized_access from repository data.
+ */
+function versioncontrol_update_6311() {
+  $ret = array();
+  $result = db_query("SELECT repo_id, data FROM {versioncontrol_repositories}");
+
+  while ($row = db_fetch_object($result)) {
+    $data = unserialize($row->data);
+    unset($data['versioncontrol']['allow_unauthorized_access']);
+    $data = serialize($row->data);
+    db_query('UPDATE {versioncontrol_repositories} SET data = %s WHERE repo_id = %d', $row->data, $row->repo_id);
+  }
 
   return $ret;
 }
