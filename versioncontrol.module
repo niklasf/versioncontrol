@@ -455,7 +455,7 @@ function versioncontrol_repository_load($repo_id) {
  *
  */
 function versioncontrol_repository_load_multiple($ids = array(), $conditions = array(), $options = array()) {
-  static $controller;
+  $controller = &ctools_static(__FUNCTION__);
   if (!isset($controller)) {
     $controller = new VersioncontrolRepositoryController();
   }
@@ -500,7 +500,7 @@ function versioncontrol_user_accounts_load_multiple($ids = array(), $conditions 
  *   An example of the result array can be found in the FakeVCS example module.
  */
 function versioncontrol_get_backends($backend = '', $reset = FALSE) {
-  static $backends;
+  $backends = &ctools_static(__FUNCTION__);
 
   if (!isset($backends) || $reset) {
     $backends = module_invoke_all('versioncontrol_backends');
