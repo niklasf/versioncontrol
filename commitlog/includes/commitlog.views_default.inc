@@ -1445,8 +1445,8 @@ $handler->override_option('block_caching', -1);
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
-    'author' => array(
-      'label' => 'Author',
+    'attribution' => array(
+      'label' => 'Attribution',
       'alter' => array(
         'alter_text' => 0,
         'text' => '',
@@ -1462,16 +1462,16 @@ $handler->override_option('block_caching', -1);
         'max_length' => '',
         'word_boundary' => 1,
         'ellipsis' => 1,
-        'strip_tags' => 0,
         'html' => 0,
+        'strip_tags' => 0,
       ),
       'empty' => '',
       'hide_empty' => 0,
       'empty_zero' => 0,
       'exclude' => 1,
-      'id' => 'author',
+      'id' => 'attribution',
       'table' => 'versioncontrol_operations',
-      'field' => 'author',
+      'field' => 'attribution',
       'relationship' => 'none',
     ),
     'vc_op_id' => array(
@@ -1555,13 +1555,13 @@ $handler->override_option('block_caching', -1);
         'max_length' => '',
         'word_boundary' => 1,
         'ellipsis' => 1,
-        'strip_tags' => 0,
         'html' => 0,
+        'strip_tags' => 0,
       ),
       'empty' => '',
       'hide_empty' => 0,
       'empty_zero' => 0,
-      'date_format' => 'custom',
+      'date_format' => 'small',
       'custom_date_format' => 'G:i',
       'exclude' => 1,
       'id' => 'date',
@@ -1572,7 +1572,7 @@ $handler->override_option('block_caching', -1);
     'nothing' => array(
       'label' => '',
       'alter' => array(
-        'text' => '<div class="commit-repository">Commit <strong>[revision]</strong> by <a class="author-link"  href="#"> [author]</a> at [date]</div>',
+        'text' => '<div class="commit-repository">Commit <strong>[revision]</strong> [attribution] at [date]</div>',
         'make_link' => 0,
         'path' => '',
         'link_class' => '',
@@ -1722,9 +1722,8 @@ $handler->override_option('block_caching', -1);
   $handler->override_option('cache', array(
     'type' => 'none',
   ));
-  $handler->override_option('style_options', array(
-    'grouping' => 'date_1',
-  ));
+  $handler->override_option('use_pager', '1');
+
   $views[$view->name] = $view;
 
   // View 'commitlog_user_commits'
