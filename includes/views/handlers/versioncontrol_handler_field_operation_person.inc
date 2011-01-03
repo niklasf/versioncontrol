@@ -8,11 +8,12 @@
 class versioncontrol_handler_field_operation_person extends views_handler_field {
 
   function render($values) {
-    $account->uid = $values->{$this->aliases['person_uid']};
-    if ($account->uid == 0) {
+    if (empty($values->{$this->aliases['person_uid']})) {
       return $values->{$this->field_alias};
     }
     else {
+      $account = new stdClass();
+      $account->uid = $values->{$this->aliases['person_uid']};
       $account->name = $values->{$this->field_alias};
       return theme('username', $account);
     }
