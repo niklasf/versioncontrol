@@ -88,16 +88,21 @@ function commitlog_ctools_plugin_directory($module, $plugin) {
  *   The argument with which to filter the view.  This is used as the first argument in the view in question.
  */
 function commitlog_operations_page($type = NULL, $argument = NULL) {
-  $path = drupal_get_path('module','commitlog');
-  drupal_add_css($path .'/commitlog.css', 'module');
+  drupal_add_css(drupal_get_path('module', 'commitlog') . '/commitlog.css', 'module');
+
+  $view = '';
   if ($type == 'author' && !is_null($argument)) {
-    $output = views_embed_view('commitlog_author_commits', 'default', $argument);
+    $set = versioncontrol_get_views_set('user_commit_view');
+    $view = $set->getViewName();
   }
   else if ($type == 'repository' && !is_null($argument)) {
-    $output = views_embed_view('commitlog_repository_commits', 'default', $argument);
+    $set = versioncontrol_get_views_set('repository_commit_view');
+    $view = $set->getViewNameByEntity(versioncontrol_repository_load($argument));
   }
   else {
-    $output = views_embed_view('commitlog_global_commits', 'default');
+    $set = versioncontrol_get_views_set('global_commit_view');
+    $view = $set->getViewName();
   }
-  return $output;
+
+  return views_embed_view($view, 'default', $argument);
 }
