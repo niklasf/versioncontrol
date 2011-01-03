@@ -224,7 +224,7 @@ function versioncontrol_views_data() {
   );
 
   $data['versioncontrol_operations']['attribution'] = array(
-    'title'    => t('Atribution'),
+    'title'    => t('Attribution'),
     'help'     => t('The operation author(and the committer if it is different than the author)'),
     'field'    => array(
       'handler' => 'versioncontrol_handler_field_operation_attribution',
