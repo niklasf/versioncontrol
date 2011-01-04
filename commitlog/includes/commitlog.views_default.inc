@@ -1486,7 +1486,7 @@ function commitlog_views_default_views() {
     'nothing' => array(
       'label' => '',
       'alter' => array(
-        'text' => '<div class="commit-global">Commit <strong>[revision]</strong> [attribution] at [date]</div>',
+        'text' => '<div class="commit-user">Commit <strong>[revision]</strong> [attribution] at [date]</div>',
         'make_link' => 0,
         'path' => '#',
         'link_class' => 'global-author',
