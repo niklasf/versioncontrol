@@ -725,7 +725,7 @@ function theme_versioncontrol_account_username($uid, $username, $repository, $op
   if (!empty($options['include_repository_name'])) {
     $username = t('!user @ !repository', array(
       '!user' => $username,
-      '!repository' => $repository['name'],
+      '!repository' => $repository->name,
     ));
   }
   if ($format == 'html' && module_exists('commitlog')) {

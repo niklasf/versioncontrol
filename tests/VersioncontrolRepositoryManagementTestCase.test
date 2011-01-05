@@ -87,7 +87,7 @@ class VersioncontrolRepositoryManagementTestCase extends VersioncontrolTestCase 
     $found_repositories = $this->testBackend->loadEntities('repo', array(), array('name' => array($edit['repo_name'])));
     if ($is_repo_edited = (count($found_repositories) == 1)) {
       $edited_repo = array_shift($found_repositories);
-      $is_repo_edited = $edited_repo['root'] == $edit['root'];
+      $is_repo_edited = $edited_repo->root == $edit['root'];
     }
     $this->assertTrue($is_repo_edited, t('Repository updated in database.'));
   }

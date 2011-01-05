@@ -88,7 +88,7 @@ class VersioncontrolRepositoryUnitTestingTestCase extends VersioncontrolTestCase
       'updated' => time(),
       //TODO $repo->update_method
       'locked' => TRUE,
-      'plugins' => array('auth_handler' => 'account') + $repo['plugins'],
+      'plugins' => array('auth_handler' => 'account') + $repo->plugins,
     );
 
     $repo->name = $data['name'];

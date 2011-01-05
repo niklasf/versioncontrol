@@ -281,8 +281,8 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
   if ($repository_exists) {
     $form['#repository'] = $repository;
   }
-  $form['#vcs'] = $repository_exists ? $repository['vcs'] : $vcs;
-  $form['#original_name'] = $repository_exists ? $repository['name'] : 0;
+  $form['#vcs'] = $repository_exists ? $repository->vcs : $vcs;
+  $form['#original_name'] = $repository_exists ? $repository->name : 0;
 
   $form['repository_information'] = array(
     '#type' => 'fieldset',
@@ -295,7 +295,7 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
     '#type' => 'textfield',
     '#title' => t('Repository name'),
     '#description' => t('A label for the repository that will be used in all user visible messages.'),
-    '#default_value' => $repository_exists ? $repository['name'] : '',
+    '#default_value' => $repository_exists ? $repository->name : '',
     '#required' => TRUE,
     '#weight' => 0,
     '#size' => 40,
@@ -305,7 +305,7 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
     '#type' => 'textfield',
     '#title' => t('Repository root'),
     '#description' => t('The location of the repository\'s root directory.'),
-    '#default_value' => $repository_exists ? $repository['root'] : '',
+    '#default_value' => $repository_exists ? $repository->root : '',
     '#weight' => 5,
     '#size' => 60,
     '#maxlength' => 255,
@@ -461,7 +461,7 @@ function versioncontrol_admin_repository_delete_confirm(&$form_state, $repositor
   $form['#repo_id'] = $repository->repo_id;
 
   $form = confirm_form($form,
-    t('Are you sure you want to delete %name?', array('%name' => $repository['name'])),
+    t('Are you sure you want to delete %name?', array('%name' => $repository->name)),
     !empty($_GET['destination']) ? $_GET['destination'] : 'admin/content/versioncontrol-repositories',
     t('Mind that by deleting the repository, all associated data such as commits and account associations will be deleted as well.'),
     t('Delete'), t('Cancel')
@@ -476,7 +476,7 @@ function versioncontrol_admin_repository_delete_confirm_submit($form, &$form_sta
   $repository = versioncontrol_repository_load($form['#repo_id']);
   $repository->delete();
   drupal_set_message(t('The %repository repository has been deleted.', array(
-    '%repository' => $repository['name'],
+    '%repository' => $repository->name,
   )));
   $form_state['redirect'] = 'admin/content/versioncontrol-repositories';
 }
