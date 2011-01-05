@@ -133,10 +133,7 @@ implements VersioncontrolItemParallelItems, VersioncontrolItemDirectoryContents,
     // in which case we need to fall back to the database or a VCS
     // invocation.  For example, something like this.
     if ($target_item->fetchItemRevisionId()) {
-      $constraints = array(
-        'item_revision_id' => array($target_item->item_revision_id),
-      );
-      $commit_operations = VersioncontrolOperationCache::getInstance()->getCommits($constraints);
+      $commit_operations = $this->backend->loadEntity('item', array($target_item->item_revision_id));
 
       if (!empty($commit_operations)) { // yo, found the associated commit!
         // Code taken from the CVS backend, which only assigns a single

@@ -386,35 +386,3 @@ function hook_versioncontrol_is_account_authorized($repository, $uid) {
   }
   return FALSE;
 }
-
-/**
- * Add additional columns into the list of VCS accounts.
- * By changing the @p $header and @p $rows_by_uid arguments,
- * the account list can be customized accordingly.
- *
- * @param $accounts
- *   The list of accounts that is being displayed in the account table. This is
- *   a structured array like the one returned by VersioncontrolAccountCache::getInstance()->getAccounts().
- * @param $repositories
- *   An array of repositories where the given users have a VCS account.
- *   Array keys are the repository ids, and array values are the
- *   repository arrays like returned from versioncontrol_get_repository().
- * @param $header
- *   A list of columns that will be passed to theme('table').
- * @param $rows_by_uid
- *   An array of existing table rows, with Drupal user ids as array keys.
- *   Each row already includes the generic column values, and for each row
- *   there is an account with the same uid given in the @p $accounts parameter.
- *
- * @ingroup Accounts
- * @ingroup Form handling
- * @ingroup Target audience: Authorization control modules
- * @ingroup Target audience: All modules with account specific settings
- */
-function hook_versioncontrol_alter_account_list($accounts, $repositories, &$header, &$rows_by_uid) {
-  $header[] = t('Karma');
-
-  foreach ($rows_by_uid as $uid => $row) {
-    $rows_by_uid[$uid][] = theme('user_karma', $uid);
-  }
-}
