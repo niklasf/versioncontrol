@@ -94,18 +94,24 @@ function _drush_versioncontrol_parse_repo_arg_list($repo_args = '') {
 function drush_versioncontrol_vcapi_parse_logs() {
   $repos = _drush_versioncontrol_parse_repo_arg_list(func_get_args());
 
-  // With the repository list assembled, begin log fetching.
+  // With the repository list assembled, queue batches to run.
+  $operations = array();
   foreach ($repos as $repo) {
-    try {
-      drush_log(dt('Beginning synchronization of repository !name', array('!name' => $repo->name)), 'ok');
-      $repo->fetchLogs();
-      // FIXME this often echoes success even if it didn't work
-      drush_log(dt('Successfully synchronized repository !name', array('!name' => $repo->name)), 'success');
-    }
-    catch (Exception $e) {
-      drush_set_error('Invalid generic repo class', dt('For repository "!name", a generic VersioncontrolRepository object was loaded instead of a backend-specific object; the generic class cannot be used for log fetching', array('!name' => $repo->name)));
-    }
+    $operations[] = array('_drush_versioncontrol_vcapi_parse_logs', array($repo->repo_id));
   }
+
+  $batch = array(
+    'operations' => $operations,
+    'title' => 'Synchronizing',
+    'init_message' => 'Fetching logs from repositories...',
+    'error_message' => 'An error occurred while fetching logs from repositories.',
+    // 'finished' => 'drush_versioncontrol_vcapi_parse_logs_finished',
+  );
+
+  batch_set($batch);
+  $batch =& batch_get();
+  $batch['progressive'] = FALSE;
+  drush_backend_batch_process();
 }
 
 function drush_versioncontrol_vcapi_map_operations() {
@@ -171,5 +177,18 @@ function drush_versioncontrol_vcapi_map_operations() {
         $commit->save();
       }
     }
+  }
+}
+
+function _drush_versioncontrol_vcapi_parse_logs($repo_id) {
+  $repo = versioncontrol_repository_load($repo_id);
+  try {
+    drush_log(dt('Beginning synchronization of repository !name', array('!name' => $repo->name)), 'ok');
+    $repo->fetchLogs();
+    // FIXME this often echoes success even if it didn't work
+    drush_log(dt('Successfully synchronized repository !name', array('!name' => $repo->name)), 'success');
+  }
+  catch (Exception $e) {
+    drush_set_error('Invalid generic repo class', dt('For repository "!name", a generic VersioncontrolRepository object was loaded instead of a backend-specific object; the generic class cannot be used for log fetching', array('!name' => $repo->name)));
   }
 }
