@@ -345,7 +345,17 @@ function versioncontrol_repository_load($repo_id) {
 function versioncontrol_repository_load_multiple($ids = array(), $conditions = array(), $options = array()) {
   $controller = &ctools_static(__FUNCTION__);
   if (!isset($controller)) {
-    $controller = new VersioncontrolRepositoryController();
+    if (variable_get('versioncontrol_single_backend_mode', FALSE)) {
+      $backends = versioncontrol_get_backends();
+      $backend = reset($backends);
+      // need to ensure the controller is initialized, and this is the only way
+      $result = $backend->loadEntities('repo', $ids, $conditions, $options);
+      $controller = $backend->controllers['repo'];
+      return $result;
+    }
+    else {
+      $controller = new VersioncontrolRepositoryController();
+    }
   }
   return $controller->load($ids, $conditions, $options);
 }
