@@ -118,7 +118,7 @@ abstract class VersioncontrolBackend {
   public function buildEntity($type, $data) {
     // Ensure this backend knows how to handle the entity type requested
     if (empty($this->classesEntities[$type])) {
-      throw new Exception("Invalid entity type '$type' requested; not supported by current backend.");
+      throw new Exception("Invalid entity type '$type' requested; not supported by " . __CLASS__, E_ERROR);
     }
 
     // Ensure the class to create descends from VersioncontrolEntity.
@@ -126,7 +126,7 @@ abstract class VersioncontrolBackend {
     // FIXME temporary hack to accommodate the introduction of the VersioncontrolEntityInterface interface; have to use reflection to check interfaces on a classname string, and
     // it's too annoying to refactor all this to accommodate that right now.
     if (!is_subclass_of($class, 'VersioncontrolEntity') && !is_subclass_of($class, 'VersioncontrolRepository')) {
-      throw new Exception('Invalid Versioncontrol entity class specified for building; all entity classes must implement VersioncontrolEntityInterface.');
+      throw new Exception("Invalid class '$class' specified by " . __CLASS__ . " backend for requested type '$type' when attempting to build a Versioncontrol entity; class does not implement VersioncontrolEntityInterface.", E_ERROR);
     }
 
     // If we're not building a repo object, snag the repo object and pass it to
