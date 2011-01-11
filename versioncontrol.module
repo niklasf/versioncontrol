@@ -281,25 +281,6 @@ function versioncontrol_revision_actions() {
 }
 
 /**
- * Custom access callback, determining if the current user (or the one given
- * in @p $account, if set) is permitted to administer version control system
- * functionality.
- */
-function versioncontrol_admin_access($account = NULL) {
-  return user_access('administer version control systems', $account);
-}
-
-/**
- * Custom access callback, determining if the current user (or the one given
- * in @p $account, if set) is permitted to use version control system
- * functionality.
- */
-function versioncontrol_user_access($account = NULL) {
-  return user_access('use version control systems', $account)
-    || user_access('administer version control systems', $account);
-}
-
-/**
  * Determine if we are operating in single or multi-backend mode, and set a
  * $conf variable accordingly.
  *
