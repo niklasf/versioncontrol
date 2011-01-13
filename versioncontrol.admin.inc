@@ -392,7 +392,7 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
     '#type' => 'radios',
     '#title' => t('Web viewer URL handler'),
     '#description' =>  t('The handler which will  provide the URLs that will be used to add links to item and commit displays such as the commit log.'),
-    '#default_value' => $repository_exists ? $repository->plugins['webviewer_url_handler'] : 0,
+    '#default_value' => $repository_exists ? $repository->plugins['webviewer_url_handler'] : 'none',
     '#options' => versioncontrol_webviewer_url_handlers_get_names($form['#vcs']),
   );
 
