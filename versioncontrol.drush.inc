@@ -30,6 +30,7 @@ function versioncontrol_drush_command() {
       '--all' => 'Attempt mapping on all operations, whether or not they have already been mapped. Respects --authors and --committers options.',
       '--authors' => 'Only attempt to map authors.',
       '--committers' => 'Only attempt to map committers.',
+      '--nobatch' => 'By default, this command operates using batchapi to help with memory management; Passing this option will cause it to execute normally.'
     ),
   );
 
@@ -93,6 +94,14 @@ function _drush_versioncontrol_parse_repo_arg_list($repo_args = '') {
 
 function drush_versioncontrol_vcapi_parse_logs() {
   $repos = _drush_versioncontrol_parse_repo_arg_list(func_get_args());
+
+  // Make batching optional, it seems to be screwing with output.
+  if (drush_get_option('nobatch', FALSE)) {
+    foreach ($repos as $repo) {
+      _drush_versioncontrol_vcapi_parse_logs($repo->repo_id);
+    }
+    return;
+  }
 
   // With the repository list assembled, queue batches to run.
   $operations = array();
