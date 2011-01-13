@@ -224,7 +224,12 @@ abstract class VersioncontrolEntityController {
     // If provided, attach generic conditions.
     if ($conditions) {
       foreach ($conditions as $field => $value) {
-        $this->attachCondition($query, $field, $value);
+        if (!empty($value)) {
+          $this->attachCondition($query, $field, $value);
+        }
+        else {
+          throw new Exception(t('Attempted to attach an empty condition on field @field with the controller @controller.', array('@field' => $field, '@controller' => get_class($this))), E_ERROR);
+        }
       }
     }
   }
