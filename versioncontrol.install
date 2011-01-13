@@ -1139,3 +1139,22 @@ function versioncontrol_update_6311() {
 
   return $ret;
 }
+
+/**
+ * Remove url_handler from repository data.
+ * Add base_url to repository data.
+ */
+function versioncontrol_update_6312() {
+  $ret = array();
+  $result = db_query("SELECT repo_id, data FROM {versioncontrol_repositories}");
+
+  while ($row = db_fetch_object($result)) {
+    $data = unserialize($row->data);
+    unset($data['versioncontrol']['url_handler']);
+    $data['webviewer_base_url'] = '';
+    $data = serialize($row->data);
+    db_query('UPDATE {versioncontrol_repositories} SET data = %s WHERE repo_id = %d', $row->data, $row->repo_id);
+  }
+
+  return $ret;
+}

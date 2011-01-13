@@ -371,6 +371,31 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
     '#options' => versioncontrol_auth_handlers_get_names(),
   );
 
+  $repo_url_handler = $repository_exists ? $repository->getUrlHandler() : NULL;
+
+  $form['repository_urls'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Repository browser URL handler'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#weight' => 5,
+  );
+  $form['repository_urls']['base_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Base URL'),
+    '#default_value' => isset($repo_url_handler) ? $repo_url_handler->baseUrl : '',
+    '#size' => 40,
+    '#maxlength' => 255,
+    '#description' => t('The URL that let you see the repository web viewer. Do not use a trailing slash.'),
+  );
+  $form['repository_urls']['url_handler'] = array(
+    '#type' => 'radios',
+    '#title' => t('Web viewer URL handler'),
+    '#description' =>  t('The handler which will  provide the URLs that will be used to add links to item and commit displays such as the commit log.'),
+    '#default_value' => $repository_exists ? $repository->plugins['webviewer_url_handler'] : 0,
+    '#options' => versioncontrol_webviewer_url_handlers_get_names($form['#vcs']),
+  );
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save repository'),
@@ -414,6 +439,7 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
       'author_mapper' => $form_state['values']['author_mapper'],
       'committer_mapper' => $form_state['values']['committer_mapper'],
       'auth_handler' => $form_state['values']['auth_handler'],
+      'webviewer_url_handler' => $form_state['values']['url_handler'],
     );
   }
   else {
@@ -428,10 +454,13 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
         'author_mapper' => $form_state['values']['author_mapper'],
         'committer_mapper' => $form_state['values']['committer_mapper'],
         'auth_handler' => $form_state['values']['auth_handler'],
+        'webviewer_url_handler' => $form_state['values']['url_handler'],
       ),
     );
     $repository = $backends[$form['#vcs']]->buildEntity('repo', $repository);
   }
+
+  $repository->data['webviewer_base_url'] = $form_state['values']['base_url'];
 
   // Let other modules alter the repository array.
   foreach (module_implements('versioncontrol_repository_submit') as $module) {

@@ -99,7 +99,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
    * The current plugin types(array keys) are:
    * - author_mapper
    * - committer_mapper
-   * - auth_handler
+   * - webviewer_url_handler
    *
    * @var array
    */
@@ -366,24 +366,24 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
    * Convinience method to retrieve url handler.
    */
   public function getUrlHandler() {
-    if (!isset($this->data['versioncontrol']['url_handler'])) {
-      $this->data['versioncontrol']['url_handler'] =
-        new VersioncontrolRepositoryUrlHandler(
-          $this, VersioncontrolRepositoryUrlHandler::getEmpty()
-        );
+    if (!isset($this->pluginInstances['webviewer_url_handler'])) {
+      $plugin = $this->getPlugin('webviewer_url_handler', 'webviewer_url_handlers');
+      $class_name = ctools_plugin_get_class($plugin, 'handler');
+      if (!class_exists($class_name)) {
+        throw new Exception("Plugin '{$this->plugins['webviewer_url_handler']}' of type 'webviewer_url_handlers' does not contain a valid class name in handler slot 'handler'", E_WARNING);
+        return FALSE;
+      }
+      $this->pluginInstances['webviewer_url_handler'] = new $class_name(
+        $this, $this->data['webviewer_base_url'], $plugin['url_templates']
+      );
     }
-    return $this->data['versioncontrol']['url_handler'];
+    return $this->pluginInstances['webviewer_url_handler'];
   }
 
   /**
-   * Get an instantiated plugin object based on a requested plugin slot, and the
-   * plugin this repository object has assigned to that slot.
-   *
-   * Internal function - other methods should provide a nicer public-facing
-   * interface. This method exists primarily to reduce code duplication involved
-   * in ensuring error handling and sound loading of the plugin.
+   * Get a ctools plugin based on plugin slot passed.
    */
-  protected function getPluginClass($plugin_slot, $plugin_type, $class_type) {
+  protected function getPlugin($plugin_slot, $plugin_type) {
     ctools_include('plugins');
 
     if (empty($this->plugins[$plugin_slot])) {
@@ -398,9 +398,23 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
       return FALSE;
     }
 
+    return $plugin;
+  }
+
+  /**
+   * Get an instantiated plugin object based on a requested plugin slot, and the
+   * plugin this repository object has assigned to that slot.
+   *
+   * Internal function - other methods should provide a nicer public-facing
+   * interface. This method exists primarily to reduce code duplication involved
+   * in ensuring error handling and sound loading of the plugin.
+   */
+  protected function getPluginClass($plugin_slot, $plugin_type, $class_type) {
+    $plugin = $this->getPlugin($plugin_slot, $plugin_type);
+
     $class_name = ctools_plugin_get_class($plugin, $class_type);
     if (!class_exists($class_name)) {
-      throw new Exception("Plugin '$plugin_name' of type '$plugin_type' does not contain a valid class name in handler slot '$class_type'", E_WARNING);
+      throw new Exception("Plugin '$plugin_slot' of type '$plugin_type' does not contain a valid class name in handler slot '$class_type'", E_WARNING);
       return FALSE;
     }
 
@@ -447,232 +461,4 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     return $this->pluginInstances['committer_mapper'];
   }
 
-}
-
-/**
- * Contains the urls mainly for displaying.
- */
-class VersioncontrolRepositoryUrlHandler {
-
-  /**
-   * Repository where this urls belongs.
-   *
-   * @var    VersioncontrolRepository
-   */
-  public $repository;
-
-  /**
-   * An array of repository viewer URLs.
-   *
-   * @var    array
-   */
-  public $urls;
-
-  public function __construct($repository, $urls) {
-    $this->repository = $repository;
-    $this->urls = $urls;
-  }
-
-  /**
-   * Explain and return and empty array of urls data member.
-   */
-  public static function getEmpty() {
-    return array(
-      /**
-       * The URL of the repository viewer that displays a given commit in the
-       * repository. "%revision" is used as placeholder for the
-       * revision/commit/changeset identifier.
-       */
-      'commit_view'    => '',
-      /**
-       * The URL of the repository viewer that displays the commit log of a
-       * given file in the repository. "%path" is used as placeholder for the
-       * file path, "%revision" will be replaced by the file-level revision
-       * (the one in {versioncontrol_item_revisions}.revision), and "%branch"
-       * will be replaced by the branch name that the file is on.
-       */
-      'file_log_view'  => '',
-      /**
-       * The URL of the repository viewer that displays the contents of a given
-       * file in the repository. "%path" is used as placeholder for the file
-       * path, "%revision" will be replaced by the file-level revision (the one
-       * in {versioncontrol_item_revisions}.revision), and "%branch" will be
-       * replaced by the branch name that the file is on.
-       */
-      'file_view'      => '',
-      /**
-       * The URL of the repository viewer that displays the contents of a given
-       * directory in the repository. "%path" is used as placeholder for the
-       * directory path, "%revision" will be replaced by the file-level revision
-       * (the one in {versioncontrol_item_revisions}.revision - only makes sense
-       * if directories are versioned, of course), and "%branch" will be
-       * replaced by the branch name that the directory is on.
-       */
-      'directory_view' => '',
-      /**
-       * The URL of the repository viewer that displays the diff between two
-       * given files in the repository. "%path" and "%old-path" are used as
-       * placeholders for the new and old paths (for some version control
-       * systems, like CVS, those paths will always be the same).
-       * "%new-revision" and "%old-revision" will be replaced by the
-       * respective file-level revisions (from
-       * {versioncontrol_item_revisions}.revision), and "%branch" will be
-       * replaced by the branch name that the file is on.
-       */
-      'diff'           => '',
-      /**
-       * The URL of the issue tracker that displays the issue/case/bug page of
-       * an issue id which presumably has been mentioned in a commit message.
-       * As issue tracker URLs are likely specific to each repository, this is
-       * also a per-repository setting. (Although... maybe it would make sense
-       * to have per-project rather than per-repository. Oh well.)
-       */
-      'tracker'        => ''
-    );
-  }
-
-  /**
-   * Retrieve the URL of the repository viewer that displays the given commit
-   * in the corresponding repository.
-   *
-   * @param $revision
-   *   The revision on the commit operation whose view URL should be retrieved.
-   *
-   * @return
-   *   The commit view URL corresponding to the given arguments.
-   *   An empty string is returned if no commit view URL has been defined,
-   *   or if the commit cannot be viewed for any reason.
-   */
-  public function getCommitViewUrl($revision) {
-    if (empty($revision)) {
-      return '';
-    }
-    return strtr($this->urls['commit_view'], array(
-      '%revision' => $revision,
-    ));
-  }
-
-  /**
-   * Retrieve the URL of the repository viewer that displays the commit log
-   * of the given item in the corresponding repository. If no such URL has been
-   * specified by the user, the appropriate URL from the Commit Log module is
-   * used as a fallback (if that module is enabled).
-   *
-   * @param $item
-   *   The item whose log view URL should be retrieved.
-   *
-   * @return
-   *   The item log view URL corresponding to the given arguments.
-   *   An empty string is returned if no item log view URL has been defined
-   *   (and if not even Commit Log is enabled), or if the item cannot be viewed
-   *   for any reason.
-   */
-  public function getItemLogViewUrl(&$item) {
-    $label = $item->getSelectedLabel();
-
-    if (isset($label->type) && $label->type == VERSIONCONTROL_LABEL_BRANCH) {
-      $current_branch = $label['name'];
-    }
-
-    if (!empty($this->urls['file_log_view'])) {
-      if ($item->isFile()) {
-        return strtr($this->urls['file_log_view'], array(
-          '%path'     => $item->path,
-          '%revision' => $item->revision,
-          '%branch'   => isset($current_branch) ? $current_branch : '',
-        ));
-      }
-      // The default URL backend doesn't do log view URLs for directory items:
-      return '';
-    }
-    elseif (module_exists('commitlog')) { // fallback, as 'file_log_view' is empty
-      $query = array(
-        'repos' => $item->repository->repo_id,
-        'paths' => drupal_urlencode($item->path),
-      );
-      if (isset($current_branch)) {
-        $query['branches'] = $current_branch;
-      }
-      return url('commitlog', array(
-        'query' => $query,
-        'absolute' => TRUE,
-      ));
-    }
-    return ''; // in case we really can't retrieve any sensible URL
-  }
-
-  /**
-   * Retrieve the URL of the repository viewer that displays the contents of the
-   * given item in the corresponding repository.
-   *
-   * @param $item
-   *   The item whose view URL should be retrieved.
-   *
-   * @return
-   *   The item view URL corresponding to the given arguments.
-   *   An empty string is returned if no item view URL has been defined,
-   *   or if the item cannot be viewed for any reason.
-   */
-  public function getItemViewUrl(&$item) {
-    $label = $item->getSelectedLabel();
-
-    if (isset($label->type) && $label->type == VERSIONCONTROL_LABEL_BRANCH) {
-      $current_branch = $label->name;
-    }
-    $view_url = $item->isFile()
-      ? $this->urls['file_view']
-      : $this->urls['directory_view'];
-
-    return strtr($view_url, array(
-      '%path'     => $item['path'],
-      '%revision' => $item['revision'],
-      '%branch'   => isset($current_branch) ? $current_branch : '',
-    ));
-  }
-
-  /**
-   * Retrieve the URL of the repository viewer that displays the diff between
-   * two given files in the corresponding repository.
-   *
-   * @param $file_item_new
-   *   The new version of the file that should be diffed.
-   * @param $file_item_old
-   *   The old version of the file that should be diffed.
-   *
-   * @return
-   *   The diff URL corresponding to the given arguments.
-   *   An empty string is returned if no diff URL has been defined,
-   *   or if the two items cannot be diffed for any reason.
-   */
-  public function getDiffUrl(&$file_item_new, $file_item_old) {
-    $label = $file_item_new->getSelectedLabel();
-
-    if (isset($label['type']) && $label['type'] == VERSIONCONTROL_LABEL_BRANCH) {
-      $current_branch = $label['name'];
-    }
-    return strtr($this->urls['diff'], array(
-      '%path'         => $file_item_new['path'],
-      '%new-revision' => $file_item_new['revision'],
-      '%old-path'     => $file_item_old['path'],
-      '%old-revision' => $file_item_old['revision'],
-      '%branch'       => isset($current_branch) ? $current_branch : '',
-    ));
-  }
-
-  /**
-   * Retrieve the URL of the issue tracker that displays the issue/case/bug page
-   * of an issue id which presumably has been mentioned in a commit message.
-   * As issue tracker URLs are specific to each repository, this also needs
-   * to be given as argument.
-   *
-   * @param $issue_id
-   *   A number that uniquely identifies the mentioned issue/case/bug.
-   *
-   * @return
-   *   The issue tracker URL corresponding to the given arguments.
-   *   An empty string is returned if no issue tracker URL has been defined.
-   */
-  public function getTrackerUrl($issue_id) {
-    return strtr($this->urls['tracker'], array('%d' => $issue_id));
-  }
 }

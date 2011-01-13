@@ -149,9 +149,13 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
       'auth_handler' => 'ffa',
       'author_mapper' => 'simple_mail',
       'committer_mapper' => 'simple_mail',
+      'webviewer_url_handler' => 'none',
     );
 
     $data += $default_data;
+    if (!isset($data['webviewer_base_url'])) {
+      $data['data']['webviewer_base_url'] = '';
+    }
     foreach ($default_plugins as $plugin_slot => $default_plugin) {
       if (empty($data['plugins'][$plugin_slot])) {
         $data['plugins'][$plugin_slot] = $default_plugin;

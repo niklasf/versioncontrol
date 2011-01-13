@@ -322,3 +322,76 @@ interface VersioncontrolAuthHandlerInterface {
    */
   public function getErrorMessages();
 }
+
+interface VersioncontrolWebviewerUrlHandlerInterface {
+
+  /**
+   * Retrieve the URL of the repository viewer that displays the main
+   * view of the repository.
+   *
+   * @return
+   *   The repository view URL of the associated repository.
+   */
+  public function getRepositoryViewUrl();
+
+  /**
+   * Retrieve the URL of the repository viewer that displays the given commit
+   * in the corresponding repository.
+   *
+   * @param $revision
+   *   The revision on the commit operation whose view URL should be retrieved.
+   *
+   * @return
+   *   The commit view URL corresponding to the given arguments.
+   *   An empty string is returned if no commit view URL has been defined,
+   *   or if the commit cannot be viewed for any reason.
+   */
+  public function getCommitViewUrl($revision);
+
+  /**
+   * Retrieve the URL of the repository viewer that displays the commit log
+   * of the given item in the corresponding repository. If no such URL has been
+   * specified by the user, the appropriate URL from the Commit Log module is
+   * used as a fallback (if that module is enabled).
+   *
+   * @param $item
+   *   The item whose log view URL should be retrieved.
+   *
+   * @return
+   *   The item log view URL corresponding to the given arguments.
+   *   An empty string is returned if no item log view URL has been defined
+   *   (and if not even Commit Log is enabled), or if the item cannot be viewed
+   *   for any reason.
+   */
+  public function getItemLogViewUrl(&$item);
+
+  /**
+   * Retrieve the URL of the repository viewer that displays the contents of the
+   * given item in the corresponding repository.
+   *
+   * @param $item
+   *   The item whose view URL should be retrieved.
+   *
+   * @return
+   *   The item view URL corresponding to the given arguments.
+   *   An empty string is returned if no item view URL has been defined,
+   *   or if the item cannot be viewed for any reason.
+   */
+  public function getItemViewUrl(&$item);
+
+  /**
+   * Retrieve the URL of the repository viewer that displays the diff between
+   * two given files in the corresponding repository.
+   *
+   * @param $file_item_new
+   *   The new version of the file that should be diffed.
+   * @param $file_item_old
+   *   The old version of the file that should be diffed.
+   *
+   * @return
+   *   The diff URL corresponding to the given arguments.
+   *   An empty string is returned if no diff URL has been defined,
+   *   or if the two items cannot be diffed for any reason.
+   */
+  public function getDiffUrl(&$file_item_new, $file_item_old);
+}

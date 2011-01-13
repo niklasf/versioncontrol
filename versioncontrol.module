@@ -1000,3 +1000,25 @@ function versioncontrol_auth_handlers_get_names() {
   asort($names);
   return $names;
 }
+
+/**
+ * Load the names of all 'webviewer_url_handlers' for use at forms.
+ */
+function versioncontrol_webviewer_url_handlers_get_names($vcs='') {
+  ctools_include('plugins');
+
+  $names = array();
+  foreach (ctools_get_plugins('versioncontrol', 'webviewer_url_handlers') as $name => $plugin) {
+    if (!empty($vcs)) {
+      if ($plugin['vcs'] == $vcs) {
+        $names[$name] = $plugin['title'];
+      }
+    }
+    else {
+      $names[$name] = $plugin['title'];
+    }
+  }
+
+  asort($names);
+  return $names;
+}
