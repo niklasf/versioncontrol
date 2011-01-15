@@ -364,9 +364,6 @@ function versioncontrol_schema() {
         'serialize' => TRUE,
       ),
     ),
-    'unique keys' => array(
-      'name' => array('name'),
-    ),
     'primary key' => array('repo_id'),
   );
 
@@ -1156,5 +1153,14 @@ function versioncontrol_update_6312() {
     db_query('UPDATE {versioncontrol_repositories} SET data = %s WHERE repo_id = %d', $row->data, $row->repo_id);
   }
 
+  return $ret;
+}
+
+/**
+ * Make repository names non-unique.
+ */
+function versioncontrol_update_6313() {
+  $ret = array();
+  db_drop_unique_key(&$ret, 'versioncontrol_repositories', 'name');
   return $ret;
 }

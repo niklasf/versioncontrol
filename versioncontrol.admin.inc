@@ -406,25 +406,6 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
 }
 
 /**
- * Validate the add/edit repository form before it is submitted.
- */
-function versioncontrol_admin_repository_edit_validate($form, &$form_state) {
-  if (!empty($form['#repository']) && $form_state['values']['repo_name'] == $form['#original_name']) {
-    return;
-  }
-
-  $conditions = array('name' => $form_state['values']['repo_name']);
-
-  $same_repositories = versioncontrol_repository_load_multiple(array(), $conditions);
-  if (!empty($same_repositories)) {
-    form_error($form['repository_information']['repo_name'],
-      t('The repository name %reponame is already in use, please assign a different one.',
-        array('%reponame' => $form_state['values']['repo_name']))
-    );
-  }
-}
-
-/**
  * Add or update the repository when the add/edit form is submitted.
  */
 function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
