@@ -1131,7 +1131,7 @@ function versioncontrol_update_6311() {
     $data = unserialize($row->data);
     unset($data['versioncontrol']['allow_unauthorized_access']);
     $data = serialize($row->data);
-    db_query('UPDATE {versioncontrol_repositories} SET data = %s WHERE repo_id = %d', $row->data, $row->repo_id);
+    db_query("UPDATE {versioncontrol_repositories} SET data = '%s' WHERE repo_id = %d", $row->data, $row->repo_id);
   }
 
   return $ret;
