@@ -291,6 +291,7 @@ function versioncontrol_views_data() {
       'click sortable' => TRUE,
       'additional fields' => array(
         'vcs' => array('table' => 'versioncontrol_repositories', 'field' => 'vcs'),
+        'repo_id' => array('table' => 'versioncontrol_repositories', 'field' => 'repo_id'),
       ),
     ),
     'sort' => array(
@@ -307,7 +308,7 @@ function versioncontrol_views_data() {
     'title'    => t('Message'),
     'help'     => t('The Operation Message'),
     'field'    => array(
-      'handler' => 'views_handler_field',
+      'handler' => 'versioncontrol_handler_field_operation_message',
     ),
   );
   $data['versioncontrol_operations']['table']['join'] = array(
@@ -440,8 +441,14 @@ function versioncontrol_views_data() {
   $data['versioncontrol_item_revisions']['path'] = array(
     'title' => t("File path"),
     'help' => t("The file path within the repository"),
-    'field' => array(
-      'handler' => 'views_handler_field',
+    'field'    => array(
+      'handler' => 'versioncontrol_handler_field_item_revision_path',
+      'click sortable' => TRUE,
+      'additional fields' => array(
+        'vcs' => array('table' => 'versioncontrol_repositories', 'field' => 'vcs'),
+        'repo_id' => array('table' => 'versioncontrol_repositories', 'field' => 'repo_id'),
+        'item_revision_id',
+      ),
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -461,6 +468,7 @@ function versioncontrol_views_data() {
       'click sortable' => TRUE,
       'additional fields' => array(
         'vcs' => array('table' => 'versioncontrol_repositories', 'field' => 'vcs'),
+        'repo_id' => array('table' => 'versioncontrol_repositories', 'field' => 'repo_id'),
       ),
     ),
     'sort' => array(
@@ -545,6 +553,9 @@ function versioncontrol_views_handlers() {
       'versioncontrol_handler_field_operation_type' => array(
         'parent' => 'views_handler_field',
       ),
+      'versioncontrol_handler_field_operation_message' => array(
+        'parent' => 'views_handler_field',
+      ),
       'versioncontrol_handler_field_operation_revision' => array(
         'parent' => 'views_handler_field',
       ),
@@ -555,6 +566,9 @@ function versioncontrol_views_handlers() {
         'parent' => 'versioncontrol_handler_field_operation_person',
       ),
       'versioncontrol_handler_field_item_revision_action' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'versioncontrol_handler_field_item_revision_path' => array(
         'parent' => 'views_handler_field',
       ),
       'versioncontrol_handler_field_item_revision_visual_diffstat' => array(

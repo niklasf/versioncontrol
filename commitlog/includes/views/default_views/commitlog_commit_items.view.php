@@ -35,6 +35,7 @@ $handler->override_option('fields', array(
     'empty' => '',
     'hide_empty' => 0,
     'empty_zero' => 0,
+    'link_type' => 'log',
     'exclude' => 0,
     'id' => 'path',
     'table' => 'versioncontrol_item_revisions',
