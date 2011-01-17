@@ -21,7 +21,8 @@ class versioncontrol_handler_field_operation_attribution extends versioncontrol_
     if ($author_uid == $committer_uid) {
       $this->aliases['person_uid'] = $this->aliases['author_uid'];
       $this->field_alias = $this->aliases['author'];
-      return parent::render($values);
+      $author = parent::render($values);
+      return t('by !author', array('!author' => $author));
     }
 
     // Show both if they are different.
@@ -31,7 +32,7 @@ class versioncontrol_handler_field_operation_attribution extends versioncontrol_
     $this->aliases['person_uid'] = $this->aliases['committer_uid'];
     $this->field_alias = $this->aliases['committer'];
     $committer = parent::render($values);
-    return t('authored by !author, committed by !committer', array(
+    return t('<span class="authored-by">authored by !author</span>, <span class="committed-by">committed by !committer</span>', array(
       '!author' => $author, '!committer' => $committer));
   }
 
