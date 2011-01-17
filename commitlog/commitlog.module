@@ -37,6 +37,14 @@ function commitlog_menu() {
     'access arguments' => array($view_access),
     'type' => MENU_SUGGESTED_ITEM,
   );
+  $items['user/%user/track/code'] = array(
+    'title' => 'Commits',
+    'page callback' => 'commitlog_operations_page',
+    'page arguments' => array('user', 1),
+    'access arguments' => array($view_access),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2,
+  );
   return $items;
 }
 
@@ -92,6 +100,12 @@ function commitlog_operations_page($type = NULL, $argument = NULL) {
 
   $view = '';
   if ($type == 'author' && !is_null($argument)) {
+    $set = versioncontrol_get_views_set('user_commit_view');
+    $view = $set->getViewName();
+  }
+  else if ($type == 'user' && !is_null($argument)) {
+    drupal_set_title($argument->name);
+    $argument = $argument->uid;
     $set = versioncontrol_get_views_set('user_commit_view');
     $view = $set->getViewName();
   }
