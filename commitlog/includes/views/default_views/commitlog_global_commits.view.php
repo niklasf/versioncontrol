@@ -101,6 +101,7 @@ $handler->override_option('fields', array(
     'empty_zero' => 0,
     'date_format' => 'custom',
     'custom_date_format' => 'F j, Y G:i',
+    'link' => 1,
     'exclude' => 1,
     'id' => 'date',
     'table' => 'versioncontrol_operations',
