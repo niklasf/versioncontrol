@@ -6,6 +6,16 @@
  * possible. It also shows the committer if it is different.
  */
 class versioncontrol_handler_field_operation_attribution extends versioncontrol_handler_field_operation_person {
+  function construct() {
+    parent::construct();
+    // @TODO After we get joins against both the author_uid and commiter_uid we need to require both here
+    $this->additional_fields['username'] = array('table' => 'users', 'field' => 'name');
+  }
+
+  function query() {
+    $this->ensure_my_table();
+    $this->add_additional_fields();
+  }
 
   function pre_render($values) {
     parent::pre_render($values);
