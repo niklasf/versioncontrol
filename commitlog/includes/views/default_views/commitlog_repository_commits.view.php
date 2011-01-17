@@ -2,7 +2,7 @@
 // $Id$
 
 $view = new view;
-$view->name = 'commitlog_global_commits';
+$view->name = 'commitlog_repository_commits';
 $view->description = 'Commitlog Global Commit Log';
 $view->tag = 'VersionControl Core';
 $view->view_php = '';
@@ -299,6 +299,67 @@ $handler->override_option('sorts', array(
     'relationship' => 'none',
   ),
 ));
+$handler->override_option('arguments', array(
+  'repo_id' => array(
+    'default_action' => 'not found',
+    'style_plugin' => 'default_summary',
+    'style_options' => array(),
+    'wildcard' => 'all',
+    'wildcard_substitution' => 'All',
+    'title' => '',
+    'breadcrumb' => '',
+    'default_argument_type' => 'fixed',
+    'default_argument' => '',
+    'validate_type' => 'none',
+    'validate_fail' => 'not found',
+    'break_phrase' => 0,
+    'not' => 0,
+    'id' => 'repo_id',
+    'table' => 'versioncontrol_repositories',
+    'field' => 'repo_id',
+    'validate_user_argument_type' => 'uid',
+    'validate_user_roles' => array(
+      '2' => 0,
+      '3' => 0,
+      '4' => 0,
+      '5' => 0,
+      '6' => 0,
+      '7' => 0,
+      '8' => 0,
+    ),
+    'relationship' => 'none',
+    'default_options_div_prefix' => '',
+    'default_argument_fixed' => '',
+    'default_argument_user' => 0,
+    'default_argument_php' => '',
+    'validate_argument_node_type' => array(
+      'forum' => 0,
+      'project_project' => 0,
+      'project_release' => 0,
+      'project_issue' => 0,
+      'book' => 0,
+      'page' => 0,
+      'story' => 0,
+    ),
+    'validate_argument_node_access' => 0,
+    'validate_argument_nid_type' => 'nid',
+    'validate_argument_vocabulary' => array(
+      '1' => 0,
+      '5' => 0,
+      '3' => 0,
+      '2' => 0,
+      '4' => 0,
+    ),
+    'validate_argument_type' => 'tid',
+    'validate_argument_transform' => 0,
+    'validate_user_restrict_roles' => 0,
+    'validate_argument_project_term_argument_type' => 'tid',
+    'validate_argument_project_term_argument_action_top_without' => 'pass',
+    'validate_argument_project_term_argument_action_top_with' => 'pass',
+    'validate_argument_project_term_argument_action_child' => 'pass',
+    'validate_argument_php' => '',
+  ),
+));
 $handler->override_option('access', array(
   'type' => 'none',
 ));
@@ -306,6 +367,4 @@ $handler->override_option('cache', array(
   'type' => 'none',
 ));
 $handler->override_option('use_pager', '1');
-$handler->override_option('style_options', array(
-  'grouping' => 'date_1',
-));
+$handler->override_option('style_plugin', 'list');
