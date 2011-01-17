@@ -10,6 +10,7 @@
  */
 function theme_versioncontrol_diffstat($places, $result) {
   $output = '';
+  drupal_add_css(drupal_get_path('module', 'versioncontrol') . '/versioncontrol.css', 'module');
   for ($i = 0; $i++, $i <= $places;) {
     if ($result['add'] != 0) {
       $output .= theme('versioncontrol_diffstat_addition');
@@ -23,7 +24,7 @@ function theme_versioncontrol_diffstat($places, $result) {
     }
     $output .= theme('versioncontrol_diffstat_no_op');
   }
-  return '<span class="versioncontrol-diffstat">'. $output .'</span>';
+  return '<span class="versioncontrol-diffstat clear-block">'. $output .'</span>';
 }
 
 function theme_versioncontrol_diffstat_addition() {
