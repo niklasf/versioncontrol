@@ -312,38 +312,6 @@ $handler->override_option('fields', array(
     ),
     'relationship' => 'none',
   ),
-  'changed_lines' => array(
-    'label' => '',
-    'alter' => array(
-      'alter_text' => 0,
-      'text' => '',
-      'make_link' => 0,
-      'path' => '',
-      'link_class' => '',
-      'alt' => '',
-      'prefix' => '',
-      'suffix' => '',
-      'target' => '',
-      'help' => '',
-      'trim' => 0,
-      'max_length' => '',
-      'word_boundary' => 1,
-      'ellipsis' => 1,
-      'html' => 0,
-      'strip_tags' => 0,
-    ),
-    'empty' => '',
-    'hide_empty' => 0,
-    'empty_zero' => 0,
-    'exclude' => 0,
-    'id' => 'changed_lines',
-    'table' => 'versioncontrol_item_revisions',
-    'field' => 'changed_lines',
-    'override' => array(
-      'button' => 'Use default',
-    ),
-    'relationship' => 'none',
-  ),
 ));
 $handler->override_option('block_description', '');
 $handler->override_option('block_caching', -1);
