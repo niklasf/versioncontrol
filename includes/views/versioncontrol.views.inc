@@ -184,7 +184,7 @@ function versioncontrol_views_data() {
     'title'    => t('Date'),
     'help'     => t('The date of the operation'),
     'field'    => array(
-      'handler' => 'views_handler_field_date',
+      'handler' => 'versioncontrol_handler_field_operation_date',
       'click sortable' => TRUE,
     ),
     'sort' => array(
@@ -315,7 +315,7 @@ function versioncontrol_views_data() {
     'users' => array(
       'left_field' => 'uid',
       'field'      => 'author_uid',
-    ),  
+    ),
     'versioncontrol_repositories' => array(
       'left_field' => 'repo_id',
       'field' => 'repo_id',
@@ -584,6 +584,9 @@ function versioncontrol_views_handlers() {
       ),
       'versioncontrol_handler_field_item_revision_lines_changed' => array(
         'parent' => 'views_handler_field',
+      ),
+      'versioncontrol_handler_field_operation_date' => array(
+        'parent' => 'views_handler_field_date',
       ),
       // filter handlers
       'versioncontrol_handler_filter_operation_type' => array(
