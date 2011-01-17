@@ -314,8 +314,8 @@ function versioncontrol_views_data() {
   $data['versioncontrol_operations']['table']['join'] = array(
     'users' => array(
       'left_field' => 'uid',
-      'field'      => 'uid',
-    ),
+      'field'      => 'author_uid',
+    ),  
     'versioncontrol_repositories' => array(
       'left_field' => 'repo_id',
       'field' => 'repo_id',
@@ -335,7 +335,7 @@ function versioncontrol_views_data() {
     ),
   );
   $data['users']['table']['join']['versioncontrol_operations'] = array(
-    'left_field' => 'uid',
+    'left_field' => 'author_uid',
       'field'      => 'uid',
       'type'       => 'inner',
   );
