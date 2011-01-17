@@ -37,6 +37,13 @@ function commitlog_menu() {
     'access arguments' => array($view_access),
     'type' => MENU_SUGGESTED_ITEM,
   );
+  $items['commitlog/commit/%'] = array(
+    'title' => 'Commit',
+    'page callback' => 'commitlog_operations_page',
+    'page arguments' => array('commit', 2),
+    'access arguments' => array($view_access),
+    'type' => MENU_SUGGESTED_ITEM,
+  );
   $items['user/%user/track/code'] = array(
     'title' => 'Commits',
     'page callback' => 'commitlog_operations_page',
@@ -112,6 +119,10 @@ function commitlog_operations_page($type = NULL, $argument = NULL) {
   else if ($type == 'repository' && !is_null($argument)) {
     $set = versioncontrol_get_views_set('repository_commit_view');
     $view = $set->getViewNameByEntity(versioncontrol_repository_load($argument));
+  }
+  else if ($type == 'commit' && !is_null($argument)) {
+    $set = versioncontrol_get_views_set('individual_commit_view');
+    $view = $view = $set->getViewName();
   }
   else {
     $set = versioncontrol_get_views_set('global_commit_view');
