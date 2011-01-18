@@ -6,41 +6,52 @@
  * possible. It also shows the committer if it is different.
  */
 class versioncontrol_handler_field_operation_attribution extends versioncontrol_handler_field_operation_person {
-  function construct() {
-    parent::construct();
-    // @TODO After we get joins against both the author_uid and commiter_uid we need to require both here
-    $this->additional_fields['username'] = array('table' => 'users', 'field' => 'name');
-  }
 
-  function query() {
-    $this->ensure_my_table();
-    $this->add_additional_fields();
-  }
+  /**
+   * An array to store {users}.name's keyed by uid for all the results.
+   * This is needed in order to get names for author_uid and committer_uid at the same time.
+   */
+  public $usernames;
 
   function pre_render($values) {
     parent::pre_render($values);
     // Ensure the author alias is set.
     $this->aliases['author'] = $this->field_alias;
+
+    // Get all uids taking care of repeated one.
+    foreach ($values as $result) {
+      $uids[$result->{$this->aliases['author_uid']}] = TRUE;
+      $uids[$result->{$this->aliases['committer_uid']}] = TRUE;
+    }
+    $uids = array_keys($uids);
+
+    $result = db_query('SELECT u.uid, u.name FROM {users} u WHERE u.uid IN ( %s )', implode(', ', $uids));
+    while ($row = db_fetch_object($result)) {
+      $this->usernames[$row->uid] = $row->name;
+    }
   }
 
   function render($values) {
     $author_uid = $values->{$this->aliases['author_uid']};
     $committer_uid = $values->{$this->aliases['committer_uid']};
 
+    // Render the author.
+    $this->aliases['person_uid'] = $this->aliases['author_uid'];
+    $this->field_alias = $this->aliases['author'];
+    $this->aliases['person_username'] = 'author_username';
+    $values->{$this->aliases['person_username']} = $this->usernames[$author_uid];
+    $author = parent::render($values);
+
     // Show only author if they are equal.
     if ($author_uid == $committer_uid) {
-      $this->aliases['person_uid'] = $this->aliases['author_uid'];
-      $this->field_alias = $this->aliases['author'];
-      $author = parent::render($values);
       return t('by !author', array('!author' => $author));
     }
 
     // Show both if they are different.
-    $this->aliases['person_uid'] = $this->aliases['author_uid'];
-    $this->field_alias = $this->aliases['author'];
-    $author = parent::render($values);
     $this->aliases['person_uid'] = $this->aliases['committer_uid'];
     $this->field_alias = $this->aliases['committer'];
+    $this->aliases['person_username'] = 'committer_username';
+    $values->{$this->aliases['person_username']} = $this->usernames[$committer_uid];
     $committer = parent::render($values);
     return t('<span class="authored-by">authored by !author</span>, <span class="committed-by">committed by !committer</span>', array(
       '!author' => $author, '!committer' => $committer));

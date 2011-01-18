@@ -14,15 +14,17 @@ class versioncontrol_handler_field_operation_person extends views_handler_field 
     else {
       $account = new stdClass();
       $account->uid = $values->{$this->aliases['person_uid']};
-      // @TODO The following is a hack until we can join both author_uid and committer_uid to users.
-      // Only fix the username for author which is the only column joined to {users}.
-      if ($this->field_alias == $this->aliases['author']) {
-        $account->name = $values->{$this->aliases['username']};
+      // Show the value on the field if not mapped.
+      if ($account->uid == 0) {
+        $account->name = $values->{$this->field_alias};
       }
       else {
-        // @TODO Remove this query
-        // This is a temporary hack that we should very rarely need.
-        $account->name = db_result(db_query("SELECT name FROM {users} WHERE uid = %d", $account->uid));
+        if (empty($values->{$this->aliases['person_username']})) {
+          return $values->{$this->field_alias};
+        }
+        else {
+          $account->name = $values->{$this->aliases['person_username']};
+        }
       }
       return theme('username', $account);
     }

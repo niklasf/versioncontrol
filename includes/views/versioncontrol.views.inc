@@ -206,6 +206,7 @@ function versioncontrol_views_data() {
       'click sortable' => TRUE,
       'additional fields' => array(
         'person_uid' => array('table' => 'versioncontrol_operations', 'field' => 'author_uid'),
+        'person_username' => array('table' => 'users', 'field' => 'name'),
       ),
     ),
     'sort' => array(
@@ -259,6 +260,7 @@ function versioncontrol_views_data() {
       'click sortable' => TRUE,
       'additional fields' => array(
         'person_uid' => array('table' => 'versioncontrol_operations', 'field' => 'committer_uid'),
+        'person_username' => array('table' => 'users', 'field' => 'name'),
       ),
     ),
     'sort' => array(
