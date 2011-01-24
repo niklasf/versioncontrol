@@ -122,7 +122,7 @@ function commitlog_operations_page($type = NULL, $argument = NULL) {
   }
   else if ($type == 'commit' && !is_null($argument)) {
     $set = versioncontrol_get_views_set('individual_commit_view');
-    $view = $view = $set->getViewName();
+    $view = $set->getViewName();
   }
   else {
     $set = versioncontrol_get_views_set('global_commit_view');
