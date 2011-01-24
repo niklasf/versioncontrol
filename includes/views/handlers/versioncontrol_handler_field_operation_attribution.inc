@@ -19,13 +19,15 @@ class versioncontrol_handler_field_operation_attribution extends versioncontrol_
     $this->aliases['author'] = $this->field_alias;
 
     // Get all uids taking care of repeated one.
+    $uids = array();
     foreach ($values as $result) {
       $uids[$result->{$this->aliases['author_uid']}] = TRUE;
       $uids[$result->{$this->aliases['committer_uid']}] = TRUE;
     }
     $uids = array_keys($uids);
+    $placeholders = implode(',', array_fill(0, count($uids), "%d"));
 
-    $result = db_query('SELECT u.uid, u.name FROM {users} u WHERE u.uid IN ( %s )', implode(', ', $uids));
+    $result = db_query("SELECT u.uid, u.name FROM {users} u WHERE u.uid IN ($placeholders)", $uids);
     while ($row = db_fetch_object($result)) {
       $this->usernames[$row->uid] = $row->name;
     }
