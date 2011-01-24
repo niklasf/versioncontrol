@@ -233,6 +233,92 @@ function versioncontrol_admin_views_sets_edit_submit($form, &$form_state) {
 }
 
 /**
+ * Form callback for "admin/settings/versioncontrol-settings/plugins":
+ * Provide a form for settings about Version Control API plugins.
+ */
+function versioncontrol_admin_settings_plugins(&$form_state) {
+  ctools_include('plugins');
+  $form = array();
+  $plugin_entity_types = versioncontrol_plugins_get_information();
+  // view_sets have its own settings page, so avoid it
+  unset($plugin_entity_types['view']);
+
+  foreach ($plugin_entity_types as $plugin_entity_type => $plugin_types) {
+    foreach ($plugin_types as $plugin_type => $plugin_type_data) {
+      $form['versioncontrol_plugin_' . $plugin_type] = array(
+        '#type' => 'fieldset',
+        '#title' => $plugin_type_data['name'],
+      );
+
+      $variable = $plugin_type_data['default_variable'];
+      $callback = $plugin_type_data['fetcher'];
+      $form['versioncontrol_plugin_' . $plugin_type][$variable] = array(
+        '#type' => 'select',
+        '#title' => t('Default plugin'),
+        '#default_value' => variable_get($variable, 0),
+        '#options' => function_exists($callback) ? array( 0 => t('Do not set default')) + $callback() : array(),
+      );
+    }
+  }
+
+  // Special configuration for webviewer_url_handler plugin
+  // TODO make this more dynamic, so we can avoid a special case
+  $backends = versioncontrol_get_backends();
+  foreach ($backends as $vcs => $backend) {
+    foreach (ctools_get_plugins('versioncontrol', 'webviewer_url_handlers') as $machine_name => $plugin) {
+      $variable = 'versioncontrol_repository_' . $vcs . '_base_url_' . $machine_name;
+      $form['versioncontrol_plugin_webviewer_url_handlers'][$variable] = array(
+        '#type' => 'textfield',
+        '#title' => t('%vcs_name: Default base URL for %plugin_name', array('%vcs_name' => $backend->name, '%plugin_name' => $plugin['title'])),
+        '#default_value' => variable_get($variable, ''),
+      );
+    }
+  }
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+    '#weight' => 100,
+  );
+
+  return $form;
+}
+
+function versioncontrol_admin_settings_plugins_submit($form, &$form_state) {
+  ctools_include('plugins');
+  $plugin_entity_types = versioncontrol_plugins_get_information();
+  // view_sets have its own settings page, so avoid it
+  unset($plugin_entity_types['view']);
+
+  foreach ($plugin_entity_types as $plugin_entity_type => $plugin_types) {
+    foreach ($plugin_types as $plugin_type => $plugin_type_data) {
+      $key = $plugin_type_data['default_variable'];
+      if ($form_state['values'][$key] == '0') {
+        variable_del($key);
+      }
+      else {
+        variable_set($key, $form_state['values'][$key]);
+      }
+    }
+  }
+
+  // Special configuration for webviewer_url_handler plugin
+  // TODO make this more dynamic, so we can avoid a special case
+  $backends = versioncontrol_get_backends();
+  foreach ($backends as $vcs => $backend) {
+    foreach (ctools_get_plugins('versioncontrol', 'webviewer_url_handlers') as $machine_name => $plugin) {
+      $key = 'versioncontrol_repository_' . $vcs . '_base_url_' . $machine_name;
+      if (empty($form_state['values'][$key])) {
+        variable_del($key);
+      }
+      else {
+        variable_set($key, $form_state['values'][$key]);
+      }
+    }
+  }
+}
+
+/**
  * Form callback for "admin/content/versioncontrol-repositories":
  * A simple list of repositories, sorted by version control system.
  */
@@ -342,16 +428,16 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
     '#type' => 'radios',
     '#title' => t('Author mapping'),
     '#description' => t('The mapping logic to be used for "author" data. All VCSes have some sort of author field.'),
-    '#default_value' => $repository_exists ? $repository->plugins['author_mapper'] : 0,
-    '#options' => array(0 => '<em>' . t('None (no mapping)') . '</em>')  + versioncontrol_user_mapping_methods_get_names(),
+    '#default_value' => $repository_exists ? $repository->plugins['author_mapper'] : variable_get('versioncontrol_repository_plugin_default_user_mapping_methods', 'none'),
+    '#options' => versioncontrol_user_mapping_methods_get_names(),
   );
 
   $form['user_mapping']['committer_mapper'] = array(
     '#type' => 'radios',
     '#title' => t('Committer mapping'),
     '#description' => t('The mapping logic to be used for "committer" data. Only some VCSes distinguish between author and committer. For most use cases, it is recommended best to set this to use the same plugin as for author mapping, especially if using "None (No mapping)" for author mapping.'),
-    '#default_value' => $repository_exists ? $repository->plugins['committer_mapper'] : 0,
-    '#options' => array(0 => '<em>' . t('Use Author mapping plugin') . '</em>') + versioncontrol_user_mapping_methods_get_names(),
+    '#default_value' => $repository_exists ? $repository->plugins['committer_mapper'] : variable_get('versioncontrol_repository_plugin_default_user_mapping_methods', 'none'),
+    '#options' => versioncontrol_user_mapping_methods_get_names(),
   );
 
   $form['user_authentication'] = array(
@@ -367,7 +453,7 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
     '#type' => 'radios',
     '#title' => t('Authentication & access'),
     '#description' => t('The authentication logic that should govern access to this repository. Note that Version Control API by itself provides very little enforcement of these ACLs. The expectation is that higher-level modules will use the interface.'),
-    '#default_value' => $repository_exists ? $repository->plugins['auth_handler'] : 0,
+    '#default_value' => $repository_exists ? $repository->plugins['auth_handler'] : variable_get('versioncontrol_repository_plugin_default_auth_handler', 'ffa'),
     '#options' => versioncontrol_auth_handlers_get_names(),
   );
 
@@ -392,7 +478,7 @@ function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = 
     '#type' => 'radios',
     '#title' => t('Web viewer URL handler'),
     '#description' =>  t('The handler which will  provide the URLs that will be used to add links to item and commit displays such as the commit log.'),
-    '#default_value' => $repository_exists ? $repository->plugins['webviewer_url_handler'] : 'none',
+    '#default_value' => $repository_exists ? $repository->plugins['webviewer_url_handler'] : variable_get('versioncontrol_repository_plugin_default_webviewer_url_handler', 'none'),
     '#options' => versioncontrol_webviewer_url_handlers_get_names($form['#vcs']),
   );
 
@@ -441,7 +527,9 @@ function versioncontrol_admin_repository_edit_submit($form, &$form_state) {
     $repository = $backends[$form['#vcs']]->buildEntity('repo', $repository);
   }
 
-  $repository->data['webviewer_base_url'] = $form_state['values']['base_url'];
+  if (!empty($form_state['values']['base_url'])) {
+    $repository->data['webviewer_base_url'] = $form_state['values']['base_url'];
+  }
 
   // Let other modules alter the repository array.
   foreach (module_implements('versioncontrol_repository_submit') as $module) {

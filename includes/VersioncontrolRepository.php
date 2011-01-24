@@ -373,8 +373,15 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
         throw new Exception("Plugin '{$this->plugins['webviewer_url_handler']}' of type 'webviewer_url_handlers' does not contain a valid class name in handler slot 'handler'", E_WARNING);
         return FALSE;
       }
+      if (isset($this->data['webviewer_base_url']) && !empty($this->data['webviewer_base_url'])) {
+        $webviewer_base_url = $this->data['webviewer_base_url'];
+      }
+      else {
+        $variable = 'versioncontrol_repository_' . $this->backend->type . '_base_url_' . $this->plugins['webviewer_url_handler'];
+        $webviewer_base_url = variable_get($variable, '');
+      }
       $this->pluginInstances['webviewer_url_handler'] = new $class_name(
-        $this, $this->data['webviewer_base_url'], $plugin['url_templates']
+        $this, $webviewer_base_url, $plugin['url_templates']
       );
     }
     return $this->pluginInstances['webviewer_url_handler'];
@@ -387,10 +394,18 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     ctools_include('plugins');
 
     if (empty($this->plugins[$plugin_slot])) {
-      throw new Exception("Attempted to get plugin in slot '$plugin_slot', but no plugin has been assigned to that slot on this repository.", E_STRICT);
-      return FALSE;
+      // handle special case for two slots using the same plugin type
+      if ($plugin_slot == 'committer_mapper' || $plugin_slot == 'author_mapper') {
+        $variable = 'versioncontrol_repository_plugin_default_user_mapping_methods';
+      }
+      else {
+        $variable = 'versioncontrol_repository_plugin_default_' . $plugin_slot;
+      }
+      $plugin_name = variable_get($variable, '');
     }
-    $plugin_name = $this->plugins[$plugin_slot];
+    else {
+      $plugin_name = $this->plugins[$plugin_slot];
+    }
 
     $plugin = ctools_get_plugins('versioncontrol', $plugin_type, $plugin_name);
     if (!is_array($plugin)) {
@@ -423,11 +438,6 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
 
   public function getAuthHandler() {
     if (!isset($this->pluginInstances['auth_handler'])) {
-      // If no plugin is set, use the free-for-all plugin
-      if (empty($this->plugins['auth_handler'])) {
-        // FIXME temporarily writing to a db-recorded field like this is very hacky
-        $this->plugins['auth_handler'] = 'ffa';
-      }
       $this->pluginInstances['auth_handler'] = $this->getPluginClass('auth_handler', 'vcs_auth', 'handler');
       $this->pluginInstances['auth_handler']->setRepository($this);
     }
@@ -436,26 +446,14 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
 
   public function getAuthorMapper() {
     if (!isset($this->pluginInstances['author_mapper'])) {
-      // if no plugin is set, just directly register FALSE for the instance
-      if (empty($this->plugins['author_mapper'])) {
-        $this->pluginInstances['author_mapper'] = FALSE;
-      }
-      else {
-        $this->pluginInstances['author_mapper'] = $this->getPluginClass('author_mapper', 'user_mapping_methods', 'mapper');
-      }
+      $this->pluginInstances['author_mapper'] = $this->getPluginClass('author_mapper', 'user_mapping_methods', 'mapper');
     }
     return $this->pluginInstances['author_mapper'];
   }
 
   public function getCommitterMapper() {
     if (!isset($this->pluginInstances['committer_mapper'])) {
-      // If nothing is set for the committer mapper plugin, reuse the author one
-      if (empty($this->plugins['committer_mapper'])) {
-        $this->pluginInstances['committer_mapper'] = $this->getAuthorMapper();
-      }
-      else {
-        $this->pluginInstances['committer_mapper'] = $this->getPluginClass('committer_mapper', 'user_mapping_methods', 'mapper');
-      }
+      $this->pluginInstances['committer_mapper'] = $this->getPluginClass('committer_mapper', 'user_mapping_methods', 'mapper');
     }
 
     return $this->pluginInstances['committer_mapper'];

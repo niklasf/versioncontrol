@@ -1150,7 +1150,7 @@ function versioncontrol_update_6312() {
     unset($data['versioncontrol']['url_handler']);
     $data['webviewer_base_url'] = '';
     $data = serialize($row->data);
-    db_query('UPDATE {versioncontrol_repositories} SET data = %s WHERE repo_id = %d', $row->data, $row->repo_id);
+    db_query("UPDATE {versioncontrol_repositories} SET data = '%s' WHERE repo_id = %d", $row->data, $row->repo_id);
   }
 
   return $ret;
@@ -1162,5 +1162,29 @@ function versioncontrol_update_6312() {
 function versioncontrol_update_6313() {
   $ret = array();
   db_drop_unique_key(&$ret, 'versioncontrol_repositories', 'name');
+  return $ret;
+}
+
+/**
+ * Add default plugins for repositories.
+ */
+function versioncontrol_update_6314() {
+  $ret = array();
+
+  variable_set('versioncontrol_repository_plugin_default_webviewer_url_handler', 'none');
+  variable_set('versioncontrol_repository_plugin_default_auth_handler', 'ffa');
+  variable_set('versioncontrol_repository_plugin_default_user_mapping_methods', 'none');
+
+  // Remove webviewer_base_url from repository data if empty.
+  $result = db_query("SELECT repo_id, data FROM {versioncontrol_repositories}");
+  while ($row = db_fetch_object($result)) {
+    $data = unserialize($row->data);
+    if (empty($data['webviewer_base_url'])) {
+      unset($data['webviewer_base_url']);
+      $data = serialize($row->data);
+      db_query("UPDATE {versioncontrol_repositories} SET data = '%s' WHERE repo_id = %d", $row->data, $row->repo_id);
+    }
+  }
+
   return $ret;
 }

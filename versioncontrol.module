@@ -190,6 +190,13 @@ function versioncontrol_menu() {
     'type' => MENU_LOCAL_TASK,
   ) + $admin;
 
+  $items['admin/settings/versioncontrol-settings/plugins'] = array(
+    'title' => 'Plugins',
+    'description' => 'Default plugins and its configuration per backend.',
+    'page arguments' => array('versioncontrol_admin_settings_plugins'),
+    'type' => MENU_LOCAL_TASK,
+  ) + $admin;
+
   $items['admin/content/versioncontrol-repositories'] = array(
     'title' => 'VCS Repositories',
     'description' => 'Define and manage the Version Control repositories known to your site.',
@@ -1021,4 +1028,36 @@ function versioncontrol_webviewer_url_handlers_get_names($vcs='') {
 
   asort($names);
   return $names;
+}
+
+/**
+ * Helper function for handlin plugin settings.
+ */
+function versioncontrol_plugins_get_information() {
+  return array(
+    'repository'  => array(
+      'user_mapping_methods'   => array(
+        'name' => t('User mapping methods'),
+        'fetcher' => 'versioncontrol_user_mapping_methods_get_names',
+        'default_variable' => 'versioncontrol_repository_plugin_default_user_mapping_methods',
+      ),
+      'vcs_auth'               => array(
+        'name' => t('Versioncontrol authentication'),
+        'fetcher' => 'versioncontrol_auth_handlers_get_names',
+        'default_variable' => 'versioncontrol_repository_plugin_default_auth_handler',
+      ),
+      'webviewer_url_handlers' => array(
+        'name' => t('Webviewer URL handler'),
+        'fetcher' => 'versioncontrol_webviewer_url_handlers_get_names',
+        'default_variable' => 'versioncontrol_repository_plugin_default_webviewer_url_handler',
+      )
+    ),
+    'view' => array(
+      'view_sets' => array(
+        'name' => t('View sets'),
+        'fetcher' => FALSE,
+        'default_variable' => FALSE,
+      ),
+    ),
+  );
 }

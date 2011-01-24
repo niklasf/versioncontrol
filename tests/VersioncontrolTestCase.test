@@ -147,8 +147,8 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     );
     $default_plugins = array(
       'auth_handler' => 'ffa',
-      'author_mapper' => 'simple_mail',
-      'committer_mapper' => 'simple_mail',
+      'author_mapper' => 'none',
+      'committer_mapper' => 'none',
       'webviewer_url_handler' => 'none',
     );
 
