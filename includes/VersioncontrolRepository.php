@@ -377,7 +377,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
         $webviewer_base_url = $this->data['webviewer_base_url'];
       }
       else {
-        $variable = 'versioncontrol_repository_' . $this->backend->type . '_base_url_' . $this->plugins['webviewer_url_handler'];
+        $variable = 'versioncontrol_repository_' . $this->backend->type . '_base_url_' . $plugin['name'];
         $webviewer_base_url = variable_get($variable, '');
       }
       $this->pluginInstances['webviewer_url_handler'] = new $class_name(
