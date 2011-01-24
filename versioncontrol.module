@@ -910,8 +910,8 @@ function versioncontrol_get_views_sets() {
           $set[$vcs] = $backend->defaultViews[$set_name];
         }
         // Allow hook implementors to specify defaults, too.
-        if (!empty($set_info['default views'][$vcs])) {
-          $set[$vcs] = $set_info['default views'][$vcs];
+        if ($handler->getdefaultViews[$vcs]) {
+          $set[$vcs] = $handler->getdefaultViews[$vcs];
         }
       }
 
