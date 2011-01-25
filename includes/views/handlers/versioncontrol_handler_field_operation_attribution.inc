@@ -27,7 +27,8 @@ class versioncontrol_handler_field_operation_attribution extends versioncontrol_
     $uids = array_keys($uids);
 
     if (count($uids) > 0) {
-      $result = db_query('SELECT u.uid, u.name FROM {users} u WHERE u.uid IN ( %s )', implode(', ', $uids));
+      $placeholders = implode(',', array_fill(0, count($uids), '%d'));
+      $result = db_query("SELECT u.uid, u.name FROM {users} u WHERE u.uid IN ( $placeholders )", $uids);
       while ($row = db_fetch_object($result)) {
         $this->usernames[$row->uid] = $row->name;
       }
