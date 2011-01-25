@@ -37,10 +37,10 @@ function commitlog_menu() {
     'access arguments' => array($view_access),
     'type' => MENU_SUGGESTED_ITEM,
   );
-  $items['commitlog/commit/%'] = array(
+  $items['commitlog/commit/%/%'] = array(
     'title' => 'Commit',
     'page callback' => 'commitlog_operations_page',
-    'page arguments' => array('commit', 2),
+    'page arguments' => array('commit', 2, 3),
     'access arguments' => array($view_access),
     'type' => MENU_SUGGESTED_ITEM,
   );
@@ -101,8 +101,10 @@ function commitlog_ctools_plugin_directory($module, $plugin) {
  *   What type of commit log listing we're creating.  Supported types are 'author' and 'repository'.
  * @param $argument
  *   The argument with which to filter the view.  This is used as the first argument in the view in question.
+ * @param $argument2
+ *   Another argument to filter the view.  This is used as the second argument in the view in question.
  */
-function commitlog_operations_page($type = NULL, $argument = NULL) {
+function commitlog_operations_page($type = NULL, $argument = NULL, $argument2 = NULL) {
   drupal_add_css(drupal_get_path('module', 'commitlog') . '/commitlog.css', 'module');
 
   $view = '';
@@ -120,9 +122,10 @@ function commitlog_operations_page($type = NULL, $argument = NULL) {
     $set = versioncontrol_get_views_set('repository_commit_view');
     $view = $set->getViewNameByEntity(versioncontrol_repository_load($argument));
   }
-  else if ($type == 'commit' && !is_null($argument)) {
+  else if ($type == 'commit' && !is_null($argument) && !is_null($argument2)) {
     $set = versioncontrol_get_views_set('individual_commit_view');
-    $view = $set->getViewName();
+    $view_name = $set->getViewName();
+    return views_embed_view($view_name, 'default', $argument, $argument2);
   }
   else {
     $set = versioncontrol_get_views_set('global_commit_view');

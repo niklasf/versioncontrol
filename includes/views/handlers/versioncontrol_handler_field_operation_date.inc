@@ -8,6 +8,7 @@ class versioncontrol_handler_field_operation_date extends views_handler_field_da
     parent::construct();
     $this->additional_fields['revision'] = 'revision';
     $this->additional_fields['date'] = 'date';
+    $this->additional_fields['repo_id'] = 'repo_id';
   }
 
   function option_definition() {
@@ -40,7 +41,8 @@ class versioncontrol_handler_field_operation_date extends views_handler_field_da
     }
     else {
       $date_field = parent::render($values);
-      return l($date_field, 'commitlog/commit/'. $values->{$this->aliases['revision']});
+      $link = sprintf('commitlog/commit/%d/%s', $values->{$this->aliases['repo_id']}, $values->{$this->aliases['revision']});
+      return l($date_field, $link);
     }
 
   }
