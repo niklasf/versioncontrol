@@ -382,7 +382,7 @@ $handler->override_option('fields', array(
     ),
   ),
   'nothing' => array(
-    'label' => 'Custom text',
+    'label' => '',
     'alter' => array(
       'text' => '[name]: [path]',
       'make_link' => 0,
