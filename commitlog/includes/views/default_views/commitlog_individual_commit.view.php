@@ -344,7 +344,7 @@ $handler->override_option('arguments', array(
     'style_options' => array(),
     'wildcard' => 'all',
     'wildcard_substitution' => 'All',
-    'title' => 'Revision %1',
+    'title' => 'Revision %2',
     'breadcrumb' => '',
     'default_argument_type' => 'fixed',
     'default_argument' => '',

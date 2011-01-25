@@ -125,7 +125,20 @@ function commitlog_operations_page($type = NULL, $argument = NULL, $argument2 = 
   else if ($type == 'commit' && !is_null($argument) && !is_null($argument2)) {
     $set = versioncontrol_get_views_set('individual_commit_view');
     $view_name = $set->getViewName();
-    return views_embed_view($view_name, 'default', $argument, $argument2);
+    $view = views_get_view($view_name);
+
+    // Basic logic here borrowed from views_embed_view().
+    if (!$view || !$view->access('default')) {
+      return drupal_not_found();
+    }
+    $output = $view->preview('default', array($argument, $argument2));
+
+    $title = $view->get_title();
+    if (!empty($title)) {
+      drupal_set_title($title);
+    }
+
+    return $output;
   }
   else {
     $set = versioncontrol_get_views_set('global_commit_view');
