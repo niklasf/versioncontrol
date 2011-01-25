@@ -11,7 +11,7 @@ class versioncontrol_handler_field_operation_attribution extends versioncontrol_
    * An array to store {users}.name's keyed by uid for all the results.
    * This is needed in order to get names for author_uid and committer_uid at the same time.
    */
-  public $usernames;
+  public $usernames = array();
 
   function pre_render($values) {
     parent::pre_render($values);
@@ -25,11 +25,12 @@ class versioncontrol_handler_field_operation_attribution extends versioncontrol_
       $uids[$result->{$this->aliases['committer_uid']}] = TRUE;
     }
     $uids = array_keys($uids);
-    $placeholders = implode(',', array_fill(0, count($uids), "%d"));
 
-    $result = db_query("SELECT u.uid, u.name FROM {users} u WHERE u.uid IN ($placeholders)", $uids);
-    while ($row = db_fetch_object($result)) {
-      $this->usernames[$row->uid] = $row->name;
+    if (count($uids) > 0) {
+      $result = db_query('SELECT u.uid, u.name FROM {users} u WHERE u.uid IN ( %s )', implode(', ', $uids));
+      while ($row = db_fetch_object($result)) {
+        $this->usernames[$row->uid] = $row->name;
+      }
     }
   }
 
