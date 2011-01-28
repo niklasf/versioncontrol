@@ -313,6 +313,29 @@ function versioncontrol_views_data() {
       'handler' => 'versioncontrol_handler_field_operation_message',
     ),
   );
+
+  $data['versioncontrol_operations']['labels'] = array(
+    'real field' => 'vc_op_id',
+    'title'    => t('List of label this operation is in'),
+    'help'     => t('This operation labels as a list on label names.'),
+    'field'    => array(
+      'handler' => 'versioncontrol_handler_field_operation_labels',
+      'additional fields' => array(
+        'vcs' => array('table' => 'versioncontrol_repositories', 'field' => 'vcs'),
+        'repo_id',
+      ),
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+  );
+
   $data['versioncontrol_operations']['table']['join'] = array(
     'users' => array(
       'left_field' => 'uid',
@@ -589,6 +612,9 @@ function versioncontrol_views_handlers() {
       ),
       'versioncontrol_handler_field_operation_date' => array(
         'parent' => 'views_handler_field_date',
+      ),
+      'versioncontrol_handler_field_operation_labels' => array(
+        'parent' => 'views_handler_field',
       ),
       // filter handlers
       'versioncontrol_handler_filter_operation_type' => array(
