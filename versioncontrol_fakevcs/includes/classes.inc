@@ -15,14 +15,6 @@ class VersioncontrolFakeBackend extends VersioncontrolBackend {
     $this->description = t('FakeVCS is a version control system that is specifically capable in doing everything that any other version control system might ever do.');
     // Our example VCS supports all possible capabilities.
     $this->capabilities = array(
-        // Able to cancel commits if the committer lacks permissions
-        // to commit to specific paths and/or branches.
-        VERSIONCONTROL_CAPABILITY_COMMIT_RESTRICTIONS,
-
-        // Able to cancel branch or tag assignments if the committer lacks
-        // permissions to create/update/delete those.
-        VERSIONCONTROL_CAPABILITY_BRANCH_TAG_RESTRICTIONS,
-
         // Able to retrieve a file or its revision number based on a global
         // revision identifier.
         VERSIONCONTROL_CAPABILITY_ATOMIC_COMMITS,
