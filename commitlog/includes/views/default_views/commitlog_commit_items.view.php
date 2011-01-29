@@ -44,7 +44,7 @@ $handler->override_option('fields', array(
 ));
 $handler->override_option('arguments', array(
   'vc_op_id' => array(
-    'default_action' => 'empty',
+    'default_action' => 'not found',
     'style_plugin' => 'default_summary',
     'style_options' => array(),
     'wildcard' => 'all',
@@ -111,7 +111,6 @@ $handler->override_option('access', array(
 $handler->override_option('cache', array(
   'type' => 'none',
 ));
-$handler->override_option('empty', 'No items changed in this operation.');
 $handler->override_option('empty_format', '1');
 $handler->override_option('items_per_page', 0);
 $handler->override_option('style_options', array(
