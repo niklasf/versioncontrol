@@ -433,7 +433,9 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
       return FALSE;
     }
 
-    return new $class_name();
+    $plugin_object = new $class_name();
+    $this->getBackend()->verifyPluginInterface($this, $plugin_slot, $plugin_object);
+    return $plugin_object;
   }
 
   public function getAuthHandler() {

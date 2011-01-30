@@ -68,6 +68,21 @@ abstract class VersioncontrolBackend {
    */
   public $update_methods = array();
 
+  /**
+   * An array of interfaces that plugins must comply with.
+   *
+   * @var array
+   */
+  protected $pluginInterfaces = array(
+    'repo' => array(
+      'worker_repomgr' => 'VersioncontrolRepositoryManagerWorkerInterface',
+      'webviewer_url_handler' => 'VersioncontrolWebviewerUrlHandlerInterface',
+      'committer_mapper' => 'VersioncontrolUserMapperInterface',
+      'author_mapper' => 'VersioncontrolUserMapperInterface',
+      'auth_handler' => 'VersioncontrolAuthHandlerInterface',
+    ),
+  );
+
   public function __construct() {
     // Add defaults to $this->classes
     $this->classesControllers += array(
@@ -206,6 +221,34 @@ abstract class VersioncontrolBackend {
    */
   public function formatRevisionIdentifier($revision, $format = 'full') {
     return $revision;
+  }
+
+  /**
+   * Verify that a plugin object conforms to the required interface.
+   *
+   * @param mixed $entity
+   *   A VersioncontrolEntity object, or string name of a VersioncontrolEntity
+   *   class, for which we are verifying a plugin.
+   * @param string $slot
+   *   The plugin slot which the plugin is being used for; determines which
+   *   interface will be checked against.
+   * @param object $plugin_object
+   *   An instanciated plugin object.
+   */
+  public function verifyPluginInterface($entity, $slot, $plugin_object) {
+    $entity_class = $entity instanceof VersioncontrolEntity ? get_class($entity) : $entity;
+    $type = array_search($entity_class, $this->classesEntities);
+    if (!empty($this->pluginInterfaces[$type][$slot]) && !($plugin_object instanceof $this->pluginInterfaces[$plugin_slot])) {
+      $vars = array(
+        '%plugin_class' => get_class($plugin_object),
+        '%entity_class' => $entity_class,
+        '%slot' => $slot,
+        '%interface' => $this->pluginInterfaces[$type][$plugin_slot],
+      );
+      $errstring = "Plugin class '%class' used in slot '%slot' by entity class '%entity_class' does not implement required interface '%interface'.";
+      watchdog('versioncontrol', $errstring, $vars, WATCHDOG_ERROR);
+      throw new Exception(strtr($errstring, $vars), E_ERROR);
+    }
   }
 
   /**
