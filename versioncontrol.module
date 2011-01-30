@@ -339,7 +339,7 @@ function versioncontrol_repository_load_multiple($ids = array(), $conditions = a
       $backend = reset($backends);
       // need to ensure the controller is initialized, and this is the only way
       $result = $backend->loadEntities('repo', $ids, $conditions, $options);
-      $controller = $backend->controllers['repo'];
+      $controller = $backend->classesControllers['repo'];
       return $result;
     }
     else {
