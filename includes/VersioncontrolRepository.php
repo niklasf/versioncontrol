@@ -463,11 +463,12 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     $refl = new ReflectionObject($this);
     // Get all properties, except static ones.
     $props = $refl->getProperties(ReflectionProperty::IS_PRIVATE | ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PUBLIC );
-    print_r($props);
+
     $ser = array();
     foreach ($props as $prop) {
-      if ($prop->name == 'backend') {
-        // don't serialize the backend, that gets nasty.
+      if (in_array($prop->name, array('backend', 'pluginInstances'))) {
+        // serializing the backend is too verbose; serializing pluginInstances
+        // could get us into trouble with autoload before D7.
         continue;
       }
       $ser[$prop->name] = $this->{$prop->name};
@@ -476,16 +477,10 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   }
 
   public function unserialize($string_rep) {
-    print "init:\n";
-    print_r($this);
     foreach (unserialize($string_rep) as $prop => $val) {
       $this->$prop = $val;
     }
-    print "after restore\n";
-    print_r($this);
     // And add the backend, which was stripped out.
     $this->backend = versioncontrol_get_backends($this->vcs);
-    print "after backend\n";
-    print_r($this);
   }
 }
