@@ -56,7 +56,11 @@ class versioncontrol_handler_field_operation_attribution extends versioncontrol_
     $this->aliases['person_username'] = 'committer_username';
     $values->{$this->aliases['person_username']} = $this->usernames[$committer_uid];
     $committer = parent::render($values);
-    return t('<span class="authored-by">authored by !author</span>, <span class="committed-by">committed by !committer</span>', array(
+    if (empty($this->options['plain_text_output'])) {
+      return t('<span class="authored-by">authored by !author</span>, <span class="committed-by">committed by !committer</span>', array(
+        '!author' => $author, '!committer' => $committer));
+    }
+    return t('authored by !author, committed by !committer', array(
       '!author' => $author, '!committer' => $committer));
   }
 

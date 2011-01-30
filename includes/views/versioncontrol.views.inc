@@ -38,7 +38,7 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_filter_numeric',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument_numeric',
+      'handler' => 'versioncontrol_handler_argument_repository_repo_id',
     ),
   );
   $data['versioncontrol_repositories']['name'] = array(
@@ -665,7 +665,35 @@ function versioncontrol_views_handlers() {
       'versioncontrol_handler_filter_operation_type_label' => array(
         'parent' => 'views_handler_filter_string',
       ),
+      // argument handlers
+      'versioncontrol_handler_argument_repository_repo_id' => array(
+        'parent' => 'views_handler_argument_numeric',
+      ),
     ),
   );
   return $ret;
+}
+
+/**
+ * Implementation of hook_views_plugins.
+ */
+function versioncontrol_views_plugins() {
+  return array(
+    'row' => array(
+      'versioncontrol_operations_rss' => array(
+        'title' => t('Versioncontrol Operations as RSS items'),
+        'help' => t('Display versioncontrol operations for RSS feeds.'),
+        'handler' => 'versioncontrol_plugin_row_operation_rss',
+        'path' => drupal_get_path('module', 'versioncontrol') . '/includes/views/plugins', // not necessary for most modules
+        'theme' => 'versioncontrol_view_row_operation_rss',
+        'theme file' => 'versioncontrol_theme.inc',
+        'theme path' => drupal_get_path('module', 'versioncontrol') . '/includes',
+        'base' => array('versioncontrol_operations'), // only works with 'versioncontrol_operations' as base.
+        'uses options' => TRUE,
+        'uses fields' => TRUE,
+        'type' => 'feed',
+        'help topic' => 'style-node-rss',
+      ),
+    ),
+  );
 }

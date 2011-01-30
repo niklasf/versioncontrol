@@ -131,6 +131,10 @@ function versioncontrol_theme() {
     'arguments' => array('places', 'results'),
     'file' => 'includes/versioncontrol_theme.inc'
   );
+  $theme['versioncontrol_view_row_operation_rss'] = array(
+    'arguments' => array('view', 'options', 'item'),
+    'file' => 'includes/versioncontrol_theme.inc'
+  );
   return $theme;
 }
 
