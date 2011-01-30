@@ -1161,7 +1161,7 @@ function versioncontrol_update_6312() {
  */
 function versioncontrol_update_6313() {
   $ret = array();
-  db_drop_unique_key(&$ret, 'versioncontrol_repositories', 'name');
+  db_drop_unique_key($ret, 'versioncontrol_repositories', 'name');
   return $ret;
 }
 
