@@ -461,6 +461,11 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     return $this->pluginInstances['committer_mapper'];
   }
 
+  /**
+   * Fulfills Serializable::serialize() interface.
+   *
+   * @return string
+   */
   public function serialize() {
     $refl = new ReflectionObject($this);
     // Get all properties, except static ones.
@@ -478,6 +483,11 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     return serialize($ser);
   }
 
+  /**
+   * Fulfills Serializable::unserialize() interface.
+   *
+   * @param string $string_rep
+   */
   public function unserialize($string_rep) {
     foreach (unserialize($string_rep) as $prop => $val) {
       $this->$prop = $val;
