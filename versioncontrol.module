@@ -311,7 +311,10 @@ function versioncontrol_perm() {
  * Menu wildcard loader for repository ids ('%versioncontrol_repository').
  */
 function versioncontrol_repository_load($repo_id, $conditions = array(), $options = array()) {
-  $repository = versioncontrol_repository_load_multiple(array($repo_id), $conditions, $options);
+  if (!is_array($repo_id)) {
+    $repo_id = array($repo_id);
+  }
+  $repository = versioncontrol_repository_load_multiple($repo_id, $conditions, $options);
   return empty($repository) ? FALSE : reset($repository);
 }
 
