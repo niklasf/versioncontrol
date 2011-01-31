@@ -44,7 +44,7 @@ $handler->override_option('fields', array(
 ));
 $handler->override_option('arguments', array(
   'vc_op_id' => array(
-    'default_action' => 'not found',
+    'default_action' => 'ignore',
     'style_plugin' => 'default_summary',
     'style_options' => array(),
     'wildcard' => 'all',
