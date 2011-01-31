@@ -305,6 +305,37 @@ function versioncontrol_perm() {
   );
 }
 
+/**
+ * Implements hook_cron_queue_info().
+ *
+ * Inform the job queueing system about our worker callback.
+ */
+function versioncontrol_cron_queue_info() {
+  $queues = array();
+
+  $queues['versioncontrol_repomgr'] = array(
+    'worker callback' => 'versioncontrol_repomgr_run_worker',
+    'time' => 0,
+  );
+
+  return $queues;
+}
+
+/**
+ * Process a versioncontrol_repomgr queue job.
+ *
+ * Passthrough to _versioncontrol_repomgr_run_worker().
+ *
+ * @see _versioncontrol_repomgr_run_worker()
+ *
+ * @param array $data
+ *   The array of job data to be processed.
+ */
+function versioncontrol_repomgr_run_worker($data) {
+  ctools_include('worker', 'versioncontrol');
+  return _versioncontrol_repomgr_run_worker($data);
+}
+
 // API functions start here.
 
 /**

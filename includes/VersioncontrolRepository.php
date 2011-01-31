@@ -91,6 +91,8 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
    * - author_mapper
    * - committer_mapper
    * - webviewer_url_handler
+   * - repomgr
+   * - auth_handler
    *
    * @var array
    */
@@ -450,6 +452,15 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     }
 
     return $this->pluginInstances['committer_mapper'];
+  }
+
+  public function getRepositoryManager() {
+    if (!isset($this->pluginInstances['repomgr'])) {
+      $this->pluginInstances['repomgr'] = $this->getPluginClass('repomgr', 'repomgr', 'worker');
+      $this->pluginInstances['repomgr']->setRepository($this);
+    }
+
+    return $this->pluginInstances['repomgr'];
   }
 
   /**

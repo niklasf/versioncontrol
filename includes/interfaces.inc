@@ -395,3 +395,25 @@ interface VersioncontrolWebviewerUrlHandlerInterface {
    */
   public function getDiffUrl(&$file_item_new, $file_item_old);
 }
+
+interface VersioncontrolRepositoryManagerWorkerInterface {
+
+  /**
+   * Set the repository object to be used by this plugin object.
+   */
+  public function setRepository(VersioncontrolRepository $repository);
+
+  public function create();
+
+  public function delete();
+
+  /**
+   * Save the repository to the database.
+   *
+   * Some operations may or may not necessitate updating vcapi's db record for
+   * the attached repository. Including this as an atomic operation allows the
+   * caller to dictate whether or not a save should take place.
+   *
+   */
+  public function save();
+}
