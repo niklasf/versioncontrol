@@ -82,15 +82,6 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
    */
   protected $backend;
 
-  /**
-   * An array of VersioncontrolEntityController objects used to spawn more
-   * entities from this repository, if needed. These objects are lazy-
-   * instanciated to avoid unnecessary object creation.
-   *
-   * @var array
-   */
-  protected $controllers = array();
-
   protected $built = FALSE;
 
   /**
