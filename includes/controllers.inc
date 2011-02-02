@@ -505,7 +505,7 @@ class VersioncontrolOperationController extends VersioncontrolEntityController {
     foreach ($result as $label) {
       $label->repository = $this->options['repository'];
       $queried_entities[$label->vc_op_id]->labels[$label->name] = $this->backend
-        ->buildEntity($label->type === VERSIONCONTROL_LABEL_BRANCH ? 'branch' : 'tag', $label);
+        ->buildEntity($label->type == VERSIONCONTROL_LABEL_BRANCH ? 'branch' : 'tag', $label);
     }
   }
 }
