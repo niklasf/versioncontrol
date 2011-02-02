@@ -212,6 +212,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
       }
       $item->insert(array('source item update' => TRUE));
     }
+    $this->updateLabels();
   }
 
   public function update($options = array()) {
@@ -248,6 +249,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
     foreach ($this->itemRevisions as $item) {
       $item->save(array('source item update' => TRUE));
     }
+    $this->updateLabels();
   }
 
   public function updateLabels() {
