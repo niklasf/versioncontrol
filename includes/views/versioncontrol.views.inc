@@ -135,10 +135,12 @@ function versioncontrol_views_data() {
     'versioncontrol_operations' => array(
       'left_field' => 'repo_id',
       'field' => 'repo_id',
+      'type' => 'INNER',
     ),
     'versioncontrol_item_revisions' => array(
       'left_field' => 'repo_id',
       'field' => 'repo_id',
+      'type' => 'INNER',
     ),
   );
 
@@ -340,29 +342,34 @@ function versioncontrol_views_data() {
     'users' => array(
       'left_field' => 'uid',
       'field'      => 'author_uid',
+      'type' => 'INNER',
     ),
     'versioncontrol_repositories' => array(
       'left_field' => 'repo_id',
       'field' => 'repo_id',
+      'type' => 'INNER',
     ),
     'versioncontrol_operation_labels' => array(
       'left_field' => 'vc_op_id',
       'field' => 'vc_op_id',
+      'type' => 'INNER',
     ),
     'versioncontrol_labels' => array(
       'left_table' => 'versioncontrol_operation_labels',
       'left_field' => 'vc_op_id',
       'field' => 'vc_op_id',
+      'type' => 'INNER',
     ),
     'versioncontrol_item_revisions' => array(
       'left_field' => 'vc_op_id',
       'field' => 'vc_op_id',
+      'type' => 'INNER',
     ),
   );
   $data['users']['table']['join']['versioncontrol_operations'] = array(
     'left_field' => 'author_uid',
       'field'      => 'uid',
-      'type'       => 'inner',
+      'type'       => 'INNER',
   );
 
   // VersionControl Labels
@@ -376,11 +383,13 @@ function versioncontrol_views_data() {
     'versioncontrol_operation_labels' => array(
       'left_field' => 'label_id',
       'field' => 'label_id',
+      'type' => 'INNER',
     ),
     'versioncontrol_operations' => array(
       'left_table' => 'versioncontrol_operation_labels',
       'left_field' => 'label_id',
       'field' => 'label_id',
+      'type' => 'INNER',
     ),
   );
   $data['versioncontrol_labels']['label_id'] = array(
@@ -429,10 +438,12 @@ function versioncontrol_views_data() {
     'versioncontrol_labels' => array(
       'left_field' => 'label_id',
       'field' => 'label_id',
+      'type' => 'INNER',
     ),
     'versioncontrol_operations' => array(
       'left_field' => 'vc_op_id',
       'field' => 'vc_op_id',
+      'type' => 'INNER',
     ),
   );
   $data['versioncontrol_operation_labels']['action'] = array(
@@ -456,11 +467,13 @@ function versioncontrol_views_data() {
     'versioncontrol_operations' => array(
       'left_field' => 'vc_op_id',
       'field' => 'vc_op_id',
+      'type' => 'INNER',
     ),
 
     'versioncontrol_repositories' => array(
       'left_field' => 'repo_id',
       'field' => 'repo_id',
+      'type' => 'INNER',
     ),
   );
   $data['versioncontrol_item_revisions']['path'] = array(
