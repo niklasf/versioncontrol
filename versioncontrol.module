@@ -94,12 +94,6 @@ define('VERSIONCONTROL_ITEM_DIRECTORY_DELETED', 4);
 //@}
 
 /**
- * Used internally by the repository and account admin pages. Private
- * constant.
- */
-define('VERSIONCONTROL_FORM_CREATE', FALSE);
-
-/**
  * @name Update methods.
  */
 //@{
@@ -217,7 +211,7 @@ function versioncontrol_menu() {
       'title' => 'Add @vcs repository',
       'title arguments' => array('@vcs' => $backend->name),
       'page arguments' => array('versioncontrol_admin_repository_edit',
-        VERSIONCONTROL_FORM_CREATE, $vcs
+        FALSE, $vcs
       ),
       'type' => MENU_LOCAL_TASK,
       'weight' => ++$weight,
