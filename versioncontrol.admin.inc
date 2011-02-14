@@ -345,7 +345,7 @@ function versioncontrol_admin_repository_list(&$form_state) {
  * Provide a form to edit or add a repository.
  *
  * @param $repository
- *   The repository that is to be edited, or VERSIONCONTROL_FORM_CREATE
+ *   The repository that is to be edited, or FALSE
  *   if the repository doesn't exist yet and should be added.
  * @param $vcs
  *   If $repo_id is NULL, this should be the unique identification string
@@ -354,7 +354,7 @@ function versioncontrol_admin_repository_list(&$form_state) {
  */
 function versioncontrol_admin_repository_edit(&$form_state, $repository, $vcs = NULL) {
   $backends = versioncontrol_get_backends();
-  $repository_exists = ($repository !== VERSIONCONTROL_FORM_CREATE);
+  $repository_exists = ($repository !== FALSE);
 
   if (!$repository_exists && !isset($backends[$vcs])) {
     drupal_goto('admin/content/versioncontrol-repositories');
