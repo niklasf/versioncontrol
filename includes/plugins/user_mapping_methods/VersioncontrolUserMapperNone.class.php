@@ -4,7 +4,7 @@
 /**
  * Plugin that do not map.
  */
-class VersioncontrolUserMapperSimpleMail implements VersioncontrolUserMapperInterface {
+class VersioncontrolUserMapperNone implements VersioncontrolUserMapperInterface {
   public function mapAuthor(VersioncontrolOperation $commit) {
     return FALSE;
   }
