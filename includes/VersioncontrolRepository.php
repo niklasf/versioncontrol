@@ -63,9 +63,13 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   public $updated = 0;
 
   /**
-   * Indicates if the repository is being updated now.
+   * Repository lock. Repositories are locked when running a parse job to ensure
+   * duplicate data does not enter the database.
    *
-   * @var    integer
+   * Zero indicates an unlocked repository; any nonzero is a timestamp
+   * the time of the last lock.
+   *
+   * @var integer
    */
   public $locked = 0;
 
@@ -123,6 +127,16 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
 
   public function getBackend() {
     return $this->backend;
+  }
+
+  /**
+   * Convenience method to set the repository lock to a specific value.
+   */
+  public function updateLock($timestamp = NULL) {
+    if (is_null($timestamp)) {
+      $timestamp = time();
+    }
+    $this->locked = $timestamp;
   }
 
   /**

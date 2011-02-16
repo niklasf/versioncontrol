@@ -596,7 +596,7 @@ function versioncontrol_admin_repository_clearlock_confirm_submit($form, &$form_
   $backend = versioncontrol_get_backends($form_state['backend']);
   $repository = $backend->loadEntity('repo', array($form_state['repo_id']));
 
-  $repository->locked = FALSE;
+  $repository->locked = 0;
   $repository->update();
   $form_state['redirect'] = 'admin/content/versioncontrol-repositories';
 }

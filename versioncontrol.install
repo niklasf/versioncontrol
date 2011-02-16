@@ -344,7 +344,7 @@ function versioncontrol_schema() {
         'default' => 1
       ),
       'locked' => array(
-        'description' => 'Dead-simple semaphore - boolean indicating whether the repository is unlocked (0) or locked (1). Locking is typically used when doing log fetches.',
+        'description' => 'Timestamp-based semaphore. If 0, repository is unlocked. Otherwise, a UNIX epoch timestamp indicating when this repository was last locked.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -1186,5 +1186,15 @@ function versioncontrol_update_6314() {
     }
   }
 
+  return $ret;
+}
+
+/**
+ * {versioncontrol_repositories}.locked is now a proper timestamp, so update
+ * all locked repos with the timestamp of this update (best we can do).
+ */
+function versioncontrol_update_6315() {
+  $ret = array();
+  db_query('UPDATE {versioncontrol_repositories} SET locked = %d WHERE locked = 1', time());
   return $ret;
 }
