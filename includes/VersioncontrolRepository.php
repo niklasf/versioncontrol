@@ -264,7 +264,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   }
 
   public function save($options = array()) {
-    return isset($this->repo_id) ? $this->update($options) : $this->insert($options);
+    return empty($this->repo_id) ? $this->insert($options) : $this->update($options);
   }
 
   /**
