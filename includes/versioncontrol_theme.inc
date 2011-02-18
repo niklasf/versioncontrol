@@ -13,28 +13,16 @@ function theme_versioncontrol_diffstat($places, $result) {
   drupal_add_css(drupal_get_path('module', 'versioncontrol') . '/versioncontrol.css', 'module');
   for ($i = 0; $i++, $i <= $places;) {
     if ($result['add'] != 0) {
-      $output .= theme('versioncontrol_diffstat_addition');
+      $output .= '<span class="plus">+</span>';
       $result['add']--;
       continue;
     }
     if ($result['remove'] != 0) {
-      $output .= theme('versioncontrol_diffstat_removal');
+      $output .= '<span class="minus">-</span>';
       $result['remove']--;
       continue;
     }
-    $output .= theme('versioncontrol_diffstat_no_op');
+    $output .= '<span class="no-op"> </span>';
   }
   return '<span class="versioncontrol-diffstat clear-block">'. $output .'</span>';
-}
-
-function theme_versioncontrol_diffstat_addition() {
-  return '<span class="plus">+</span>';
-}
-
-function theme_versioncontrol_diffstat_removal() {
-  return '<span class="minus">-</span>';
-}
-
-function theme_versioncontrol_diffstat_no_op() {
-  return '<span class="no-op"> </span>';
 }

@@ -132,18 +132,6 @@ function versioncontrol_theme() {
     'arguments' => array('places', 'results'),
     'file' => 'includes/versioncontrol_theme.inc'
   );
-  $theme['versioncontrol_diffstat_addition'] = array(
-    'arguments' => array(),
-    'file' => 'includes/versioncontrol_theme.inc'
-  );
-  $theme['versioncontrol_diffstat_removal'] = array(
-    'arguments' => array(),
-    'file' => 'includes/versioncontrol_theme.inc'
-  );
-  $theme['versioncontrol_diffstat_no_op'] = array(
-    'arguments' => array(),
-    'file' => 'includes/versioncontrol_theme.inc'
-  );
   return $theme;
 }
 
