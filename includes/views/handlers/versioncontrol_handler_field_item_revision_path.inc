@@ -49,6 +49,18 @@ class versioncontrol_handler_field_item_revision_path extends views_handler_fiel
     );
   }
 
+  function pre_render($values) {
+    $revision_ids = array();
+    foreach ($values as $result) {
+      $vcs = $result->{$this->aliases['vcs']};
+      $revision_ids[$vcs][] = $result->{$this->aliases['item_revision_id']};
+    }
+    $this->itemRevisions = array();
+    foreach ($revision_ids as $vcs => $ids) {
+      $this->itemRevisions += $this->backends[$vcs]->loadEntities('item', array($ids));
+    }
+  }
+
   function render($values) {
     $path = $values->{$this->field_alias};
     $vcs = $values->{$this->aliases['vcs']};
