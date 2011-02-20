@@ -112,7 +112,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   protected $defaultCrudOptions = array(
     'update' => array('nested' => TRUE),
     'insert' => array('nested' => TRUE),
-    'delete' => array('nested' => TRUE),
+    'delete' => array('purge bypass' => TRUE),
   );
 
   public function __construct($backend = NULL) {
@@ -331,15 +331,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     $options += $this->defaultCrudOptions['delete'];
 
     // Delete all contained data.
-    foreach ($this->loadBranches() as $branch) {
-      $branch->delete();
-    }
-    foreach ($this->loadTags() as $tag) {
-      $tag->delete();
-    }
-    foreach ($this->loadCommits() as $commit) {
-      $commit->delete();
-    }
+    $this->purgeData($options['purge bypass']);
 
     db_delete('versioncontrol_repositories')
       ->condition('repo_id', $this->repo_id)
@@ -348,6 +340,56 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     $this->backendDelete($options);
 
     module_invoke_all('versioncontrol_entity_repository_delete', $this);
+  }
+
+  /**
+   * Purge all parsed log data from this repository. Optionally bypass the API
+   * to go MUCH faster.
+   *
+   * @param bool $bypass
+   *   Whether or not to bypass the API and perform all operations with a small
+   *   number of large queries. Skips individual hook notifications, but fires
+   *   its own hook and is FAR more efficient than running deletes
+   *   entity-by-entity.
+   */
+  public function purgeData($bypass = TRUE) {
+    if (empty($bypass)) {
+      foreach ($this->loadBranches() as $branch) {
+        $branch->delete();
+      }
+      foreach ($this->loadTags() as $tag) {
+        $tag->delete();
+      }
+      foreach ($this->loadCommits() as $commit) {
+        $commit->delete();
+      }
+    }
+    else {
+      $label_ids = db_select('versioncontrol_labels', 'vl')
+        ->fields('vl', array('label_id'))
+        ->condition('vl.repo_id', $this->repo_id)
+        ->execute()->fetchAll(PDO::FETCH_COLUMN);
+
+      if (!empty($label_ids)) {
+        db_delete('versioncontrol_operation_labels')
+          ->condition('label_id', $label_ids)
+          ->execute();
+      }
+
+      db_delete('versioncontrol_operations')
+        ->condition('repo_id', $this->repo_id)
+        ->execute();
+
+      db_delete('versioncontrol_labels')
+        ->condition('repo_id', $this->repo_id)
+        ->execute();
+
+      db_delete('versioncontrol_item_revisions')
+        ->condition('repo_id', $this->repo_id)
+        ->execute();
+
+      module_invoke_all('versioncontrol_repository_bypassing_purge', $this);
+    }
   }
 
   protected function backendDelete($options) {}
