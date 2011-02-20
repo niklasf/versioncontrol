@@ -57,7 +57,7 @@ class versioncontrol_handler_field_item_revision_path extends views_handler_fiel
     }
     $this->itemRevisions = array();
     foreach ($revision_ids as $vcs => $ids) {
-      $this->itemRevisions += $this->backends[$vcs]->loadEntities('item', array($ids));
+      $this->itemRevisions += $this->backends[$vcs]->loadEntities('item', $ids);
     }
   }
 
