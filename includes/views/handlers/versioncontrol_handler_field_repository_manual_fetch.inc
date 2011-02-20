@@ -33,7 +33,7 @@ class versioncontrol_handler_field_repository_manual_fetch extends views_handler
         'href' => 'admin/content/versioncontrol-repositories/clearlock/' . $values->{$this->repo_alias},
       );
       $output = theme('links', array($link));
-      return  t('Repo is locked since @date.', array('@date' => format_date($locked, 'small'))) . "($output)";
+      return  t('Locked since @date.', array('@date' => format_date($locked, 'small'))) . "$output";
     }
   }
 }
