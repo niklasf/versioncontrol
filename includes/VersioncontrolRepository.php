@@ -330,17 +330,15 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     // Append default options.
     $options += $this->defaultCrudOptions['delete'];
 
-    if ($options['nested']) {
-      // Delete operations.
-      foreach ($this->loadBranches() as $branch) {
-        $branch->delete();
-      }
-      foreach ($this->loadTags() as $tag) {
-        $tag->delete();
-      }
-      foreach ($this->loadCommits() as $commit) {
-        $commit->delete();
-      }
+    // Delete all contained data.
+    foreach ($this->loadBranches() as $branch) {
+      $branch->delete();
+    }
+    foreach ($this->loadTags() as $tag) {
+      $tag->delete();
+    }
+    foreach ($this->loadCommits() as $commit) {
+      $commit->delete();
     }
 
     db_delete('versioncontrol_repositories')
