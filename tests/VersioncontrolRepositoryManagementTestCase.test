@@ -1,5 +1,4 @@
 <?php
-// $Id$
 require_once drupal_get_path('module', 'versioncontrol') . '/tests/VersioncontrolTestCase.test';
 /**
  * @file

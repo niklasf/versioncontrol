@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Views Field handler to show the list of label names this operation is in.

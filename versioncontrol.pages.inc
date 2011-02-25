@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Version Control API - An interface to version control systems

@@ -1,5 +1,4 @@
 <?php
-// $Id$
 class versioncontrol_handler_field_item_revision_path extends views_handler_field {
   public $backends = NULL;
   public $repos = array();

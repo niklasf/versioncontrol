@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * A handler to provide date for operation with optional link to operation.
  */

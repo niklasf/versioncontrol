@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Views Field handler to provide visual diffstat representation of changes to

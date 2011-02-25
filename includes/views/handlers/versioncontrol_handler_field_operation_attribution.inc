@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Views Field handler to show an author mapped to a drupal user if

@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Unit test ensuring the parent of the 'account' family of auth plugins behaves

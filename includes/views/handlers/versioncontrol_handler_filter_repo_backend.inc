@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Views filter handler that pulls the formatted name from the backend object.

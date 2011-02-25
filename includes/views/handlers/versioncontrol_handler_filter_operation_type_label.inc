@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Views filter handler to filter by label BUT also allows limitting based on type

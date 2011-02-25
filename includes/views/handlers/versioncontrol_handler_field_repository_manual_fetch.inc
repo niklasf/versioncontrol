@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Views Field handler to provide repository manual log fetching links.

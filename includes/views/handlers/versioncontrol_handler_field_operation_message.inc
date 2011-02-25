@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Version Control API field handler to be able to generate bug tracker

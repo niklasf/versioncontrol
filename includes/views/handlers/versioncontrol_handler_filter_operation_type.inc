@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Views filter handler to allow filtering based on the type of operation

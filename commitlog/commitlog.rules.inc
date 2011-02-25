@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Commit Log - Display a history of commits, branches and tags,

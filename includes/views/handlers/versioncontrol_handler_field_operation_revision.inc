@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Version Control API field handler to output the right value of the

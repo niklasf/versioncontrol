@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * We need to declare this file to avoid a not defined class, because autoload

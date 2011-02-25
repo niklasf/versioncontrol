@@ -1,4 +1,3 @@
-$Id$
 
 Version Control API -
 An interface to version control systems whose functionality

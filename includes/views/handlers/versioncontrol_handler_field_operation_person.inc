@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Views Field handler to show an author or committer, mapped to a

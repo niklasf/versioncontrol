@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Views Field handler to convert the numeric type field into text

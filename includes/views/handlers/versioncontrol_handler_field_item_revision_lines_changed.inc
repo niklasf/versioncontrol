@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Views Field handler to provide a combined output of lines added and deleted

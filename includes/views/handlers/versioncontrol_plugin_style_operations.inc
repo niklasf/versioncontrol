@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Views style plugin to display a date grouped list of items

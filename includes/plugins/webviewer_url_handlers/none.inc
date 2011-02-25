@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * This plugin contains the main documentation of how to make a

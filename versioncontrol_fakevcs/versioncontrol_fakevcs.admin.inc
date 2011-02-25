@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * FakeVCS backend for Version Control API -
