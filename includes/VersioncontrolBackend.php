@@ -135,11 +135,17 @@ abstract class VersioncontrolBackend {
       throw new Exception("Invalid entity type '$type' requested; not supported by " . __CLASS__, E_ERROR);
     }
 
-    // Ensure the class to create descends from VersioncontrolEntity.
     $class = $this->classesEntities[$type];
+
+    // Ensure the class actually exists; throw an error if it does not.
+    if (!class_exists($class)) {
+      throw new Exception("Nonexistent class '$class' specified by " . __CLASS__ . " backend for requested type '$type' when attempting to build a Versioncontrol entity.", E_ERROR);
+    }
+
+    // Ensure the class to create descends from VersioncontrolEntity.
     // FIXME temporary hack to accommodate the introduction of the VersioncontrolEntityInterface interface; have to use reflection to check interfaces on a classname string, and
     // it's too annoying to refactor all this to accommodate that right now.
-    if (!is_subclass_of($class, 'VersioncontrolEntity') && !is_subclass_of($class, 'VersioncontrolRepository')) {
+    else if (!is_subclass_of($class, 'VersioncontrolEntity') && !is_subclass_of($class, 'VersioncontrolRepository')) {
       throw new Exception("Invalid class '$class' specified by " . __CLASS__ . " backend for requested type '$type' when attempting to build a Versioncontrol entity; class does not implement VersioncontrolEntityInterface.", E_ERROR);
     }
 
