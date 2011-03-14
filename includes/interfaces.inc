@@ -416,3 +416,52 @@ interface VersioncontrolRepositoryManagerWorkerInterface {
    */
   public function save();
 }
+
+/**
+ * Interface defining the behavior of a versioncontrol log parser plugin.
+ *
+ * Log parsers are responsible for getting raw backend repository data into
+ * the database for direct use in the versioncontrol suite. This interface
+ * defines methods for doing so.
+ *
+ */
+interface VersioncontrolRepositoryLogParserInterface {
+
+  /**
+   * Set the repository object to be used by this plugin object.
+   */
+  public function setRepository(VersioncontrolRepository $repository);
+
+  /**
+   * Ensure the database's representation of the repository data is entirely
+   * in sync with the repository.
+   *
+   * This is the most complex parsing option, as the log parser must essentially
+   * "diff" the db against the repo data and synchronize only that which is
+   * different, leaving that which already exists alone.
+   */
+  public function fullSync();
+
+  /**
+   * Perform an initial parse on a repository, bringing the db from empty all
+   * the way fully up to date.
+   */
+  public function initialSync();
+
+  /**
+   * Parse an incoming blob of repository data, typically of the sort sent
+   * from a hook tripped by a network operation.
+   *
+   * Unlike the sync methods, implementations of this method should make no
+   * attempt to ensure exact mirroring between the repository and the database;
+   * it should assume the indicated incoming data is the complete and exclusive
+   * set of new/missing repository data to be added to the database.
+   *
+   * @param mixed $data
+   *   The incoming data. The form of this data varies completely from one
+   *   vcs to another; typically it is data fed in from a "commit hook" - the
+   *   server-side hook tripped when some client sends new data into the
+   *   repository.
+   */
+  public function parseIncoming($data);
+}
