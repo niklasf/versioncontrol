@@ -14,20 +14,36 @@
  */
 function _versioncontrol_repomgr_run_worker($data) {
   // Lots and LOTS of input validation; this is a really bad place to fail silently.
+  if (empty($data['repository'])) {
+    $str = "Repository management job payload contained no repository data.";
+    watchdog('versioncontrol', $str, array(), WATCHDOG_ERROR);
+    throw new Exception($str, E_ERROR);
+  }
+  else if ($data['repository'] instanceof VersioncontrolRepository) {
+    // Full object was serialized, no loading required
+    $repo = $data['repository'];
+  }
+  else {
+    // Expect that a repo_id was sent and we load it out here
+    $repo = versioncontrol_repository_load($data['repository']);
+    if (!$repo instanceof VersioncontrolRepository) {
+      $str = "Repository management job enqueued with repo_id '%repo_id', which failed to load a valid VersioncontrolRepository object.";
+      $vars = array(
+        '%repo_id' => $data['repository'],
+      );
+      watchdog('versioncontrol', $str, $vars, WATCHDOG_ERROR);
+      throw new Exception(strtr($str, $vars), E_ERROR);
+    }
+  }
+
+  $manager = $repo->getRepositoryManager();
+
   if (empty($data['operation'])) {
     watchdog('versioncontrol_repomgr', "Repository management job was enqueued without any operations to run.", array(), WATCHDOG_ERROR);
     throw new Exception("Repository management job was enqueued without any operations to run.", E_ERROR);
   }
 
   $ops = is_string($data['operation']) ? array($data['operation'] => array()) : $data['operation'];
-
-  if (empty($data['repository']) || !$data['repository'] instanceof VersioncontrolRepository) {
-    watchdog('versioncontrol_repomgr', "Repository management job was enqueued without a valid VersioncontrolRepository object to act on.", array(), WATCHDOG_ERROR);
-    throw new Exception("Repository management job was enqueued without a valid VersioncontrolRepository object to act on.", E_ERROR);
-  }
-
-  $repo = $data['repository'];
-  $manager = $repo->getRepositoryManager();
 
   // Loop through all ops and ensure all are valid before running any. This
   // helps preserve known state by preventing jobs are guaranteed to terminate
