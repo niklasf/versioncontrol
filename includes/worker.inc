@@ -24,8 +24,9 @@ function _versioncontrol_repomgr_run_worker($data) {
     $repo = $data['repository'];
   }
   else {
-    // Expect that a repo_id was sent and we load it out here
-    $repo = versioncontrol_repository_load($data['repository']);
+    // Expect that a repo_id was sent and we load it out here. Ensure we bypass
+    // cache, as caching in a long-running worker would be trouble.
+    $repo = versioncontrol_repository_load($data['repository'], array(), array('may cache' => FALSE));
     if (!$repo instanceof VersioncontrolRepository) {
       $str = "Repository management job enqueued with repo_id '%repo_id', which failed to load a valid VersioncontrolRepository object.";
       $vars = array(
@@ -46,8 +47,8 @@ function _versioncontrol_repomgr_run_worker($data) {
   $ops = is_string($data['operation']) ? array($data['operation'] => array()) : $data['operation'];
 
   // Loop through all ops and ensure all are valid before running any. This
-  // helps preserve known state by preventing jobs are guaranteed to terminate
-  // partway through from starting at all.
+  // helps preserve known state by preventing jobs containing ops that are
+  // guaranteed to terminate partway through from starting at all.
   foreach (array_keys($ops) as $op) {
     if (!method_exists($manager, $op)) {
       $vars = array(
