@@ -299,6 +299,11 @@ function versioncontrol_cron_queue_info() {
     'time' => 0,
   );
 
+  $queues['versioncontrol_logparser'] = array(
+    'worker callback' => 'versioncontrol_logparser_run_worker',
+    'time' => 0,
+  );
+
   return $queues;
 }
 
@@ -316,6 +321,22 @@ function versioncontrol_repomgr_run_worker($data) {
   ctools_include('worker', 'versioncontrol');
   return _versioncontrol_repomgr_run_worker($data);
 }
+
+/**
+ * Process a versioncontrol_logparser queue job.
+ *
+ * Passthrough to _versioncontrol_logparser_run_worker().
+ *
+ * @see _versioncontrol_logparser_run_worker()
+ *
+ * @param array $data
+ *   The array of job data to be processed.
+ */
+function versioncontrol_logparser_run_worker($data) {
+  ctools_include('worker', 'versioncontrol');
+  return _versioncontrol_logparser_run_worker($data);
+}
+
 
 // API functions start here.
 

@@ -66,3 +66,58 @@ function _versioncontrol_repomgr_run_worker($data) {
     call_user_func_array(array($manager, $op), $args);
   }
 }
+
+function _versioncontrol_logparser_run_worker($data) {
+  // Lots and LOTS of input validation; this is a really bad place to fail silently.
+  if (empty($data['repository'])) {
+    $str = "Repository parsing job payload contained no repository data.";
+    watchdog('versioncontrol', $str, array(), WATCHDOG_ERROR);
+    throw new Exception($str, E_ERROR);
+  }
+  else if ($data['repository'] instanceof VersioncontrolRepository) {
+    // Full object was serialized, no loading required
+    $repo = $data['repository'];
+  }
+  else {
+    // Expect that a repo_id was sent and we load it out here
+    $repo = versioncontrol_repository_load($data['repository'], array(), array('may cache' => FALSE));
+    if (!$repo instanceof VersioncontrolRepository) {
+      $str = "Repository parsing job enqueued with repo_id '%repo_id', which failed to load a valid VersioncontrolRepository object.";
+      $vars = array(
+        '%repo_id' => $data['repository'],
+      );
+      watchdog('versioncontrol', $str, $vars, WATCHDOG_ERROR);
+      throw new Exception(strtr($str, $vars), E_ERROR);
+    }
+  }
+
+  $parser = $repo->getParser();
+
+  // Lots and LOTS of input validation; this is a really bad place to fail silently.
+  if (empty($data['operation'])) {
+    watchdog('versioncontrol', "Repository parsing job was enqueued without any operations to run.", array(), WATCHDOG_ERROR);
+    throw new Exception("Repository management job was enqueued without any operations to run.", E_ERROR);
+  }
+
+  $ops = is_string($data['operation']) ? array($data['operation'] => array()) : $data['operation'];
+
+  // Loop through all ops and ensure all are valid before running any. This
+  // helps preserve known state by preventing jobs containing ops that are
+  // guaranteed to terminate partway through from starting at all.
+  foreach (array_keys($ops) as $op) {
+    if (!method_exists($parser, $op)) {
+      $vars = array(
+        '%op' => $op,
+        '%repo_id' => empty($repo->repo_id) ? '[NEW]' : $repo->repo_id,
+        '%plugin' => get_class($parser),
+      );
+      watchdog('versioncontrol', "Operation '%op' was requested on repo_id %repo_id using plugin class %plugin, but no such method exists.", $vars, WATCHDOG_ERROR);
+      throw new Exception(strtr("Operation '%op' was requested on repo_id %repo_id using plugin class %plugin, but no such method exists.", $vars), E_ERROR);
+    }
+  }
+
+  // Finally ready to actually run the operations.
+  foreach ($ops as $op => $args) {
+    call_user_func_array(array($parser, $op), $args);
+  }
+}
