@@ -418,14 +418,15 @@ interface VersioncontrolRepositoryManagerWorkerInterface {
 }
 
 /**
- * Interface defining the behavior of a versioncontrol log parser plugin.
+ * Interface defining the behavior of a versioncontrol history synchronizer
+ * plugin.
  *
- * Log parsers are responsible for getting raw backend repository data into
- * the database for direct use in the versioncontrol suite. This interface
+ * History synchronizers are responsible for getting raw backend repository data
+ * into the database for direct use in the versioncontrol suite. This interface
  * defines methods for doing so.
  *
  */
-interface VersioncontrolRepositoryLogParserInterface {
+interface VersioncontrolRepositoryHistorySynchronizerInterface {
 
   /**
    * Set the repository object to be used by this plugin object.
@@ -449,8 +450,9 @@ interface VersioncontrolRepositoryLogParserInterface {
   public function initialSync();
 
   /**
-   * Parse an incoming blob of repository data, typically of the sort sent
-   * from a hook tripped by a network operation.
+   * Take an incoming blob of repository data, typically of the sort sent from
+   * a hook tripped by a network operation, and perform appropriate sync
+   * operations.
    *
    * Unlike the sync methods, implementations of this method should make no
    * attempt to ensure exact mirroring between the repository and the database;
@@ -463,7 +465,7 @@ interface VersioncontrolRepositoryLogParserInterface {
    *   server-side hook tripped when some client sends new data into the
    *   repository.
    */
-  public function parseIncoming($data);
+  public function dumbSync($data);
 
   /**
    * Verify that the data represented in the database is an accurate

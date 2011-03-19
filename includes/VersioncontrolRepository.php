@@ -516,13 +516,13 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     return $this->pluginInstances['repomgr'];
   }
 
-  public function getLogParser() {
-    if (!isset($this->pluginInstances['logparser'])) {
-      $this->pluginInstances['logparser'] = $this->getPluginClass('logparser', 'logparser', 'worker');
-      $this->pluginInstances['logparser']->setRepository($this);
+  public function getSynchronizer() {
+    if (!isset($this->pluginInstances['reposync'])) {
+      $this->pluginInstances['reposync'] = $this->getPluginClass('reposync', 'reposync', 'worker');
+      $this->pluginInstances['reposync']->setRepository($this);
     }
 
-    return $this->pluginInstances['logparser'];
+    return $this->pluginInstances['reposync'];
   }
 
   /**
