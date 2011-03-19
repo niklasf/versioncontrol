@@ -4,6 +4,10 @@
  * @file worker.inc
  *
  * Queue-processing worker-related functions.
+ *
+ * FIXME: these worker callbacks only differ in the method names they call and
+ * the string in their error messages. Seems very wasteful, and really points to
+ * needing better architecture.
  */
 
 /**
