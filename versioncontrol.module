@@ -321,6 +321,11 @@ function versioncontrol_repomgr_run_worker($data) {
 
 /**
  * Menu wildcard loader for repository ids ('%versioncontrol_repository').
+ *
+ * @return VersioncontrolRepository
+ *   Returns the top VersioncontrolRepository object from the array returned
+ *   given the query conditions, or FALSE if no such objects were found given
+ *   the conditions.
  */
 function versioncontrol_repository_load($repo_id, $conditions = array(), $options = array()) {
   if (!is_array($repo_id)) {
