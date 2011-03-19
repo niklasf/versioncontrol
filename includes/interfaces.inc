@@ -464,4 +464,14 @@ interface VersioncontrolRepositoryLogParserInterface {
    *   repository.
    */
   public function parseIncoming($data);
+
+  /**
+   * Verify that the data represented in the database is an accurate
+   * representation of the current state of repository data.
+   *
+   * @return bool
+   *   TRUE if the database is consistent with the repository, FALSE if there
+   *   are any irregularities whatsoever.
+   */
+  public function verifyData();
 }
