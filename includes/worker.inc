@@ -39,7 +39,7 @@ function _versioncontrol_repomgr_run_worker($data) {
   $manager = $repo->getRepositoryManager();
 
   if (empty($data['operation'])) {
-    watchdog('versioncontrol_repomgr', "Repository management job was enqueued without any operations to run.", array(), WATCHDOG_ERROR);
+    watchdog('versioncontrol', "Repository management job was enqueued without any operations to run.", array(), WATCHDOG_ERROR);
     throw new Exception("Repository management job was enqueued without any operations to run.", E_ERROR);
   }
 
@@ -55,7 +55,7 @@ function _versioncontrol_repomgr_run_worker($data) {
         '%repo_id' => empty($repo->repo_id) ? '[NEW]' : $repo->repo_id,
         '%plugin' => get_class($manager),
       );
-      watchdog('versioncontrol_repomgr', "Operation '%op' was requested on repo_id %repo_id using plugin class %plugin, but no such method exists.", $vars, WATCHDOG_ERROR);
+      watchdog('versioncontrol', "Operation '%op' was requested on repo_id %repo_id using plugin class %plugin, but no such method exists.", $vars, WATCHDOG_ERROR);
       throw new Exception(strtr("Operation '%op' was requested on repo_id %repo_id using plugin class %plugin, but no such method exists.", $vars), E_ERROR);
     }
   }
