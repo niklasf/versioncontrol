@@ -95,7 +95,7 @@ function _versioncontrol_logparser_run_worker($data) {
     }
   }
 
-  $parser = $repo->getParser();
+  $parser = $repo->getLogParser();
 
   // Lots and LOTS of input validation; this is a really bad place to fail silently.
   if (empty($data['operation'])) {

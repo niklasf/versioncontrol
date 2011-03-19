@@ -75,6 +75,7 @@ abstract class VersioncontrolBackend {
   protected $pluginInterfaces = array(
     'repo' => array(
       'repomgr' => 'VersioncontrolRepositoryManagerWorkerInterface',
+      'logparser' => 'VersioncontrolRepositoryLogParserInterface',
       'webviewer_url_handler' => 'VersioncontrolWebviewerUrlHandlerInterface',
       'committer_mapper' => 'VersioncontrolUserMapperInterface',
       'author_mapper' => 'VersioncontrolUserMapperInterface',

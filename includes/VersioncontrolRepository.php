@@ -516,6 +516,15 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     return $this->pluginInstances['repomgr'];
   }
 
+  public function getLogParser() {
+    if (!isset($this->pluginInstances['logparser'])) {
+      $this->pluginInstances['logparser'] = $this->getPluginClass('logparser', 'logparser', 'worker');
+      $this->pluginInstances['logparser']->setRepository($this);
+    }
+
+    return $this->pluginInstances['logparser'];
+  }
+
   /**
    * Fulfills Serializable::serialize() interface.
    *
