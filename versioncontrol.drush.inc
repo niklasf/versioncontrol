@@ -18,6 +18,10 @@ function versioncontrol_drush_command() {
       'drush vcapi-parse-logs 1,2,repo_name,17' => 'Sequentially fetch repository logs for the the four indicated repositories.',
       'drush vcapi-parse-logs' => 'Sequentially fetch repository logs for all repositories tracked by the system.',
     ),
+    'options' => array(
+      '--flush' => 'Flush all data prior to performing history synchronization. Useful if something has gone awry in the db data and normal resyncs are failing to correct it.',
+      '--nobatch' => 'By default, this command operates using batchapi to help with memory management; Passing this option will cause it to execute normally.'
+    ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
   );
   $items['vcapi-map-operations'] = array(
@@ -30,7 +34,6 @@ function versioncontrol_drush_command() {
       '--all' => 'Attempt mapping on all operations, whether or not they have already been mapped. Respects --authors and --committers options.',
       '--authors' => 'Only attempt to map authors.',
       '--committers' => 'Only attempt to map committers.',
-      '--nobatch' => 'By default, this command operates using batchapi to help with memory management; Passing this option will cause it to execute normally.'
     ),
   );
 
@@ -95,10 +98,11 @@ function _drush_versioncontrol_parse_repo_arg_list($repo_args = '') {
 function drush_versioncontrol_vcapi_parse_logs() {
   $repos = _drush_versioncontrol_parse_repo_arg_list(func_get_args());
 
+  $flush = drush_get_option('flush', FALSE);
   // Make batching optional, it seems to be screwing with output.
   if (drush_get_option('nobatch', FALSE)) {
     foreach ($repos as $repo) {
-      _drush_versioncontrol_vcapi_parse_logs($repo->repo_id);
+      _drush_versioncontrol_vcapi_parse_logs($repo->repo_id, $flush);
     }
     return;
   }
@@ -106,7 +110,7 @@ function drush_versioncontrol_vcapi_parse_logs() {
   // With the repository list assembled, queue batches to run.
   $operations = array();
   foreach ($repos as $repo) {
-    $operations[] = array('_drush_versioncontrol_vcapi_parse_logs', array($repo->repo_id));
+    $operations[] = array('_drush_versioncontrol_vcapi_parse_logs', array($repo->repo_id, $flush));
   }
 
   $batch = array(
@@ -189,11 +193,11 @@ function drush_versioncontrol_vcapi_map_operations() {
   }
 }
 
-function _drush_versioncontrol_vcapi_parse_logs($repo_id) {
+function _drush_versioncontrol_vcapi_parse_logs($repo_id, $flush = FALSE) {
   $repo = versioncontrol_repository_load($repo_id);
   try {
     drush_log(dt('Beginning synchronization of repository !name', array('!name' => $repo->name)), 'ok');
-    $repo->fetchLogs();
+    $flush ? $repo->reSyncFromScratch() : $repo->fetchLogs();
     // FIXME this often echoes success even if it didn't work
     drush_log(dt('Successfully synchronized repository !name', array('!name' => $repo->name)), 'success');
   }

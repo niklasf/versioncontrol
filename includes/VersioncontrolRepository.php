@@ -175,6 +175,28 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   }
 
   /**
+   * Perform a full history synchronization, but first purge all existing
+   * repository data so that the sync job starts from scratch.
+   *
+   * This method triggers a special set of hooks so that projects which have
+   * data dependencies on the serial ids of versioncontrol entities can properly
+   * recover from the purge & rebuild.
+   *
+   * // FIXME this must be refactored so that hook invocations occur on the same
+   *    side of queueing as the history sync.
+   */
+  public function reSyncFromScratch($bypass = TRUE) {
+    module_invoke_all('versioncontrol_repository_pre_resync', $this, $bypass);
+
+    $this->purgeData($bypass);
+    $this->fetchLogs();
+
+    module_invoke_all('versioncontrol_repository_post_resync', $this, $bypass);
+
+    // TODO ensure all controller caches are cleared
+  }
+
+  /**
    * Title callback for repository arrays.
    */
   public function titleCallback() {
