@@ -9,7 +9,7 @@
 function versioncontrol_drush_command() {
   $items = array();
 
-  $items['vcapi-parse-logs'] = array(
+  $items['vcapi-sync-repositories'] = array(
     'description' => "Parse the logs from a repository known to Version Control API, fully updating the database with any changes made.",
     'arguments' => array(
       'repositories' => 'A comma-delimited list of repository ids or shortnames. Mixing and matching names and ids is fine.',
@@ -19,6 +19,7 @@ function versioncontrol_drush_command() {
       'drush vcapi-parse-logs' => 'Sequentially fetch repository logs for all repositories tracked by the system.',
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+    'aliases' => array('vc-sync'),
   );
   $items['vcapi-map-operations'] = array(
     'description' => "Attempt to map author & committer data in tracked commits/operations to Drupal users. By default, only unmapped operations will be attempted.",
@@ -48,7 +49,7 @@ function versioncontrol_drush_command() {
  */
 function versioncontrol_drush_help($section) {
   switch ($section) {
-    case 'drush:vcapi-parse-logs':
+    case 'drush:vcapi-sync-repositories':
       return dt("This command will fetch all new activity in the repositories listed on the command line. If no repositories are given, log fetching will be triggered on all repositories.");
     case 'drush:vcapi-map-operations':
       return dt("This command will attempt to map raw operation author/committer data to known Drupal accounts.");
@@ -92,13 +93,13 @@ function _drush_versioncontrol_parse_repo_arg_list($repo_args = '') {
   return $repos;
 }
 
-function drush_versioncontrol_vcapi_parse_logs() {
+function drush_versioncontrol_vcapi_sync_repositories() {
   $repos = _drush_versioncontrol_parse_repo_arg_list(func_get_args());
 
   // Make batching optional, it seems to be screwing with output.
   if (drush_get_option('nobatch', FALSE)) {
     foreach ($repos as $repo) {
-      _drush_versioncontrol_vcapi_parse_logs($repo->repo_id);
+      _drush_versioncontrol_vcapi_sync_repositories($repo->repo_id);
     }
     return;
   }
@@ -106,7 +107,7 @@ function drush_versioncontrol_vcapi_parse_logs() {
   // With the repository list assembled, queue batches to run.
   $operations = array();
   foreach ($repos as $repo) {
-    $operations[] = array('_drush_versioncontrol_vcapi_parse_logs', array($repo->repo_id));
+    $operations[] = array('_drush_versioncontrol_vcapi_sync_repositories', array($repo->repo_id));
   }
 
   $batch = array(
@@ -189,7 +190,7 @@ function drush_versioncontrol_vcapi_map_operations() {
   }
 }
 
-function _drush_versioncontrol_vcapi_parse_logs($repo_id) {
+function _drush_versioncontrol_vcapi_sync_repositories($repo_id) {
   $repo = versioncontrol_repository_load($repo_id);
   try {
     drush_log(dt('Beginning synchronization of repository !name', array('!name' => $repo->name)), 'ok');
