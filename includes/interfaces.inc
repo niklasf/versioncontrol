@@ -451,8 +451,8 @@ interface VersioncontrolRepositoryHistorySynchronizerInterface {
 
   /**
    * Take an incoming blob of repository data, typically of the sort sent from
-   * a hook tripped by a network operation, and perform appropriate sync
-   * operations.
+   * a hook tripped by a repository event (e.g., `svn commit` or `git push`),
+   * and perform appropriate sync operations.
    *
    * Unlike the sync methods, implementations of this method should make no
    * attempt to ensure exact mirroring between the repository and the database;
@@ -465,7 +465,7 @@ interface VersioncontrolRepositoryHistorySynchronizerInterface {
    *   server-side hook tripped when some client sends new data into the
    *   repository.
    */
-  public function dumbSync($data);
+  public function syncDataEvent($data);
 
   /**
    * Verify that the data represented in the database is an accurate
