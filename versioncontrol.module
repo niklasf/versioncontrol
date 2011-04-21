@@ -289,7 +289,7 @@ function versioncontrol_perm() {
 /**
  * Implements hook_cron_queue_info().
  *
- * Inform the job queueing system about our worker callback.
+ * Inform the job queueing system about our worker callbacks.
  */
 function versioncontrol_cron_queue_info() {
   $queues = array();
@@ -299,8 +299,8 @@ function versioncontrol_cron_queue_info() {
     'time' => 0,
   );
 
-  $queues['versioncontrol_logparser'] = array(
-    'worker callback' => 'versioncontrol_logparser_run_worker',
+  $queues['versioncontrol_reposync'] = array(
+    'worker callback' => 'versioncontrol_reposync_run_worker',
     'time' => 0,
   );
 
@@ -323,18 +323,18 @@ function versioncontrol_repomgr_run_worker($data) {
 }
 
 /**
- * Process a versioncontrol_logparser queue job.
+ * Process a versioncontrol_reposync queue job.
  *
- * Passthrough to _versioncontrol_logparser_run_worker().
+ * Passthrough to _versioncontrol_reposync_run_worker().
  *
- * @see _versioncontrol_logparser_run_worker()
+ * @see _versioncontrol_reposync_run_worker()
  *
  * @param array $data
  *   The array of job data to be processed.
  */
-function versioncontrol_logparser_run_worker($data) {
+function versioncontrol_reposync_run_worker($data) {
   ctools_include('worker', 'versioncontrol');
-  return _versioncontrol_logparser_run_worker($data);
+  return _versioncontrol_reposync_run_worker($data);
 }
 
 

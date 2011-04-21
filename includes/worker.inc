@@ -71,7 +71,7 @@ function _versioncontrol_repomgr_run_worker($data) {
   }
 }
 
-function _versioncontrol_logparser_run_worker($data) {
+function _versioncontrol_reposync_run_worker($data) {
   // Lots and LOTS of input validation; this is a really bad place to fail silently.
   if (empty($data['repository'])) {
     $str = "Repository parsing job payload contained no repository data.";
