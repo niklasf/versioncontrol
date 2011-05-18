@@ -135,9 +135,9 @@ function drush_versioncontrol_vcapi_map_operations() {
       ->distinct()
       ->where('vco.author_uid = 0 OR vco.committer_uid = 0')
       ->execute()
-      ->fetchAll(PDO::FETCH_COLUMN, 'repo_id');
+      ->fetchCol();
 
-    $repos = versioncontrol_repository_load_multiple($repos);
+    $repos = versioncontrol_repository_load_multiple($ids);
   }
   else {
     $repos = _drush_versioncontrol_parse_repo_arg_list(func_get_args());
