@@ -94,7 +94,7 @@ class VersioncontrolRepositoryUrlHandler implements VersioncontrolWebviewerUrlHa
    *   (and if not even Commit Log is enabled), or if the item cannot be viewed
    *   for any reason.
    */
-  public function getItemLogViewUrl(&$item) {
+  public function getItemLogViewUrl($item) {
     $label = $item->getSelectedLabel();
 
     if (isset($label->type) && $label->type == VERSIONCONTROL_LABEL_BRANCH) {
@@ -128,7 +128,7 @@ class VersioncontrolRepositoryUrlHandler implements VersioncontrolWebviewerUrlHa
    *   An empty string is returned if no item view URL has been defined,
    *   or if the item cannot be viewed for any reason.
    */
-  public function getItemViewUrl(&$item) {
+  public function getItemViewUrl($item) {
     $label = $item->getSelectedLabel();
 
     if (isset($label->type) && $label->type == VERSIONCONTROL_LABEL_BRANCH) {
@@ -160,7 +160,7 @@ class VersioncontrolRepositoryUrlHandler implements VersioncontrolWebviewerUrlHa
    *   An empty string is returned if no diff URL has been defined,
    *   or if the two items cannot be diffed for any reason.
    */
-  public function getDiffUrl(&$file_item_new, $file_item_old) {
+  public function getDiffUrl($file_item_new, $file_item_old) {
     $label = $file_item_new->getSelectedLabel();
 
     if (isset($label->type) && $label->type == VERSIONCONTROL_LABEL_BRANCH) {
