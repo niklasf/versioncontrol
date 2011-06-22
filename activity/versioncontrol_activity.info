@@ -1,0 +1,7 @@
+name = Versioncontrol API Activity
+description = Part of the Google Summer of Code Project 'Development Activity logging, Activity Streams and Development Statistics'.
+package = Project Activity
+dependencies[] = versioncontrol
+dependencies[] = trigger
+dependencies[] = activity
+core = 6.x
