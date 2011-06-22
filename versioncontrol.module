@@ -1083,3 +1083,146 @@ function versioncontrol_plugins_get_information() {
     ),
   );
 }
+
+/**
+ * Implementation of hook token_list.
+ */
+function versioncontrol_token_list($type = 'all') {
+	$tokens = array();
+	
+	if (($type == 'VersioncontrolBackend') || ($type == 'all')) {
+		$tokens['Versioncontrol Backend'] = array(
+				'backend-name' => t('The name of the backend'),
+				'backend-type' => t('The type of the backend'),
+				'backend-description' => t('The description of the backend'),
+			);
+	}
+	
+	if (($type == 'VersioncontrolRepository') || ($type == 'all')) {
+		$tokens['Versioncontrol Repository'] = array(
+				'repository' => t('Link to the repository'),
+				'repository-id' => t('The identifier of the repository'),
+				'repository-name' => t('The name of the repository'),
+				'repository-vcs' => t('The name of the version control system the repository belongs to'),
+			);
+	}
+	
+	if (($type == 'VersioncontrolOperation') || ($type == 'all')) {
+		$tokens['Versioncontrol Operation'] = array(
+				'operation-id' => t('The identifier of the operation'),
+				'operation-repository' => t('Link to the repository'),
+				'operation-repository-id' => t('The identifier of the repository'),
+				'operation-repository-name' => t('The name of the repository'),
+				'operation-revision' => t('The operation\'s revision identifier'),
+				'operation-message' => t('The log message for the operation'),
+				'operation-author' => t('The user who performed the action'),
+				'operation-author-name' => t('The name of the user who performed the action'),
+				'operation-author-uid' => t('The user id of the user who performed the action'),
+				'operation-committer' => t('The user who performed the commit'),
+				'operation-committer-name' => t('The name of the user who performed the commit'),
+				'operation-committer-uid' => t('The user id of the user who performed the commit'),
+			) + token_get_date_token_info(t('The operation\'s execution'), 'operation-created-');
+	}
+	
+	if (($type == 'VersioncontrolBranch') || ($type == 'all')) {
+		$tokens['Versioncontrol Branch'] = array(
+				'branch-id' => t('The identifier of the branch'),
+				'branch-name' => t('The name of the branch'),
+				'branch-repository' => t('Link to the repository'),
+				'branch-repository-id' => t('The identifier of the repository'),
+				'branch-repository-name' => t('The name of the repository'),
+			);
+	}
+	
+	if (($type == 'VersioncontrolTag') || ($type == 'all')) {
+		$tokens['Versioncontrol Tag'] = array(
+				'tag-id' => t('The identifier of the tag'),
+				'tag-name' => t('The name of the tag'),
+				'tag-repository' => t('Link to the repository'),
+				'tag-repository-id' => t('The identifier of the repository'),
+				'tag-repository-name' => t('The name of the repository'),
+			);
+	}
+	
+	if (($type == 'VersioncontrolItem') || ($type == 'all')) {
+		$tokens['Versioncontrol Item'] = array(
+				'item-path' => t('The path of the item'),
+			);
+	}
+	
+	return $tokens;
+}
+
+/**
+ * Implementation of hook_token_values().
+ *
+ * @todo Implement missing values.
+ */
+function versioncontrol_token_values($type, $object, $options) {
+	$values = array();
+	
+	switch($type) {
+		case "VersioncontrolBackend":
+			$values = array(
+					'backend-name' => $object->name,
+					'backend-type' => $object->type,
+					'backend-description' => $object->description,
+				);
+				
+			break;
+		case "VersioncontrolRepository":
+			$values = array(
+					'repository' => '', // Implement
+					'repository-id' => $object->repo_id,
+					'repository-name' => $object->name,
+					'repository-vcs' => $object->vcs,
+				);
+				
+			break;
+		case "VersioncontrolOperation":
+			$values = array(
+					'operation-id' => $object->vc_op_id,
+					'operation-repository' => '', // Implement
+					'operation-repository-id' => $object->getRepository()->repo_id,
+					'operation-repository-name' => $object->getRepository()->name,
+					'operation-revision' => $object->revision,
+					'operation-message' => $object->message,
+					'operation-author' => '', // Implement
+					'operation-author-name' => $object->author,
+					'operation-author-uid' => $object->author_uid,
+					'operation-committer' => '', // Implement
+					'operation-committer-name' => $object->committer,
+					'operation-committer-uid' => $object->committer_uid,
+				) + token_get_date_token_values($object->date, 'operation-created-');
+			
+			break;
+		case "VersioncontrolBranch":
+			$values = array(
+					'branch-id' => $object->label_id,
+					'branch-name' => $object->name,
+					'branch-repository' => '', // Implement
+					'branch-repository-id' => $object->getRepository()->repo_id,
+					'branch-repository-name' => $object->getRepository()->name,
+				);
+				
+			break;
+		case "VersioncontrolTag":
+			$values = array(
+					'tag-id' => $object->label_id,
+					'tag-name' => $object->name,
+					'tag-repository' => '', // Implement
+					'tag-repository-id' => $object->getRepository()->repo_id,
+					'tag-repository-name' => $object->getRepository()->name,
+				);
+				
+			break;
+		case "VersioncontrolItem":
+			$values = array(
+					'item-path' => $object->path,
+				);
+			
+			break;
+	}
+	
+	return $values;
+}
