@@ -1,0 +1,25 @@
+<?php
+
+/**
+ * @file: Provide tests for Versioncontrol API Activity module.
+ */
+ 
+ /**
+ *
+ */
+class VersioncontrolActivityWebTestCase extends DrupalWebTestCase {
+
+  /**
+   * Returns information about these tests.
+   *
+   * @return mixed
+   */
+  function getInfo() {
+    return array(
+      'name' => t('Versioncontrol API activity'),
+      'description' => t('Test the basic functionality of Versioncontrol API Activity module.'),
+      'group' => t('Project Activity'),
+    );
+  }
+  
+}
