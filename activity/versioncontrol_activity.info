@@ -1,4 +1,4 @@
-name = Versioncontrol API Activity
+name = Version Control API Activity
 description = Part of the Google Summer of Code Project 'Development Activity logging, Activity Streams and Development Statistics'.
 package = Project Activity
 dependencies[] = versioncontrol

@@ -1,5 +1,7 @@
 <?php
 
+require_once drupal_get_path('module', 'versioncontrol') . '/tests/VersioncontrolTestCase.test';
+
 /**
  * @file: Provide tests for Versioncontrol API Activity module.
  */
@@ -7,7 +9,7 @@
  /**
  *
  */
-class VersioncontrolActivityWebTestCase extends DrupalWebTestCase {
+class VersioncontrolActivityWebTestCase extends VersioncontrolTestCase {
 
   /**
    * Returns information about these tests.
@@ -15,11 +17,133 @@ class VersioncontrolActivityWebTestCase extends DrupalWebTestCase {
    * @return mixed
    */
   function getInfo() {
-    return array(
-      'name' => t('Versioncontrol API activity'),
+    return array( 
+      'name' => t('Version Control API activity'),
       'description' => t('Test the basic functionality of Versioncontrol API Activity module.'),
       'group' => t('Project Activity'),
     );
+  }
+  
+  function setUp() {
+    $this->useBackends = self::BACKENDS_ALL;
+    parent::setUp('versioncontrol_activity', 'views', 'activity', 'token', 'trigger');
+  }
+  
+  /**
+   * Creates an activity template for the specified type and operation.
+   * Returns an unique hash that identifies the template.
+   *
+   * @param  $type  string  The type of the activity template.
+   * @param  $operation  string  The operation we need to create a template for.
+   * @param  $types  mixed  The activity types that have to be selected.
+   *
+   * @return  string  An unique hash to identify the activity template.
+   */
+  protected function createActivityTemplate($type, $operation, $field = NULL, $types = array(), $node = TRUE) {
+    $hash = md5(print_r($types, true) . $type . $operation);
+    
+    if ($node) {
+      $message = '[account-url]'. $hash .'[node-url]';
+    } else {
+      $message = '[account-url]'. $hash;
+    }
+    
+    $this->_createActivityTemplate($type, $operation, $message, $field, $types);
+    
+    return $hash;
+  }
+  
+  /**
+   * Creates an activity template for the specified type and operation.
+   *
+   * @param  $type  string  The type of the activity template.
+   * @param  $operation  string  The operation we need to create a template for.
+   * @param  $message  string  The message we want to record when the activity occurs.
+   * @param  $options  mixed  The activity options that have to be selected.
+   */
+  protected function _createActivityTemplate($type, $operation, $message, $field, $options = array()) {
+    $activityUser = $this->drupalCreateUser(array('administer activity'));
+    $this->drupalLogin($activityUser);
+    
+    $edit = array();
+    $edit['hook'] = $type;
+    $this->drupalPost('admin/build/activity/create', $edit, t('Continue'));
+    
+    // fill out our configurable action form and post
+    $edit = array();
+    $edit['operation'] = $operation;
+    
+    // activity options
+    foreach ($options as $option) {
+      $edit['activity_types['.$option.']'] = '1';
+    }
+    
+    if (empty($field)) {
+      $field = type;
+    }
+    
+    $this->drupalPost(NULL, $edit, t('Continue'));
+    
+    // fill out our configurable action form and post
+    $edit = array();
+    $edit['everyone-pattern-en'] = $message;
+    $edit[$field.'-pattern-en'] = $edit['everyone-pattern-en'];    
+    $this->drupalPost(NULL, $edit, t('Save'));
+    
+    $this->assertText(t('Saved.'));
+  }
+  
+  /**
+   * Asserts that a given activity message has been logged.
+   *
+   * @param  $user  string  Absolute URL to user profile.
+   * @param  $hash  string  Hash received from the createActivityTemplate function.
+   * @param  $node  string  Absolute URL to node.
+   * @param  $index  integer  The location of the activity in the activity log; lower is sooner.
+   * @param  $amount  integer  The total amount of activity messages expected.
+   * @param  $display  string  The display that needs to be shown.
+   *
+   * ... any additional parameters will be passed as arguments to the view.
+   */
+  protected function assertActivity($user, $hash, $node, $index = 0, $amount = 0, $display_id = NULL) {
+    $args = array_slice(func_get_args(), 6);
+    array_unshift($args, 'all_activity', $display_id);
+    
+    $activity = call_user_func_array('views_get_view_result', $args);
+    
+    if (empty($node)) {
+      $message = $user . $hash;
+    } else {
+      $message = $user . $hash . $node;
+    }
+    
+    if (!empty($activity)) {
+      $this->assertEqual($activity[$index]->activity_messages_message, $message);
+    } else {
+      $this->assertEqual($user, NULL);
+    }
+    
+    if ($amount) {
+        $this->assertEqual(count($activity), $amount);
+    }
+  }
+  
+  private function versioncontrolGenerateNetworkActivity($repository) {
+    module_invoke_all('versioncontrol_activity', $repository, $this->loggedInUser->uid);
+  }
+  
+  function testNetworkActivity() { 
+    $hash = $this->createActivityTemplate('versioncontrol', 'activity', 'VersioncontrolRepository', array(), FALSE);
+    
+    $account = $this->drupalCreateUser();
+    $this->drupalLogin($account);
+    $user = $this->getUrl();
+    
+    $object = $this->versioncontrolCreateRepository();
+    
+    $this->versioncontrolGenerateNetworkActivity($object);
+    
+    $this->assertActivity($user, $hash, NULL, 0, 1);
   }
   
 }
