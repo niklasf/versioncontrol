@@ -1,0 +1,119 @@
+<?php
+
+require_once drupal_get_path('module', 'versioncontrol') . '/tests/VersioncontrolTestCase.test';
+
+/**
+ * @file
+ * Tests ensuring proper behavior of the integration with Token.
+ */
+
+class VersioncontrolTokenTests extends VersioncontrolTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => t('Token integration tests'),
+      'description' => t('Tests on Token integration.'),
+      'group' => t('Version Control API'),
+    );
+  }
+
+  function setUp() {
+    $this->useBackends = self::BACKENDS_ALL;
+    parent::setUp();
+  }
+  
+  function testVersioncontrolBackendTokens() {
+    $message = '[backend-name] [backend-type] [backend-description]';
+    
+    $object = $this->testBackend;
+    
+    $expected = $object->name.' '.
+                $object->type.' '.
+                $object->description;
+    
+    $render = token_replace_multiple($message, array('VersioncontrolBackend' => $object), '[', ']', array(), TRUE);
+    
+    $this->assertEqual($render, $expected);
+  }
+
+  function testVersioncontrolRepositoryTokens() {
+    $message = '[repository] [repository-id] [repository-name] [repository-vcs]';
+    
+    $object = $this->versioncontrolCreateRepository();
+    
+    $expected = l($object->name, $object->getUrlHandler()->getRepositoryViewUrl()).' '.
+                $object->repo_id.' '.
+                $object->name.' '.
+                $object->vcs;
+    
+    $render = token_replace_multiple($message, array('VersioncontrolRepository' => $object), '[', ']', array(), TRUE);
+    
+    $this->assertEqual($render, $expected);
+  }
+  
+  function testVersioncontrolOperationTokens() {
+    $message = '[operation-id] [operation-repository] [operation-repository-id] [operation-repository-name] [operation-revision] [operation-message] [operation-author-name] [operation-author-uid] [operation-committer-name] [operation-committer-uid]';
+    
+    $object = $this->versioncontrolCreateOperation();
+    
+    $expected = $object->vc_op_id.' '.
+                l($object->getRepository()->name, $object->getRepository()->getUrlHandler()->getRepositoryViewUrl()).' '.
+                $object->getRepository()->repo_id.' '.
+                $object->getRepository()->name.' '.
+                $object->revision.' '.
+                $object->message.' '.
+                $object->author.' '.
+                $object->author_uid.' '.
+                $object->committer.' '.
+                $object->committer_uid;
+    
+    $render = token_replace_multiple($message, array('VersioncontrolOperation' => $object), '[', ']', array(), TRUE);
+    
+    $this->assertEqual($render, $expected);
+  }
+  
+  function testVersioncontrolBranchTokens() {
+    $message = '[branch-id] [branch-name] [branch-repository] [branch-repository-id] [branch-repository-name]';
+    
+    $object = $this->versioncontrolCreateLabel('branch');
+    
+    $expected = $object->label_id.' '.
+                $object->name.' '.
+                l($object->getRepository()->name, $object->getRepository()->getUrlHandler()->getRepositoryViewUrl()).' '.
+                $object->getRepository()->repo_id.' '.
+                $object->getRepository()->name;
+    
+    $render = token_replace_multiple($message, array('VersioncontrolBranch' => $object), '[', ']', array(), TRUE);
+    
+    $this->assertEqual($render, $expected);
+  }
+  
+  function testVersioncontrolTagTokens() {
+    $message = '[tag-id] [tag-name] [tag-repository] [tag-repository-id] [tag-repository-name]';
+    
+    $object = $this->versioncontrolCreateLabel('tag');
+    
+    $expected = $object->label_id.' '.
+                $object->name.' '.
+                l($object->getRepository()->name, $object->getRepository()->getUrlHandler()->getRepositoryViewUrl()).' '.
+                $object->getRepository()->repo_id.' '.
+                $object->getRepository()->name;
+    
+    $render = token_replace_multiple($message, array('VersioncontrolTag' => $object), '[', ']', array(), TRUE);
+    
+    $this->assertEqual($render, $expected);
+  }
+  
+  function testVersioncontrolItemTokens() {
+    $message = '[item-path]';
+    
+    $object = $this->versioncontrolCreateItem();
+    
+    $expected = $object->path;
+    
+    $render = token_replace_multiple($message, array('VersioncontrolItem' => $object), '[', ']', array(), TRUE);
+    
+    $this->assertEqual($render, $expected);
+  }
+  
+}
