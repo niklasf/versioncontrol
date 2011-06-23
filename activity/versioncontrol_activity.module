@@ -4,3 +4,101 @@
  * @file: Main module of Versioncontrol API Activity.
  */
  
+/**
+ * Implementation of hook_hook_info().
+ *
+ * Provides Trigger support for Version Control API.
+ */
+function versioncontrol_hook_info() {
+  $hooks = versioncontrol_activity_hooks();
+  
+  return array('versioncontrol' => array('versioncontrol' => $hooks['versioncontrol']));
+}
+
+/**
+ * Implementation of hook_activity_info().
+ *
+ * Provides Activity support for Project.
+ */
+function versioncontrol_activity_info() {
+  static $cache;
+  static $cache_options;
+  
+  if (!isset($cache)) {
+    $cache = versioncontrol_activity_hooks();
+  
+    foreach ($cache as $module => &$hooks) {
+      $hooks = array_keys($hooks);
+    }
+  }
+  
+  if (!isset($cache_options)) {
+    $cache_options = versioncontrol_get_backends();
+    
+    foreach ($cache_options as $name => &$backend) {
+      $backend = $backend->name;
+    }
+  }
+  
+  $info = new stdClass();
+  
+  $info->api = 2;
+  $info->name = 'versioncontrol';
+  $info->object_type = 'VersioncontrolRepository';
+  $info->eid_field = 'repo_id';
+  $info->objects = array('Actor' => 'VersioncontrolRepository');
+  $info->hooks = array('versioncontrol' => $cache['versioncontrol']);
+  $info->type_options = $cache_options;
+  
+  return $info;
+}
+
+/**
+ * Implementation of hook_activity_type_check().
+ */
+function versioncontrol_activity_type_check($token_objects, $types) {
+  return (in_array($tokens_objects['VersioncontrolRepository']->type, $types));
+}
+
+/**
+ * Returns a list of triggers for Project.
+ */
+function versioncontrol_activity_hooks() {
+  static $cache;
+  
+  if (!isset($cache)) {
+    $cache = array(
+      'versioncontrol' =>
+        array(
+          'activity' => array(
+            'runs when' => t('When network activity was caused.'),
+          ),
+        ),
+    );
+  }
+  
+  return $cache;
+}
+
+/**
+ * Following functions are to catch events from the Version Control API module.
+ */
+
+/**
+ *
+ */
+function versioncontrol_activity_versioncontrol_activity($repository, $uid) {
+  $aids = _trigger_get_hook_aids('versioncontrol', 'activity');
+  
+  $repository->uid = $uid;
+
+  $context = array(
+    'hook' => 'versioncontrol',
+    'op' => 'activity',
+    'action' => 'activity',
+    'VersioncontrolRepository' => $repository,
+    'actor' => $uid,
+  );
+
+  actions_do(array_keys($aids), $repository, $context);
+}
