@@ -38,8 +38,15 @@ function versioncontrol_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'date' => array(
-        'description' => 'Date/time when the operation was executed, as Unix timestamp.',
+      'author_date' => array(
+        'description' => 'Date/time when the operation was created, as Unix timestamp.',
+        'type' => 'int',
+        'size' => 'big',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'committer_date' => array(
+        'description' => 'Date/time when the operation was added to the repository, as Unix timestamp.',
         'type' => 'int',
         'size' => 'big',
         'not null' => TRUE,
@@ -92,7 +99,8 @@ function versioncontrol_schema() {
     'indexes' => array(
       'type' => array('type'),
       'repo_id' => array('repo_id'),
-      'date' => array('date'),
+      'author_date' => array('author_date'),
+      'committer_date' => array('committer_date'),
       'author' => array('author'),
       'author_uid' => array('author_uid'),
       'committer' => array('committer'),
@@ -1207,5 +1215,33 @@ function versioncontrol_update_6315() {
 function versioncontrol_update_6316() {
   $ret = array();
   db_add_index($ret, 'versioncontrol_item_revisions','vc_op_id', array('vc_op_id'));
+  return $ret;
+}
+
+/**
+ * Use two fields to handle operation dates.
+ */
+function versioncontrol_update_6317() {
+  $ret = array();
+  $author_date_spec = array(
+    'description' => 'Date/time when the operation was created, as Unix timestamp.',
+    'type' => 'int',
+    'size' => 'big',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  $committer_date_spec = array(
+    'description' => 'Date/time when the operation was added to the repository, as Unix timestamp.',
+    'type' => 'int',
+    'size' => 'big',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  $committer_date_index_spec = array('indexes' => array('committer_date' => array('committer_date')));
+  $author_date_index_spec = array('indexes' => array('author_date' => array('author_date')));
+  db_add_field($ret, 'versioncontrol_operations', 'committer_date', $committer_date_spec, $committer_date_index_spec);
+  db_query('UPDATE {versioncontrol_operations} vco SET vco.committer_date = vco.date');
+  db_drop_index($ret, 'versioncontrol_operations', 'date');
+  db_change_field($ret, 'versioncontrol_operations', 'date', 'author_date', $author_date_spec, $author_date_index_spec);
   return $ret;
 }

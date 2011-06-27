@@ -75,8 +75,8 @@ $handler->override_option('fields', array(
     'field' => 'vc_op_id',
     'relationship' => 'none',
   ),
-  'date' => array(
-    'label' => 'Date',
+  'author_date' => array(
+    'label' => 'Author date',
     'alter' => array(
       'alter_text' => 0,
       'text' => '',
@@ -102,9 +102,9 @@ $handler->override_option('fields', array(
     'custom_date_format' => 'F j, Y G:i',
     'link' => 1,
     'exclude' => 1,
-    'id' => 'date',
+    'id' => 'author_date',
     'table' => 'versioncontrol_operations',
-    'field' => 'date',
+    'field' => 'author_date',
     'relationship' => 'none',
   ),
   'labels' => array(
@@ -169,7 +169,7 @@ $handler->override_option('fields', array(
     'label' => '',
     'alter' => array(
       'text' => '<div class="commit-global">
-  <h3>[date]</h3>
+  <h3>[author_date]</h3>
   <div class="commit-info">Commit <strong>[revision]</strong> on <strong>[labels]</strong></div>
   <div class="attribtution">[attribution]</div>
 </div>',
@@ -290,12 +290,12 @@ $handler->override_option('fields', array(
   ),
 ));
 $handler->override_option('sorts', array(
-  'date' => array(
+  'author_date' => array(
     'order' => 'DESC',
     'granularity' => 'second',
-    'id' => 'date',
+    'id' => 'author_date',
     'table' => 'versioncontrol_operations',
-    'field' => 'date',
+    'field' => 'author_date',
     'relationship' => 'none',
   ),
 ));

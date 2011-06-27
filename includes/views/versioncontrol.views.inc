@@ -181,12 +181,39 @@ function versioncontrol_views_data() {
       'handler' => 'versioncontrol_handler_filter_operation_type',
     ),
   );
-  $data['versioncontrol_operations']['date'] = array(
-    'title'    => t('Date'),
-    'help'     => t('The date of the operation'),
+  $data['versioncontrol_operations']['author_date'] = array(
+    'title'    => t('Author date'),
+    'help'     => t('The date when the operation was originally done.'),
     'field'    => array(
       'handler' => 'versioncontrol_handler_field_operation_date',
       'click sortable' => TRUE,
+      'additional fields' => array(
+        'date_value' => array('table' => 'versioncontrol_operations', 'field' => 'author_date'),
+        'revision',
+        'repo_id',
+      ),
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_date',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_date',
+    ),
+  );
+  $data['versioncontrol_operations']['committer_date'] = array(
+    'title'    => t('Committer date'),
+    'help'     => t('The date when the operation was added to the repository.'),
+    'field'    => array(
+      'handler' => 'versioncontrol_handler_field_operation_date',
+      'click sortable' => TRUE,
+      'additional fields' => array(
+        'date_value' => array('table' => 'versioncontrol_operations', 'field' => 'committer_date'),
+        'revision',
+        'repo_id',
+      ),
     ),
     'sort' => array(
       'handler' => 'views_handler_sort_date',
