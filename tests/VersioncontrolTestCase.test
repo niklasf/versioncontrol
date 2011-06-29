@@ -214,7 +214,8 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     $name = $this->randomName(7);
     $default_data = array(
       'type' => VERSIONCONTROL_OPERATION_COMMIT,
-      'date' => time(),
+      'author_date' => time(),
+      'committer_date' => time(),
       'author' => $name,
       'author_uid' => 0,
       'committer' => $name,

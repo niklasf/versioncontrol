@@ -34,7 +34,8 @@ class VersioncontrolOperationUnitTestingTestCase extends VersioncontrolTestCase 
     $repo = $this->versioncontrolCreateRepository('test');
     $data = array(
       'type' => VERSIONCONTROL_OPERATION_COMMIT,
-      'date' => time(),
+      'author_date' => time(),
+      'committer_date' => time(),
       'author' => $this->randomName(7),
       'author_uid' => 0,
       'committer' => $this->randomName(7),
@@ -88,7 +89,8 @@ class VersioncontrolOperationUnitTestingTestCase extends VersioncontrolTestCase 
     $operation = $this->versioncontrolCreateOperation('test');
 
     $data = array(
-      'date' => time(),
+      'author_date' => time(),
+      'committer_date' => time(),
       'author' => $this->randomName(7),
       'author_uid' => 0,
       'committer' => $this->randomName(7),
