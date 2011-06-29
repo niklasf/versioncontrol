@@ -102,3 +102,19 @@ function versioncontrol_activity_versioncontrol_activity($repository, $uid) {
 
   actions_do(array_keys($aids), $repository, $context);
 }
+
+/**
+ * Implementation of hook_activity_token_list().
+ *
+ * Here we break with our convention of working abstract,
+ * it's not really necesarry but it increases usability.
+ */
+function versioncontrol_activity_token_list($type = 'all') {
+  $tokens = array();
+  
+  if (module_exists('versioncontrol_project') && ($type == 'VersioncontrolRepository')) {
+    $tokens = project_activity_token_list('project');
+  }
+  
+  return $tokens;
+}
