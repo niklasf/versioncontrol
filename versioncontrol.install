@@ -153,6 +153,22 @@ function versioncontrol_schema() {
     'primary key' => array('vc_op_id', 'label_id'),
   );
 
+  // Make {versioncontrol_labels}.name case sensitive for mysql (postgres
+  // cannot). Re-think this for D7, sqlite3 support collation too.
+  $name_spec = array(
+    'description' => 'Name of the label, e.g. "HEAD", "master", "DRUPAL-6--1" or "6.x-1.0".',
+    'type' => 'varchar',
+    'not null' => TRUE,
+    'default' => '',
+  );
+  if (in_array($GLOBALS['db_type'], array('mysql', 'mysqli'))) {
+    // This is evil, but there is not standard way to change a field collation.
+    $name_spec['mysql_type'] = "VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_bin";
+  }
+  else {
+    $name_spec['length'] = 255;
+  }
+
   $schema['versioncontrol_labels'] = array(
     'description' =>
       'This table stores information about branches and tags (= labels) that exist in a repository. While there might be multiple operations involving the same branch/tag (see also {versioncontrol_operation_labels}, e.g. "create DRUPAL-6--1-0 tag for the files in project 1", "create DRUPAL-6--1-0 tag for the files in project 2", "delete DRUPAL-6--1-0 tag for the files in project 2 again"), there is only one row in this table that represents this label ("DRUPAL-6--1-0" in the above example).',
@@ -170,13 +186,7 @@ function versioncontrol_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'name' => array(
-        'description' => 'Name of the label, e.g. "HEAD", "master", "DRUPAL-6--1" or "6.x-1.0".',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
+      'name' => $name_spec,
       'type' => array(
         'description' =>
           'Whether this label is a branch or a tag. Consequently, this can be either VERSIONCONTROL_LABEL_BRANCH or VERSIONCONTROL_LABEL_TAG.',
@@ -1243,5 +1253,30 @@ function versioncontrol_update_6317() {
   db_query('UPDATE {versioncontrol_operations} vco SET vco.committer_date = vco.date');
   db_drop_index($ret, 'versioncontrol_operations', 'date');
   db_change_field($ret, 'versioncontrol_operations', 'date', 'author_date', $author_date_spec, $author_date_index_spec);
+  return $ret;
+}
+
+/**
+ * Make {versioncontrol_labels}.name case sensitive on mysql.
+ */
+function versioncontrol_update_6318() {
+  $ret = array();
+
+  // Only try this on mysql.
+  if (!in_array($GLOBALS['db_type'], array('mysql', 'mysqli'))) {
+    return $ret;
+  }
+
+  db_drop_unique_key($ret, 'versioncontrol_labels', 'repo_id_name_type');
+  $name_spec = array(
+    'description' => 'Name of the label, e.g. "HEAD", "master", "DRUPAL-6--1" or "6.x-1.0".',
+    // This is evil, but there is not standard way to change a field collation.
+    'mysql_type' => "VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_bin",
+    'not null' => TRUE,
+    'default' => '',
+  );
+  db_change_field($ret, 'versioncontrol_labels', 'name', 'name', $name_spec);
+  db_add_unique_key($ret, 'versioncontrol_labels', 'repo_id_name_type', array('repo_id', 'name', 'type'));
+
   return $ret;
 }
