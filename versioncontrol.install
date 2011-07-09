@@ -520,6 +520,42 @@ function versioncontrol_schema() {
     'primary key' => array('views_set', 'vcs'),
   );
 
+  $schema['versioncontrol_event_log'] = array(
+    'description' => 'A log of all human interaction events in all repositories. Its primary use is providing the base data required for modules like Activity. This table contains at least some original, non-derived data and as such cannot be safely flushed, unlike some of the other core versioncontrol tables.
+    Backends are expected to implement their own tables joining label and commit information against this event bank, as structural variances across backends are too great to be well accounted-for in a fixed schema.',
+    'fields' => array(
+      'elid' => array(
+        'description' => 'Serial primary key uniquely identifying each event.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'repo_id' => array(
+        'description' => 'Foreign key to {versioncontrol_repositories}.repo_id; identifies the repository from which this activity data derives.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'Foreign key to {users}.uid; uniquely identifies the Drupal user responsible for this event.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'timestamp' => array(
+        'description' => 'The Unix timestamp of when the event occurred.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('elid'),
+    'indexes' => array(
+      'repo_id' => array('repo_id'),
+      'uid' => array('uid'),
+    ),
+  );
+
   return $schema;
 }
 
@@ -1278,5 +1314,51 @@ function versioncontrol_update_6318() {
   db_change_field($ret, 'versioncontrol_labels', 'name', 'name', $name_spec);
   db_add_unique_key($ret, 'versioncontrol_labels', 'repo_id_name_type', array('repo_id', 'name', 'type'));
 
+  return $ret;
+}
+
+/**
+ * Introduce the {versioncontrol_event_log} table, used for storing raw event
+ * information.
+ */
+function versioncontrol_update_6319() {
+  $ret = array();
+
+  $schema = array(
+    'description' => 'A log of all human interaction events in all repositories. Its primary use is providing the base data required for modules like Activity. This table contains at least some original, non-derived data and as such cannot be safely flushed, unlike some of the other core versioncontrol tables.
+    Backends are expected to implement their own tables joining label and commit information against this event bank, as structural variances across backends are too great to be well accounted-for in a fixed schema.',
+    'fields' => array(
+      'elid' => array(
+        'description' => 'Serial primary key uniquely identifying each event.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'repo_id' => array(
+        'description' => 'Foreign key to {versioncontrol_repositories}.repo_id; identifies the repository from which this activity data derives.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'Foreign key to {users}.uid; uniquely identifies the Drupal user responsible for this event.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'timestamp' => array(
+        'description' => 'The Unix timestamp of when the event occurred.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('elid'),
+    'indexes' => array(
+      'repo_id' => array('repo_id'),
+      'uid' => array('uid'),
+    ),
+  );
+  db_create_table($ret, 'versioncontrol_event_log', $schema);
   return $ret;
 }
