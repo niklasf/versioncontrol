@@ -49,6 +49,8 @@ function versioncontrol_activity_info() {
   $info->objects = array('Actor' => 'VersioncontrolRepository');
   $info->hooks = array('versioncontrol' => $cache['versioncontrol']);
   $info->type_options = $cache_options;
+  $info->list_callback = 'versioncontrol_activity_list_activity_actions';
+  $info->context_load_callback = 'versioncontrol_activity_load_activity_context';
   
   return $info;
 }
@@ -90,17 +92,35 @@ function versioncontrol_activity_hooks() {
 function versioncontrol_activity_versioncontrol_activity($repository, $uid) {
   $aids = _trigger_get_hook_aids('versioncontrol', 'activity');
   
+  // Hack required by the Activity module for correct Token replacement.
   $repository->uid = $uid;
-
-  $context = array(
-    'hook' => 'versioncontrol',
-    'op' => 'activity',
-    'action' => 'activity',
-    'VersioncontrolRepository' => $repository,
-    'actor' => $uid,
-  );
+  
+  $context = versioncontrol_activity_context('activity', $repository, $uid);
 
   actions_do(array_keys($aids), $repository, $context);
+}
+
+/**
+ * Returns the context array for Project activity.
+ */
+function versioncontrol_activity_context($op, $repository, $uid = FALSE) {
+  if (empty($repository)) {
+    return array();
+  } 
+  else {
+    $context = array(
+      'hook' => 'versioncontrol',
+      'op' => $op,
+      'action' => $op,
+      'VersioncontrolRepository' => $repository,
+    );
+    
+    if ($uid !== FALSE) {
+      $context['actor'] = $uid;
+    }
+    
+    return $context;
+  }
 }
 
 /**
@@ -117,4 +137,60 @@ function versioncontrol_activity_token_list($type = 'all') {
   }
   
   return $tokens;
+}
+
+/**
+ * List all the Activity Actions that match the hook and op.
+ *
+ * @param string $hook
+ *  The hook that is to be fired.
+ * @param string $op
+ *  The op to be used in the hook.
+ * @param int $max_age
+ *  The max age from now.
+ *
+ * @return array
+ *  An array of arrays with 'id', 'created' and 'actor' keys.
+ */
+function versioncontrol_activity_list_activity_actions($hook, $op, $max_age) {
+  $actions = array();
+
+  if (!empty($max_age)) {
+    $min_time = time() - $max_age;
+  }
+  else {
+    $min_time = 0;
+  }
+
+
+  if ($op == 'activity' ) {
+    $sql = "SELECT repo_id as id, timestamp as created, uid as actor FROM {versioncontrol_event_log} WHERE timestamp > %d";
+  }
+
+  if (isset($sql)) {
+    $result = db_query($sql, $min_time);
+    while ($row = db_fetch_array($result)) {
+      $actions[] = $row;
+    }
+  }
+
+  return $actions;
+}
+
+/**
+ * Load up the context array to pass to activity_record.
+ *
+ * @param string $hook
+ *  The hook that is being fired.
+ * @param string $op
+ *  The op for that hook.
+ * @param string $id
+ *  The id for the action.
+ *
+ * @return array
+ *   The context array for activity_record.
+ * @see trigger_nodeapi
+ */
+function versioncontrol_activity_load_activity_context($hook, $op, $id) {
+  return versioncontrol_activity_context($op, versioncontrol_repository_load($id));
 }

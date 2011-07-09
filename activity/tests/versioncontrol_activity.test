@@ -5,10 +5,7 @@ require_once drupal_get_path('module', 'versioncontrol') . '/tests/Versioncontro
 /**
  * @file: Provide tests for Versioncontrol API Activity module.
  */
- 
- /**
- *
- */
+
 class VersioncontrolActivityWebTestCase extends VersioncontrolTestCase {
 
   /**
@@ -61,7 +58,7 @@ class VersioncontrolActivityWebTestCase extends VersioncontrolTestCase {
    * @param  $message  string  The message we want to record when the activity occurs.
    * @param  $options  mixed  The activity options that have to be selected.
    */
-  protected function _createActivityTemplate($type, $operation, $message, $field, $options = array()) {
+  protected function _createActivityTemplate($type, $operation, $message, $field = NULL, $options = array()) {
     $activityUser = $this->drupalCreateUser(array('administer activity'));
     $this->drupalLogin($activityUser);
     
@@ -79,7 +76,7 @@ class VersioncontrolActivityWebTestCase extends VersioncontrolTestCase {
     }
     
     if (empty($field)) {
-      $field = type;
+      $field = $type;
     }
     
     $this->drupalPost(NULL, $edit, t('Continue'));
@@ -128,10 +125,41 @@ class VersioncontrolActivityWebTestCase extends VersioncontrolTestCase {
     }
   }
   
+  /**
+   * Regenerates Activity and asserts that it's the same as before.
+   */
+  protected function regenerate() {
+    $activityUser = $this->drupalCreateUser(array('administer activity'));
+    $this->drupalLogin($activityUser);
+    
+    $before = views_get_view_result('all_activity');
+    
+    $urls = $this->xpath('//a[normalize-space(text())=:label]', array(':label' => t('regenerate')));
+    
+    for ($index = 0; $index < count($urls); $index ++) {
+      $this->drupalGet('admin/build/activity');
+      $this->clickLink(t('regenerate'), $index);
+    }
+    
+    $after = views_get_view_result('all_activity');
+    
+    // $this->assertEqual($before, $after);
+    $index = 0;
+    
+    while ($index < min(count($before), count($after))) {
+      $this->assertEqual($before[$index]->activity_messages_message, $after[$index]->activity_messages_message);
+      
+      $index ++;
+    }
+  }
+  
   private function versioncontrolGenerateNetworkActivity($repository) {
     module_invoke_all('versioncontrol_activity', $repository, $this->loggedInUser->uid);
   }
   
+  /**
+   * Test if network activity is properly logged
+   */
   function testNetworkActivity() { 
     $hash = $this->createActivityTemplate('versioncontrol', 'activity', 'VersioncontrolRepository', array(), FALSE);
     
@@ -144,6 +172,26 @@ class VersioncontrolActivityWebTestCase extends VersioncontrolTestCase {
     $this->versioncontrolGenerateNetworkActivity($object);
     
     $this->assertActivity($user, $hash, NULL, 0, 1);
+  }
+  
+  /**
+   * Tests if regeneration works correctly.
+   */
+  function testRegeneration() {
+    $this->createActivityTemplate('versioncontrol', 'activity', 'VersioncontrolRepository');
+    
+    $account = $this->drupalCreateUser();
+    $this->drupalLogin($account);
+    $user = $this->getUrl();
+    
+    // Create new repositories and create activity
+    $object = $this->versioncontrolCreateRepository();
+    
+    for ($i = 0; $i < 10; $i ++) {
+      $this->versioncontrolGenerateNetworkActivity($object);
+    }
+    
+    $this->regenerate();
   }
   
 }
