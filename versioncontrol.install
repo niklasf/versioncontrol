@@ -1269,6 +1269,7 @@ function versioncontrol_update_6318() {
 
   db_drop_unique_key($ret, 'versioncontrol_labels', 'repo_id_name_type');
   $name_spec = array(
+    'type' => 'varchar',
     'description' => 'Name of the label, e.g. "HEAD", "master", "DRUPAL-6--1" or "6.x-1.0".',
     // This is evil, but there is not standard way to change a field collation.
     'mysql_type' => "VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_bin",
