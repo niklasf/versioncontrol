@@ -174,7 +174,6 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
   public function versioncontrolCreateLabel($type, $backend_name = 'test', $data = array(), $insert=TRUE) {
     $default_data = array(
       'name' => $this->randomName(32),
-      'data' => array(),
     );
     $data += $default_data;
 

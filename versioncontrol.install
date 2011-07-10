@@ -196,13 +196,6 @@ function versioncontrol_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'data' => array(
-        'description' => 'A serialized array of additional per-label data.',
-        'type' => 'text',
-        'size' => 'medium',
-        'not null' => TRUE,
-        'serialize' => TRUE,
-      ),
     ),
     'unique keys' => array(
       'repo_id_name_type' => array('repo_id', 'name', 'type'),
@@ -1279,5 +1272,14 @@ function versioncontrol_update_6318() {
   db_change_field($ret, 'versioncontrol_labels', 'name', 'name', $name_spec);
   db_add_unique_key($ret, 'versioncontrol_labels', 'repo_id_name_type', array('repo_id', 'name', 'type'));
 
+  return $ret;
+}
+
+/**
+ * Remove {versioncontrol_labels}.data column
+ */
+function versioncontrol_update_6319() {
+  $ret = array();
+  db_drop_field($ret, 'versioncontrol_labels', 'data');
   return $ret;
 }
