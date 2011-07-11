@@ -22,6 +22,7 @@ class VersioncontrolTestBackend extends VersioncontrolBackend {
       'item'      => 'VersioncontrolTestItem',
       'branch'    => 'VersioncontrolTestBranch',
       'tag'       => 'VersioncontrolTestTag',
+      'event'     => 'VersioncontrolTestEvent',
     );
     parent::__construct();
   }
@@ -66,5 +67,9 @@ class VersioncontrolTestItem extends VersioncontrolItem {
     $repo = new VersioncontrolTestRepository(1, $_repo, FALSE);
     return new VersioncontrolBranch('HEAD', NULL, '1', $repo);
   }
+
+}
+
+class VersioncontrolTestEvent extends VersioncontrolEvent {
 
 }

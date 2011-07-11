@@ -406,6 +406,41 @@ abstract class VersioncontrolEntityController {
   }
 }
 
+class VersioncontrolEventController extends VersioncontrolEntityController {
+  protected $entityType = 'event';
+  protected $baseTable = 'versioncontrol_event_log';
+  protected $idKey = 'elid';
+
+  /**
+   * Lets the backend load additional extended data for VCS events.
+   *
+   * Makes a call to VersioncontrolBackend::loadExtendedEventData which is expected
+   * to return a SelectQuery object containing a table aliased 'base' with a field 'elid'.
+   *
+   * The resultset of the SelectQuery should contain a field aliased 'id' that uniquely identifies
+   * that specific extended data tuple.
+   */
+  protected function extendData(&$queried_entities) {
+    parent::extendData($queried_entities);
+      
+    // Insert magic here.
+    // $query = $this->getBackend()->loadExtendedEventData();
+    
+    if (!empty($query)) {
+      $event_ids = array();
+      foreach ($queried_entities as $event_data) {
+        $event_ids[] = $event_data->elid;
+      }
+      
+      $result = $query->condition('base.elid', $event_ids)->execute();
+
+      foreach ($result as $tuple) {
+        $queried_entities[$tuple->elid]->data[$tuple->id] = $tuple;
+      }
+    }
+  }
+}
+
 class VersioncontrolRepositoryController extends VersioncontrolEntityController {
   protected $entityType = 'repo';
   protected $baseTable = 'versioncontrol_repositories';

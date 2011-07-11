@@ -202,6 +202,29 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   public function titleCallback() {
     return check_plain($repository->name);
   }
+  
+  /**
+   * Load known events in a repository from the database as an array of
+   * VersioncontrolEvent-descended objects.
+   *
+   * @param array $ids
+   *   An array of event ids. If given, only branches matching these ids will
+   *   be returned.
+   * @param array $conditions
+   *   An associative array of additional conditions. These will be passed to
+   *   the entity controller and composed into the query. The array should be
+   *   key/value pairs with the field name as key, and desired field value as
+   *   value. The value may also be an array, in which case the IN operator is
+   *   used. For more complex requirements, FIXME finish!
+   *   @see VersioncontrolEntityController::buildQuery() .
+   *
+   * @return
+   *   An associative array of label objects, keyed on their
+   */
+  public function loadEvents($ids = array(), $conditions = array(), $options = array()) {
+    $conditions['repo_id'] = $this->repo_id;
+    return $this->backend->loadEntities('event', $ids, $conditions, $options);
+  }
 
   /**
    * Load known branches in a repository from the database as an array of

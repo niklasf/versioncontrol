@@ -10,6 +10,7 @@ files[] = includes/VersioncontrolItem.php
 files[] = includes/VersioncontrolOperation.php
 files[] = includes/VersioncontrolRepository.php
 files[] = includes/VersioncontrolTag.php
+files[] = includes/VersioncontrolEvent.php
 files[] = includes/interfaces.inc
 files[] = includes/controllers.inc
 files[] = includes/views_sets.inc
