@@ -202,6 +202,9 @@ function _drush_versioncontrol_vcapi_parse_logs($repo_id, $flush = FALSE) {
     drush_log(dt('Successfully synchronized repository !name', array('!name' => $repo->name)), 'success');
   }
   catch (Exception $e) {
-    drush_set_error('Invalid generic repo class', dt('For repository "!name", a generic VersioncontrolRepository object was loaded instead of a backend-specific object; the generic class cannot be used for log fetching', array('!name' => $repo->name)));
+    drush_set_error('Exception while synchronizing', dt('An error occurred while performing history synchronziation on repository !name. Error info: ' . $e->__toString()), array('!name' => $repo->name));
+    // There'll be a stale lock on the repo now, so clear it
+    $repo->updateLock(0);
+    $repo->update();
   }
 }
