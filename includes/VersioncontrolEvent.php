@@ -35,12 +35,12 @@ abstract class VersioncontrolEvent extends VersioncontrolEntity {
    * @var int
    */
   public $uid;
-  
+
   /**
    *
    */
   public $data;
-  
+
   /**
    *
    */
@@ -109,5 +109,19 @@ abstract class VersioncontrolEvent extends VersioncontrolEntity {
    * Load all commit objects associated with this event.
    */
   abstract public function loadCommits();
-  
+
+  /**
+   * Load all branches associated with this event.
+   */
+  abstract public function loadBranches();
+
+  /**
+   * Load all tags associated with this event.
+   */
+  abstract public function loadTags();
+
+  /**
+   * Load all branches AND tags associated with this event.
+   */
+  abstract public function loadLabels();
 }
