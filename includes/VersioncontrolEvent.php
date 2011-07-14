@@ -104,8 +104,10 @@ abstract class VersioncontrolEvent extends VersioncontrolEntity {
 
     module_invoke_all('versioncontrol_event_delete', $this);
   }
-  
-  public function loadCommits() {
-  }
+
+  /**
+   * Load all commit objects associated with this event.
+   */
+  abstract public function loadCommits();
   
 }
