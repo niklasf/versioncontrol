@@ -29,7 +29,7 @@ abstract class VersioncontrolEvent extends VersioncontrolEntity {
   public $timestamp;
 
   /**
-   * The Drupal user id of the operation author, or 0 if no Drupal user
+   * The Drupal user id of the event author, or 0 if no Drupal user
    * could be associated to the author.
    *
    * @var int
@@ -37,12 +37,8 @@ abstract class VersioncontrolEvent extends VersioncontrolEntity {
   public $uid;
 
   /**
-   *
-   */
-  public $data;
-
-  /**
-   *
+   * The database id of the repository with which this event is associated.
+   * @var int
    */
   public $repo_id;
 

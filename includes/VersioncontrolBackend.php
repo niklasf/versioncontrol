@@ -257,11 +257,6 @@ abstract class VersioncontrolBackend {
       throw new Exception(strtr($errstring, $vars), E_ERROR);
     }
   }
-  
-  /**
-   *
-   */
-  public function loadExtendedEventData() { }
 
   /**
    * Return the most accurate guess on what the VCS username for a Drupal user
