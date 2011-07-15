@@ -72,4 +72,24 @@ class VersioncontrolTestItem extends VersioncontrolItem {
 
 class VersioncontrolTestEvent extends VersioncontrolEvent {
 
+  /**
+   * Implementation of abstract method.
+   */
+  public function loadCommits() { }
+
+  /**
+   * Implementation of abstract method.
+   */
+  public function loadBranches() { }
+
+  /**
+   * Implementation of abstract method.
+   */
+  public function loadTags() { }
+
+  /**
+   * Implementation of abstract method.
+   */
+  public function loadLabels() { }
+
 }
