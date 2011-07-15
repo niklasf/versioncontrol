@@ -406,7 +406,7 @@ abstract class VersioncontrolEntityController {
   }
 }
 
-class VersioncontrolEventController extends VersioncontrolEntityController {
+abstract class VersioncontrolEventController extends VersioncontrolEntityController {
   protected $entityType = 'event';
   protected $baseTable = 'versioncontrol_event_log';
   protected $idKey = 'elid';
@@ -422,23 +422,22 @@ class VersioncontrolEventController extends VersioncontrolEntityController {
    */
   protected function extendData(&$queried_entities) {
     parent::extendData($queried_entities);
-      
-    // Insert magic here.
-    // $query = $this->getBackend()->loadExtendedEventData();
-    
-    if (!empty($query)) {
-      $event_ids = array();
-      foreach ($queried_entities as $event_data) {
-        $event_ids[] = $event_data->elid;
-      }
-      
-      $result = $query->condition('base.elid', $event_ids)->execute();
 
-      foreach ($result as $tuple) {
-        $queried_entities[$tuple->elid]->data[$tuple->id] = $tuple;
-      }
+    $elids = array();
+    foreach ($queried_entities as $event_data) {
+      $elids[] = $event_data->elid;
     }
+
+    $this->attachExtendedEventData($elids, $queried_entities);
   }
+
+  /**
+   * Attach backend-specific extended event data to the events being loaded.
+   *
+   * This method is abstract as extended data is inherently backend-specific,
+   * so we expect backends to extend this controller with their own class.
+   */
+  abstract protected function attachExtendedEventData($elids, &$queried_entities);
 }
 
 class VersioncontrolRepositoryController extends VersioncontrolEntityController {
