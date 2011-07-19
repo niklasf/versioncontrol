@@ -86,7 +86,7 @@ class VersioncontrolEventUnitTestingTestCase extends VersioncontrolTestCase {
 
     $db_event = db_select('versioncontrol_event_log', 'el')
       ->fields('el')
-      ->condition('elid', $event->repo_id)
+      ->condition('elid', $event->elid)
       ->execute()
       ->fetchObject();
     foreach ($data as $key => $val) {
