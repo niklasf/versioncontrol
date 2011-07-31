@@ -38,8 +38,15 @@ function versioncontrol_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'date' => array(
-        'description' => 'Date/time when the operation was executed, as Unix timestamp.',
+      'author_date' => array(
+        'description' => 'Date/time when the operation was created, as Unix timestamp.',
+        'type' => 'int',
+        'size' => 'big',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'committer_date' => array(
+        'description' => 'Date/time when the operation was added to the repository, as Unix timestamp.',
         'type' => 'int',
         'size' => 'big',
         'not null' => TRUE,
@@ -92,7 +99,8 @@ function versioncontrol_schema() {
     'indexes' => array(
       'type' => array('type'),
       'repo_id' => array('repo_id'),
-      'date' => array('date'),
+      'author_date' => array('author_date'),
+      'committer_date' => array('committer_date'),
       'author' => array('author'),
       'author_uid' => array('author_uid'),
       'committer' => array('committer'),
@@ -145,6 +153,22 @@ function versioncontrol_schema() {
     'primary key' => array('vc_op_id', 'label_id'),
   );
 
+  // Make {versioncontrol_labels}.name case sensitive for mysql (postgres
+  // cannot). Re-think this for D7, sqlite3 support collation too.
+  $name_spec = array(
+    'description' => 'Name of the label, e.g. "HEAD", "master", "DRUPAL-6--1" or "6.x-1.0".',
+    'type' => 'varchar',
+    'not null' => TRUE,
+    'default' => '',
+  );
+  if (in_array($GLOBALS['db_type'], array('mysql', 'mysqli'))) {
+    // This is evil, but there is not standard way to change a field collation.
+    $name_spec['mysql_type'] = "VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_bin";
+  }
+  else {
+    $name_spec['length'] = 255;
+  }
+
   $schema['versioncontrol_labels'] = array(
     'description' =>
       'This table stores information about branches and tags (= labels) that exist in a repository. While there might be multiple operations involving the same branch/tag (see also {versioncontrol_operation_labels}, e.g. "create DRUPAL-6--1-0 tag for the files in project 1", "create DRUPAL-6--1-0 tag for the files in project 2", "delete DRUPAL-6--1-0 tag for the files in project 2 again"), there is only one row in this table that represents this label ("DRUPAL-6--1-0" in the above example).',
@@ -162,13 +186,7 @@ function versioncontrol_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'name' => array(
-        'description' => 'Name of the label, e.g. "HEAD", "master", "DRUPAL-6--1" or "6.x-1.0".',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
+      'name' => $name_spec,
       'type' => array(
         'description' =>
           'Whether this label is a branch or a tag. Consequently, this can be either VERSIONCONTROL_LABEL_BRANCH or VERSIONCONTROL_LABEL_TAG.',
@@ -500,6 +518,42 @@ function versioncontrol_schema() {
       ),
     ),
     'primary key' => array('views_set', 'vcs'),
+  );
+
+  $schema['versioncontrol_event_log'] = array(
+    'description' => 'A log of all human interaction events in all repositories. Its primary use is providing the base data required for modules like Activity. This table contains at least some original, non-derived data and as such cannot be safely flushed, unlike some of the other core versioncontrol tables.
+    Backends are expected to implement their own tables joining label and commit information against this event bank, as structural variances across backends are too great to be well accounted-for in a fixed schema.',
+    'fields' => array(
+      'elid' => array(
+        'description' => 'Serial primary key uniquely identifying each event.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'repo_id' => array(
+        'description' => 'Foreign key to {versioncontrol_repositories}.repo_id; identifies the repository from which this activity data derives.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'Foreign key to {users}.uid; uniquely identifies the Drupal user responsible for this event.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'timestamp' => array(
+        'description' => 'The Unix timestamp of when the event occurred.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('elid'),
+    'indexes' => array(
+      'repo_id' => array('repo_id'),
+      'uid' => array('uid'),
+    ),
   );
 
   return $schema;
@@ -1207,5 +1261,104 @@ function versioncontrol_update_6315() {
 function versioncontrol_update_6316() {
   $ret = array();
   db_add_index($ret, 'versioncontrol_item_revisions','vc_op_id', array('vc_op_id'));
+  return $ret;
+}
+
+/**
+ * Use two fields to handle operation dates.
+ */
+function versioncontrol_update_6317() {
+  $ret = array();
+  $author_date_spec = array(
+    'description' => 'Date/time when the operation was created, as Unix timestamp.',
+    'type' => 'int',
+    'size' => 'big',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  $committer_date_spec = array(
+    'description' => 'Date/time when the operation was added to the repository, as Unix timestamp.',
+    'type' => 'int',
+    'size' => 'big',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  $committer_date_index_spec = array('indexes' => array('committer_date' => array('committer_date')));
+  $author_date_index_spec = array('indexes' => array('author_date' => array('author_date')));
+  db_add_field($ret, 'versioncontrol_operations', 'committer_date', $committer_date_spec, $committer_date_index_spec);
+  db_query('UPDATE {versioncontrol_operations} vco SET vco.committer_date = vco.date');
+  db_drop_index($ret, 'versioncontrol_operations', 'date');
+  db_change_field($ret, 'versioncontrol_operations', 'date', 'author_date', $author_date_spec, $author_date_index_spec);
+  return $ret;
+}
+
+/**
+ * Make {versioncontrol_labels}.name case sensitive on mysql.
+ */
+function versioncontrol_update_6318() {
+  $ret = array();
+
+  // Only try this on mysql.
+  if (!in_array($GLOBALS['db_type'], array('mysql', 'mysqli'))) {
+    return $ret;
+  }
+
+  db_drop_unique_key($ret, 'versioncontrol_labels', 'repo_id_name_type');
+  $name_spec = array(
+    'description' => 'Name of the label, e.g. "HEAD", "master", "DRUPAL-6--1" or "6.x-1.0".',
+    // This is evil, but there is not standard way to change a field collation.
+    'mysql_type' => "VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_bin",
+    'not null' => TRUE,
+    'default' => '',
+  );
+  db_change_field($ret, 'versioncontrol_labels', 'name', 'name', $name_spec);
+  db_add_unique_key($ret, 'versioncontrol_labels', 'repo_id_name_type', array('repo_id', 'name', 'type'));
+
+  return $ret;
+}
+
+/**
+ * Introduce the {versioncontrol_event_log} table, used for storing raw event
+ * information.
+ */
+function versioncontrol_update_6319() {
+  $ret = array();
+
+  $schema = array(
+    'description' => 'A log of all human interaction events in all repositories. Its primary use is providing the base data required for modules like Activity. This table contains at least some original, non-derived data and as such cannot be safely flushed, unlike some of the other core versioncontrol tables.
+    Backends are expected to implement their own tables joining label and commit information against this event bank, as structural variances across backends are too great to be well accounted-for in a fixed schema.',
+    'fields' => array(
+      'elid' => array(
+        'description' => 'Serial primary key uniquely identifying each event.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'repo_id' => array(
+        'description' => 'Foreign key to {versioncontrol_repositories}.repo_id; identifies the repository from which this activity data derives.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'Foreign key to {users}.uid; uniquely identifies the Drupal user responsible for this event.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'timestamp' => array(
+        'description' => 'The Unix timestamp of when the event occurred.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('elid'),
+    'indexes' => array(
+      'repo_id' => array('repo_id'),
+      'uid' => array('uid'),
+    ),
+  );
+  db_create_table($ret, 'versioncontrol_event_log', $schema);
   return $ret;
 }

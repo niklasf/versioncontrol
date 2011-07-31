@@ -38,7 +38,7 @@ function versioncontrol_views_data() {
       'handler' => 'views_handler_filter_numeric',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument_numeric',
+      'handler' => 'versioncontrol_handler_argument_repository_repo_id',
     ),
   );
   $data['versioncontrol_repositories']['name'] = array(
@@ -181,12 +181,39 @@ function versioncontrol_views_data() {
       'handler' => 'versioncontrol_handler_filter_operation_type',
     ),
   );
-  $data['versioncontrol_operations']['date'] = array(
-    'title'    => t('Date'),
-    'help'     => t('The date of the operation'),
+  $data['versioncontrol_operations']['author_date'] = array(
+    'title'    => t('Author date'),
+    'help'     => t('The date when the operation was originally done.'),
     'field'    => array(
       'handler' => 'versioncontrol_handler_field_operation_date',
       'click sortable' => TRUE,
+      'additional fields' => array(
+        'date_value' => array('table' => 'versioncontrol_operations', 'field' => 'author_date'),
+        'revision',
+        'repo_id',
+      ),
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_date',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_date',
+    ),
+  );
+  $data['versioncontrol_operations']['committer_date'] = array(
+    'title'    => t('Committer date'),
+    'help'     => t('The date when the operation was added to the repository.'),
+    'field'    => array(
+      'handler' => 'versioncontrol_handler_field_operation_date',
+      'click sortable' => TRUE,
+      'additional fields' => array(
+        'date_value' => array('table' => 'versioncontrol_operations', 'field' => 'committer_date'),
+        'revision',
+        'repo_id',
+      ),
     ),
     'sort' => array(
       'handler' => 'views_handler_sort_date',
@@ -638,7 +665,35 @@ function versioncontrol_views_handlers() {
       'versioncontrol_handler_filter_operation_type_label' => array(
         'parent' => 'views_handler_filter_string',
       ),
+      // argument handlers
+      'versioncontrol_handler_argument_repository_repo_id' => array(
+        'parent' => 'views_handler_argument_numeric',
+      ),
     ),
   );
   return $ret;
+}
+
+/**
+ * Implementation of hook_views_plugins.
+ */
+function versioncontrol_views_plugins() {
+  return array(
+    'row' => array(
+      'versioncontrol_operations_rss' => array(
+        'title' => t('Versioncontrol Operations as RSS items'),
+        'help' => t('Display versioncontrol operations for RSS feeds.'),
+        'handler' => 'versioncontrol_plugin_row_operation_rss',
+        'path' => drupal_get_path('module', 'versioncontrol') . '/includes/views/plugins', // not necessary for most modules
+        'theme' => 'versioncontrol_view_row_operation_rss',
+        'theme file' => 'versioncontrol_theme.inc',
+        'theme path' => drupal_get_path('module', 'versioncontrol') . '/includes',
+        'base' => array('versioncontrol_operations'), // only works with 'versioncontrol_operations' as base.
+        'uses options' => TRUE,
+        'uses fields' => TRUE,
+        'type' => 'feed',
+        'help topic' => 'style-node-rss',
+      ),
+    ),
+  );
 }

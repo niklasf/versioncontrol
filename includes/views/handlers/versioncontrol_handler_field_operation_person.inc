@@ -6,6 +6,22 @@
  */
 class versioncontrol_handler_field_operation_person extends views_handler_field {
 
+  function option_definition() {
+    $options = parent::option_definition();
+    $options['plain_text_output'] = array('default' => 0, 'translatable' => TRUE);
+    return $options;
+  }
+
+  function options_form(&$form, &$form_state) {
+    parent::options_form($form, $form_state);
+    $form['plain_text_output'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Plain text output'),
+      '#default_value' => $this->options['plain_text_output'],
+      '#description' => t('Avoid markup and links on this field output.'),
+    );
+  }
+
   function render($values) {
     if (empty($values->{$this->aliases['person_uid']})) {
       return $values->{$this->field_alias};
@@ -25,7 +41,10 @@ class versioncontrol_handler_field_operation_person extends views_handler_field 
           $account->name = $values->{$this->aliases['person_username']};
         }
       }
-      return theme('username', $account);
+      if (empty($this->options['plain_text_output'])) {
+        return theme('username', $account);
+      }
+      return $account->name;
     }
   }
 

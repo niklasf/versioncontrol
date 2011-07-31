@@ -22,13 +22,19 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
 
   /**
    * The time when the operation was performed, given as
-   * Unix timestamp. (For commits, this is the time when the revision
-   * was committed, whereas for branch/tag operations it is the time
-   * when the files were branched or tagged.)
+   * Unix timestamp.
    *
    * @var timestamp
    */
-  public $date;
+  public $author_date;
+
+  /**
+   * The time when the operation was added to the repository, given as
+   * Unix timestamp.
+   *
+   * @var timestamp
+   */
+  public $committer_date;
 
   /**
    * The VCS specific repository-wide revision identifier,

@@ -131,6 +131,10 @@ function versioncontrol_theme() {
     'arguments' => array('places', 'results'),
     'file' => 'includes/versioncontrol_theme.inc'
   );
+  $theme['versioncontrol_view_row_operation_rss'] = array(
+    'arguments' => array('view', 'options', 'item'),
+    'file' => 'includes/versioncontrol_theme.inc'
+  );
   return $theme;
 }
 
@@ -342,6 +346,11 @@ function versioncontrol_reposync_run_worker($data) {
 
 /**
  * Menu wildcard loader for repository ids ('%versioncontrol_repository').
+ *
+ * @return VersioncontrolRepository
+ *   Returns the top VersioncontrolRepository object from the array returned
+ *   given the query conditions, or FALSE if no such objects were found given
+ *   the conditions.
  */
 function versioncontrol_repository_load($repo_id, $conditions = array(), $options = array()) {
   if (!is_array($repo_id)) {

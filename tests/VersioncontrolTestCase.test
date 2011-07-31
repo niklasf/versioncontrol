@@ -214,7 +214,8 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     $name = $this->randomName(7);
     $default_data = array(
       'type' => VERSIONCONTROL_OPERATION_COMMIT,
-      'date' => time(),
+      'author_date' => time(),
+      'committer_date' => time(),
       'author' => $name,
       'author_uid' => 0,
       'committer' => $name,
@@ -273,6 +274,30 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     }
 
     return $item;
+  }
+  
+  public function versioncontrolCreateEvent($backend_name = 'test', $data = array(), $insert = TRUE) {
+    $default_data = array(
+      'timestamp' => time(),
+      'uid' => 0,
+      'data' => array(),
+    );
+    $data += $default_data;
+
+    $backend = $this->backends[$backend_name];
+    if (!isset($data['repo_id'])) {
+      if (!isset($data['repository']) || !is_subclass_of($data['repository'], 'VersioncontrolRepository')) {
+        $repo = $this->versioncontrolCreateRepository($backend_name);
+        $data['repo_id'] = $repo->repo_id;
+      }
+    }
+    $event = $backend->buildEntity('event', $data);
+    if ($insert) {
+      $event->insert();
+      $this->assertTrue(isset($event->elid) && is_numeric($event->elid), t('VerioncontrolEvent::insert() properly populates a new event object with an integer elid.'));
+    }
+
+    return $event;
   }
 
 }

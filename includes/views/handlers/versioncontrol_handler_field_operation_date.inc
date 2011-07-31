@@ -3,13 +3,6 @@
  * A handler to provide date for operation with optional link to operation.
  */
 class versioncontrol_handler_field_operation_date extends views_handler_field_date {
-  function construct() {
-    parent::construct();
-    $this->additional_fields['revision'] = 'revision';
-    $this->additional_fields['date'] = 'date';
-    $this->additional_fields['repo_id'] = 'repo_id';
-  }
-
   function option_definition() {
     $options = parent::option_definition();
 
@@ -34,7 +27,7 @@ class versioncontrol_handler_field_operation_date extends views_handler_field_da
   }
 
   function render($values) {
-    $this->field_alias = $this->aliases['date'];
+    $this->field_alias = $this->aliases['date_value'];
     if (!$this->options['link']) {
       return parent::render($values);
     }

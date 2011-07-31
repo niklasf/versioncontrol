@@ -175,10 +175,55 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   }
 
   /**
+   * Perform a full history synchronization, but first purge all existing
+   * repository data so that the sync job starts from scratch.
+   *
+   * This method triggers a special set of hooks so that projects which have
+   * data dependencies on the serial ids of versioncontrol entities can properly
+   * recover from the purge & rebuild.
+   *
+   * // FIXME this must be refactored so that hook invocations occur on the same
+   *    side of queueing as the history sync.
+   */
+  public function reSyncFromScratch($bypass = TRUE) {
+    module_invoke_all('versioncontrol_repository_pre_resync', $this, $bypass);
+
+    $this->purgeData($bypass);
+    $this->fetchLogs();
+
+    module_invoke_all('versioncontrol_repository_post_resync', $this, $bypass);
+
+    // TODO ensure all controller caches are cleared
+  }
+
+  /**
    * Title callback for repository arrays.
    */
   public function titleCallback() {
     return check_plain($repository->name);
+  }
+  
+  /**
+   * Load known events in a repository from the database as an array of
+   * VersioncontrolEvent-descended objects.
+   *
+   * @param array $ids
+   *   An array of event ids. If given, only branches matching these ids will
+   *   be returned.
+   * @param array $conditions
+   *   An associative array of additional conditions. These will be passed to
+   *   the entity controller and composed into the query. The array should be
+   *   key/value pairs with the field name as key, and desired field value as
+   *   value. The value may also be an array, in which case the IN operator is
+   *   used. For more complex requirements, FIXME finish!
+   *   @see VersioncontrolEntityController::buildQuery() .
+   *
+   * @return
+   *   An associative array of label objects, keyed on their
+   */
+  public function loadEvents($ids = array(), $conditions = array(), $options = array()) {
+    $conditions['repo_id'] = $this->repo_id;
+    return $this->backend->loadEntities('event', $ids, $conditions, $options);
   }
 
   /**

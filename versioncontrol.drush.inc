@@ -18,6 +18,10 @@ function versioncontrol_drush_command() {
       'drush vcapi-parse-logs 1,2,repo_name,17' => 'Sequentially fetch repository logs for the the four indicated repositories.',
       'drush vcapi-parse-logs' => 'Sequentially fetch repository logs for all repositories tracked by the system.',
     ),
+    'options' => array(
+      '--flush' => 'Flush all data prior to performing history synchronization. Useful if something has gone awry in the db data and normal resyncs are failing to correct it.',
+      '--nobatch' => 'By default, this command operates using batchapi to help with memory management; Passing this option will cause it to execute normally.'
+    ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
     'aliases' => array('vc-sync'),
   );
@@ -96,6 +100,7 @@ function _drush_versioncontrol_parse_repo_arg_list($repo_args = '') {
 function drush_versioncontrol_vcapi_sync_repositories() {
   $repos = _drush_versioncontrol_parse_repo_arg_list(func_get_args());
 
+  $flush = drush_get_option('flush', FALSE);
   // Make batching optional, it seems to be screwing with output.
   if (drush_get_option('nobatch', FALSE)) {
     foreach ($repos as $repo) {
@@ -132,9 +137,9 @@ function drush_versioncontrol_vcapi_map_operations() {
       ->distinct()
       ->where('vco.author_uid = 0 OR vco.committer_uid = 0')
       ->execute()
-      ->fetchAll(PDO::FETCH_COLUMN, 'repo_id');
+      ->fetchCol();
 
-    $repos = versioncontrol_repository_load_multiple($repos);
+    $repos = versioncontrol_repository_load_multiple($ids);
   }
   else {
     $repos = _drush_versioncontrol_parse_repo_arg_list(func_get_args());
@@ -192,9 +197,13 @@ function drush_versioncontrol_vcapi_map_operations() {
 
 function _drush_versioncontrol_vcapi_sync_repositories($repo_id) {
   $repo = versioncontrol_repository_load($repo_id);
-
-  drush_log(dt('Beginning synchronization of repository !name', array('!name' => $repo->name)), 'ok');
-  $repo->fetchLogs();
-  // FIXME this often echoes success even if it didn't work
-  drush_log(dt('Successfully synchronized repository !name', array('!name' => $repo->name)), 'success');
+  try {
+    drush_log(dt('Beginning synchronization of repository !name', array('!name' => $repo->name)), 'ok');
+    $flush ? $repo->reSyncFromScratch() : $repo->fetchLogs();
+    // FIXME this often echoes success even if it didn't work
+    drush_log(dt('Successfully synchronized repository !name', array('!name' => $repo->name)), 'success');
+  }
+  catch (Exception $e) {
+    drush_set_error('Invalid generic repo class', dt('For repository "!name", a generic VersioncontrolRepository object was loaded instead of a backend-specific object; the generic class cannot be used for log fetching', array('!name' => $repo->name)));
+  }
 }

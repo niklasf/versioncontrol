@@ -92,6 +92,7 @@ abstract class VersioncontrolBackend {
       'item'      => 'VersioncontrolItemController',
       'branch'    => 'VersioncontrolBranchController',
       'tag'       => 'VersioncontrolTagController',
+      'event'     => 'VersioncontrolEventController',
     );
     // FIXME currently all these classes are abstract, so this won't work. Decide
     // if this should be removed, or if they should be made concrete classes
@@ -102,6 +103,7 @@ abstract class VersioncontrolBackend {
       'item'      => 'VersioncontrolItem',
       'branch'    => 'VersioncontrolBranch',
       'tag'       => 'VersioncontrolTag',
+      'event'     => 'VersioncontrolEvent',
     );
 
     $this->update_methods += array(
