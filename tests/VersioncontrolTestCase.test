@@ -199,6 +199,20 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     return $label;
   }
 
+  /**
+  * Create a dummy object representing a repository branch.
+  *
+  * @param string $backend_name
+  *   The backend with which the operation should be created.
+  * @param array $data
+  *   Data to be used in creating the branch object. Defaults will be
+  *   appended to this list.
+  * @param $insert
+  *   Whether to properly insert the object into the database, or simply
+  *   create the dummy object and postpone insertion.
+  *
+  * @return VersioncontrolTag
+  */
   public function versioncontrolCreateBranch($backend_name = 'test', $data = array(), $insert=TRUE) {
     $label = $this->versioncontrolCreateLabel('branch', $backend_name, $data, $insert);
     if ($insert) {
@@ -207,6 +221,20 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     return $label;
   }
 
+  /**
+  * Create a dummy object representing a repository tag.
+  *
+  * @param string $backend_name
+  *   The backend with which the operation should be created.
+  * @param array $data
+  *   Data to be used in creating the tag object. Defaults will be
+  *   appended to this list.
+  * @param $insert
+  *   Whether to properly insert the object into the database, or simply
+  *   create the dummy object and postpone insertion.
+  *
+  * @return VersioncontrolTag
+  */
   public function versioncontrolCreateTag($backend_name = 'test', $data = array(), $insert=TRUE) {
     $label = $this->versioncontrolCreateLabel('tag', $backend_name, $data, $insert);
     if ($insert) {
@@ -215,6 +243,20 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     return $label;
   }
 
+  /**
+  * Create a dummy object representing a repository operation (commit).
+  *
+  * @param string $backend_name
+  *   The backend with which the operation should be created.
+  * @param array $data
+  *   Data to be used in creating the operation object. Defaults will be
+  *   appended to this list.
+  * @param $insert
+  *   Whether to properly insert the object into the database, or simply
+  *   create the dummy object and postpone insertion.
+  *
+  * @return VersioncontrolOperation
+  */
   public function versioncontrolCreateOperation($backend_name = 'test', $data = array(), $insert=TRUE) {
     static $i = 0;
     $name = $this->randomName(7);
@@ -249,6 +291,20 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     return $operation;
   }
 
+  /**
+  * Create a dummy object representing a repository item (a file or directory).
+  *
+  * @param string $backend_name
+  *   The backend with which the item should be created.
+  * @param array $data
+  *   Data to be used in creating the item object. Defaults will be appended
+  *   to this list.
+  * @param $insert
+  *   Whether to properly insert the object into the database, or simply
+  *   create the dummy object and postpone insertion.
+  *
+  * @return VersioncontrolItem
+  */
   public function versioncontrolCreateItem($backend_name = 'test', $data = array(), $insert=TRUE) {
     static $i = 0;
     $default_data = array(
@@ -282,6 +338,20 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     return $item;
   }
 
+  /**
+   * Create a dummy object representing some user action on a repository.
+   *
+   * @param string $backend_name
+   *   The backend with which the event should be created.
+   * @param array $data
+   *   Data to be used in creating the event object. Defaults will be appended
+   *   to this list.
+   * @param $insert
+   *   Whether to properly insert the object into the database, or simply
+   *   create the dummy object and postpone insertion.
+   *
+   * @return VersioncontrolEvent
+   */
   public function versioncontrolCreateEvent($backend_name = 'test', $data = array(), $insert = TRUE) {
     $default_data = array(
       'timestamp' => time(),
@@ -305,5 +375,4 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
 
     return $event;
   }
-
 }

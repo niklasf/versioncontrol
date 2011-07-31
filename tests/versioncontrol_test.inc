@@ -101,4 +101,3 @@ class VersioncontrolTestEvent extends VersioncontrolEvent {
 class VersioncontrolTestEventController extends VersioncontrolEventController {
   protected function attachExtendedEventData($elids, &$queried_entities) {}
 }
-
