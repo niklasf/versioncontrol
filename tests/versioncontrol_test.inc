@@ -7,7 +7,7 @@
 
 class VersioncontrolTestBackend extends VersioncontrolBackend {
   public $type = 'test';
-  
+
   public function __construct() {
     $this->name = 'API Test';
     $this->description = t('TestVCS backend for Version Control API.');
@@ -23,6 +23,10 @@ class VersioncontrolTestBackend extends VersioncontrolBackend {
       'branch'    => 'VersioncontrolTestBranch',
       'tag'       => 'VersioncontrolTestTag',
       'event'     => 'VersioncontrolTestEvent',
+    );
+
+    $this->classesControllers = array(
+      'event'	  => 'VersioncontrolTestEventController',
     );
     parent::__construct();
   }
@@ -93,3 +97,8 @@ class VersioncontrolTestEvent extends VersioncontrolEvent {
   public function loadLabels() { }
 
 }
+
+class VersioncontrolTestEventController extends VersioncontrolEventController {
+  protected function attachExtendedEventData($elids, &$queried_entities) {}
+}
+

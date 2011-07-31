@@ -41,6 +41,12 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
    * @see VersioncontrolTestCase::determineBackends()
    */
   protected $useBackends = self::BACKENDS_DEFAULT;
+  /**
+   * An instance of the VersioncontrolTestBackend for use in this test. Not
+   * always available, but usually is.
+   *
+   * @var VersioncontrolTestBackend
+   */
   public $testBackend;
 
   public function setUp() {
@@ -275,7 +281,7 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
 
     return $item;
   }
-  
+
   public function versioncontrolCreateEvent($backend_name = 'test', $data = array(), $insert = TRUE) {
     $default_data = array(
       'timestamp' => time(),
