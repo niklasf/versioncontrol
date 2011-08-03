@@ -34,19 +34,13 @@ abstract class VersioncontrolEvent extends VersioncontrolEntity {
    *
    * @var int
    */
-  public $uid;
+  public $uid = 0;
 
   /**
    * The database id of the repository with which this event is associated.
    * @var int
    */
   public $repo_id;
-
-  /* protected $defaultCrudOptions = array(
-    'update' => array('nested' => TRUE, 'map users' => FALSE),
-    'insert' => array('nested' => TRUE, 'map users' => FALSE),
-    'delete' => array('nested' => TRUE),
-  ); */
 
   public function insert($options = array()) {
     if (!empty($this->elid)) {
@@ -100,24 +94,4 @@ abstract class VersioncontrolEvent extends VersioncontrolEntity {
 
     module_invoke_all('versioncontrol_event_delete', $this);
   }
-
-  /**
-   * Load all commit objects associated with this event.
-   */
-  abstract public function loadCommits();
-
-  /**
-   * Load all branches associated with this event.
-   */
-  abstract public function loadBranches();
-
-  /**
-   * Load all tags associated with this event.
-   */
-  abstract public function loadTags();
-
-  /**
-   * Load all branches AND tags associated with this event.
-   */
-  abstract public function loadLabels();
 }
