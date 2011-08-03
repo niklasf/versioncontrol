@@ -30,6 +30,8 @@ class VersioncontrolTestBackend extends VersioncontrolBackend {
     );
     parent::__construct();
   }
+  // TODO this should probably generate a stub
+  public function generateCodeArrivalEvent($data) {}
 }
 
 class VersioncontrolTestRepository extends VersioncontrolRepository {
