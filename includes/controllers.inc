@@ -629,7 +629,7 @@ abstract class VersioncontrolEntity implements VersioncontrolEntityInterface {
    */
   public function build($args = array()) {
     // If this object has already been built, bail out.
-    if ($this->built == TRUE) {
+    if ($this->built === TRUE) {
       return FALSE;
     }
 
