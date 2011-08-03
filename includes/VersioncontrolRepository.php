@@ -215,8 +215,11 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
    *   the entity controller and composed into the query. The array should be
    *   key/value pairs with the field name as key, and desired field value as
    *   value. The value may also be an array, in which case the IN operator is
-   *   used. For more complex requirements, FIXME finish!
+   *   used. For more complex requirements,
    *   @see VersioncontrolEntityController::buildQuery() .
+   * @param array $options
+   *   An associative array of options that govern controller various aspects
+   *   of the controller's behavior.
    *
    * @return
    *   An associative array of label objects, keyed on their
@@ -238,8 +241,11 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
    *   the entity controller and composed into the query. The array should be
    *   key/value pairs with the field name as key, and desired field value as
    *   value. The value may also be an array, in which case the IN operator is
-   *   used. For more complex requirements, FIXME finish!
+   *   used. For more complex requirements,
    *   @see VersioncontrolEntityController::buildQuery() .
+   * @param array $options
+   *   An associative array of options that govern controller various aspects
+   *   of the controller's behavior.
    *
    * @return
    *   An associative array of label objects, keyed on their
@@ -249,6 +255,27 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     return $this->backend->loadEntities('tag', $ids, $conditions, $options);
   }
 
+  /**
+  * Load known commits in a repository from the database as an array of
+  * VersioncontrolOperation-descended objects.
+  *
+  * @param array $ids
+  *   An array of operation ids. If given, only tags matching these ids will be
+  *   returned.
+  * @param array $conditions
+  *   An associative array of additional conditions. These will be passed to
+  *   the entity controller and composed into the query. The array should be
+  *   key/value pairs with the field name as key, and desired field value as
+  *   value. The value may also be an array, in which case the IN operator is
+  *   used. For more complex requirements,
+  *   @see VersioncontrolEntityController::buildQuery() .
+  * @param array $options
+  *   An associative array of options that govern controller various aspects
+  *   of the controller's behavior.
+  *
+  * @return
+  *   An associative array of label objects, keyed on their
+  */
   public function loadCommits($ids = array(), $conditions = array(), $options = array()) {
     $conditions['type'] = VERSIONCONTROL_OPERATION_COMMIT;
     $conditions['repo_id'] = $this->repo_id;
@@ -364,8 +391,10 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   }
 
   /**
-   * Purge all parsed log data from this repository. Optionally bypass the API
-   * to go MUCH faster.
+   * Purge all synchronized history data from this repository.
+   *
+   * Optionally bypass the one-by-one API and do it with bulk commands to go
+   * MUCH faster.
    *
    * @param bool $bypass
    *   Whether or not to bypass the API and perform all operations with a small
@@ -416,7 +445,9 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   protected function backendDelete($options) {}
 
   /**
-   * Convinience method to call backend analogue.
+   * Format a revision identifier string, typically for human-readable output.
+   *
+   * @see VersioncontrolBackend::formatRevisionIdentifier().
    *
    * @param $revision
    *   The unformatted revision, as given in $operation->revision
@@ -431,7 +462,10 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   }
 
   /**
-   * Convinience method to retrieve url handler.
+   * Return the webviewer url handler plugin object that this repository is
+   * configured to use for generating links to a web-based browser.
+   *
+   * @return VersioncontrolWebviewerUrlHandlerInterface
    */
   public function getUrlHandler() {
     if (!isset($this->pluginInstances['webviewer_url_handler'])) {
@@ -506,6 +540,12 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     return $plugin_object;
   }
 
+  /**
+  * Return the auth handler plugin object that this repository is
+  * configured to use for implementing ACLs on this repository.
+  *
+  * @return VersioncontrolAuthHandlerInterface
+  */
   public function getAuthHandler() {
     if (!isset($this->pluginInstances['auth_handler'])) {
       $this->pluginInstances['auth_handler'] = $this->getPluginClass('auth_handler', 'vcs_auth', 'handler');
@@ -529,6 +569,13 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     return $this->pluginInstances['committer_mapper'];
   }
 
+  /**
+  * Return the repository manager plugin object that this repository is
+  * configured to use for performing administrative actions against the on-disk
+  * repository.
+  *
+  * @return VersioncontrolRepositoryManagerWorkerInterface
+  */
   public function getRepositoryManager() {
     if (!isset($this->pluginInstances['repomgr'])) {
       $this->pluginInstances['repomgr'] = $this->getPluginClass('repomgr', 'repomgr', 'worker');
