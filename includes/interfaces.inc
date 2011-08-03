@@ -450,22 +450,26 @@ interface VersioncontrolRepositoryHistorySynchronizerInterface {
   public function initialSync();
 
   /**
-   * Take an incoming blob of repository data, typically of the sort sent from
-   * a hook tripped by a repository event (e.g., `svn commit` or `git push`),
-   * and perform appropriate sync operations.
+   * Perform a targeted sync based on information about an incoming data event
+   * as represented by a VersioncontrolEvent object.
    *
    * Unlike the sync methods, implementations of this method should make no
    * attempt to ensure exact mirroring between the repository and the database;
    * it should assume the indicated incoming data is the complete and exclusive
    * set of new/missing repository data to be added to the database.
    *
-   * @param mixed $data
-   *   The incoming data. The form of this data varies completely from one
-   *   vcs to another; typically it is data fed in from a "commit hook" - the
-   *   server-side hook tripped when some client sends new data into the
-   *   repository.
+   * Implementations are, however, responsible for ensuring that the provided
+   * VersioncontrolEvent object gets updated and re-saved after synchronization
+   * is complete, as needed. A typical such requirement would be creating and
+   * updating foreign key references in the event to data created during the
+   * sync.
+   *
+   * @param VersioncontrolEvent $event
+   *   The incoming data, encapsulated within a VersioncontrolEvent-descended
+   *   object. The specific form of this data varies extensively from backend to
+   *   backend, but VersioncontrolEvent abstracts across these differences.
    */
-  public function syncDataEvent($data);
+  public function syncEvent(VersioncontrolEvent $event);
 
   /**
    * Verify that the data represented in the database is an accurate

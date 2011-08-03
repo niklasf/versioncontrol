@@ -100,33 +100,13 @@ function _versioncontrol_reposync_run_worker($data) {
     }
   }
 
-  $parser = $repo->getLogParser();
+  $backend = $repo->getBackend();
+  $event = $backend->generateCodeArrivalEvent($data);
+  // Insert the event right away, even though it may not yet be fully realized
+  $event->insert();
 
-  // Lots and LOTS of input validation; this is a really bad place to fail silently.
-  if (empty($data['operation'])) {
-    watchdog('versioncontrol', "Repository parsing job was enqueued without any operations to run.", array(), WATCHDOG_ERROR);
-    throw new Exception("Repository management job was enqueued without any operations to run.", E_ERROR);
-  }
-
-  $ops = is_string($data['operation']) ? array($data['operation'] => array()) : $data['operation'];
-
-  // Loop through all ops and ensure all are valid before running any. This
-  // helps preserve known state by preventing jobs containing ops that are
-  // guaranteed to terminate partway through from starting at all.
-  foreach (array_keys($ops) as $op) {
-    if (!method_exists($parser, $op)) {
-      $vars = array(
-        '%op' => $op,
-        '%repo_id' => empty($repo->repo_id) ? '[NEW]' : $repo->repo_id,
-        '%plugin' => get_class($parser),
-      );
-      watchdog('versioncontrol', "Operation '%op' was requested on repo_id %repo_id using plugin class %plugin, but no such method exists.", $vars, WATCHDOG_ERROR);
-      throw new Exception(strtr("Operation '%op' was requested on repo_id %repo_id using plugin class %plugin, but no such method exists.", $vars), E_ERROR);
-    }
-  }
-
-  // Finally ready to actually run the operations.
-  foreach ($ops as $op => $args) {
-    call_user_func_array(array($parser, $op), $args);
-  }
+  $synchronizer = $repo->getSynchronizer();
+  $synchronizer->syncEvent($event);
+  // Fire the notification hook - new code is here, parsed and ready to go!
+  module_invoke_all('versioncontrol_code_arrival', $repo, $event);
 }
