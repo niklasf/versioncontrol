@@ -163,6 +163,24 @@ abstract class VersioncontrolBackend {
     return $obj;
   }
 
+  /**
+   * Produce a new backend-specific VersioncontrolEvent object using a blob
+   * of incoming data.
+   *
+   * This method takes raw data produced by commit/receive hook scripts -
+   * that is, hooks that are triggered when new code arrives in a repository
+   * as a result of intentional user action (commit/push) - and translates it
+   * into an event object.
+   *
+   * @param array $data
+   *   The data that should be used to generate a new event. The structure and
+   *   content of the array is entirely backend-specific, as it reflects the
+   *   particular data produced by the backend's hook scripts.
+   *
+   * @return VersioncontrolEvent
+   */
+  abstract public function generateCodeArrivalEvent($data);
+
   public function loadEntities($controller, $ids = array(), $conditions = array(), $options = array()) {
     if (!isset($this->controllers[$controller])) {
       $class = $this->classesControllers[$controller];
