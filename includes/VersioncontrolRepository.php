@@ -202,7 +202,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   public function titleCallback() {
     return check_plain($repository->name);
   }
-  
+
   /**
    * Load known events in a repository from the database as an array of
    * VersioncontrolEvent-descended objects.
@@ -561,6 +561,12 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     return $this->pluginInstances['repomgr'];
   }
 
+  /**
+   * Return the history synchronizer plugin object that this repository is
+   * configured to use for all sync behaviors.
+   *
+   * @return VersioncontrolRepositoryHistorySynchronizerInterface
+   */
   public function getSynchronizer() {
     if (!isset($this->pluginInstances['reposync'])) {
       $this->pluginInstances['reposync'] = $this->getPluginClass('reposync', 'reposync', 'worker');

@@ -72,9 +72,14 @@ function _versioncontrol_repomgr_run_worker($data) {
 }
 
 function _versioncontrol_reposync_run_worker($data) {
-  // Lots and LOTS of input validation; this is a really bad place to fail silently.
+  // If a repo_id is provided, use it to try to load a repository object. This
+  // will supercede any repository object provided directly.
+  if (!empty($data['repo_id'])) {
+    $data['repository'] = versioncontrol_repository_load($data['repo_id']);
+  }
+
   if (empty($data['repository'])) {
-    $str = "Repository parsing job payload contained no repository data.";
+    $str = "Repository history synchronization job payload contained no repository data.";
     watchdog('versioncontrol', $str, array(), WATCHDOG_ERROR);
     throw new Exception($str, E_ERROR);
   }
