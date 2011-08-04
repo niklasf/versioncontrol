@@ -23,7 +23,9 @@ class VersioncontrolActivityWebTestCase extends VersioncontrolTestCase {
   
   function setUp() {
     $this->useBackends = self::BACKENDS_ALL;
-    parent::setUp('versioncontrol_activity', 'views', 'activity', 'token', 'trigger');
+    parent::setUp('versioncontrol_activity', 'versioncontrol', 'views', 'activity', 'token', 'trigger');
+    
+    $this->versioncontrolUser = $this->drupalCreateUser();
   }
   
   /**
@@ -121,7 +123,7 @@ class VersioncontrolActivityWebTestCase extends VersioncontrolTestCase {
     }
     
     if ($amount) {
-        $this->assertEqual(count($activity), $amount);
+      $this->assertEqual(count($activity), $amount);
     }
   }
   
@@ -153,32 +155,46 @@ class VersioncontrolActivityWebTestCase extends VersioncontrolTestCase {
     }
   }
   
-  private function versioncontrolGenerateNetworkActivity($repository) {
-    module_invoke_all('versioncontrol_activity', $repository, $this->loggedInUser->uid);
+  private function versioncontrolGenerateCodeArrival() {
+    $repo = $this->versioncontrolCreateRepository('test');
+    $event = $this->versioncontrolCreateEvent('test', array('repository' => $repo, 'uid' => $this->loggedInUser->uid));
+    
+    versioncontrol_activity_versioncontrol_code_arrival($repo, $event);
   }
   
   /**
-   * Test if network activity is properly logged
+   * Test if network activity is properly logged.
    */
-  function testNetworkActivity() { 
-    $hash = $this->createActivityTemplate('versioncontrol', 'activity', 'VersioncontrolRepository', array(), FALSE);
+  public function testCodeArrival() { 
+    $hash = $this->createActivityTemplate('versioncontrol', 'code_arrival', 'VersioncontrolEvent', array(), FALSE);
     
-    $account = $this->drupalCreateUser();
-    $this->drupalLogin($account);
+    $this->drupalLogin($this->versioncontrolUser);
     $user = $this->getUrl();
     
-    $object = $this->versioncontrolCreateRepository();
+    $this->versioncontrolGenerateCodeArrival();
     
-    $this->versioncontrolGenerateNetworkActivity($object);
+    $this->assertActivity($user, $hash, NULL, 0, 1);
+  }
+  
+  /**
+   * Test if repository insertion is properly logged.
+   */
+  public function testRepositoryInsertion() {
+    $hash = $this->createActivityTemplate('versioncontrol', 'repository_insert', 'VersioncontrolEvent', array(), FALSE);
+    
+    $this->drupalLogin($this->versioncontrolUser);
+    $user = $this->getUrl();
+
+    $repo = $this->versioncontrolCreateRepository('test', array('uid' => $this->versioncontrolUser->uid));
     
     $this->assertActivity($user, $hash, NULL, 0, 1);
   }
   
   /**
    * Tests if regeneration works correctly.
-   */
+   *//*
   function testRegeneration() {
-    $this->createActivityTemplate('versioncontrol', 'activity', 'VersioncontrolRepository');
+    $this->createActivityTemplate('versioncontrol', 'code_arrival', 'VersioncontrolRepository');
     
     $account = $this->drupalCreateUser();
     $this->drupalLogin($account);
@@ -192,6 +208,6 @@ class VersioncontrolActivityWebTestCase extends VersioncontrolTestCase {
     }
     
     $this->regenerate();
-  }
+  }*/
   
 }

@@ -44,15 +44,27 @@ function versioncontrol_activity_info() {
   
   $info->api = 2;
   $info->name = 'versioncontrol';
-  $info->object_type = 'VersioncontrolRepository';
+  $info->object_type = 'VersioncontrolEvent';
   $info->eid_field = 'repo_id';
-  $info->objects = array('Actor' => 'VersioncontrolRepository');
+  $info->objects = array('Actor' => 'VersioncontrolEvent');
   $info->hooks = array('versioncontrol' => $cache['versioncontrol']);
   $info->type_options = $cache_options;
   $info->list_callback = 'versioncontrol_activity_list_activity_actions';
   $info->context_load_callback = 'versioncontrol_activity_load_activity_context';
   
   return $info;
+}
+
+/**
+ * Implementation of hook_activity_objects_alter.
+ */
+function versioncontrol_activity_activity_objects_alter(&$objects, $type) {
+  switch ($type) {
+    case 'VersioncontrolEvent':
+      $objects['VersioncontrolRepository'] = $objects['VersioncontrolEvent']->getRepository();
+      
+      break;
+  }
 }
 
 /**
@@ -66,20 +78,17 @@ function versioncontrol_activity_type_check($token_objects, $types) {
  * Returns a list of triggers for Project.
  */
 function versioncontrol_activity_hooks() {
-  static $cache;
-  
-  if (!isset($cache)) {
-    $cache = array(
-      'versioncontrol' =>
-        array(
-          'activity' => array(
-            'runs when' => t('When network activity was caused.'),
-          ),
+  return array(
+    'versioncontrol' =>
+      array(
+        'repository_insert' => array(
+          'runs when' => t('When a repository is created.'),
         ),
-    );
-  }
-  
-  return $cache;
+        'code_arrival' => array(
+          'runs when' => t('When new code has arrived.'),
+        ),
+      ),
+  );
 }
 
 /**
@@ -87,15 +96,39 @@ function versioncontrol_activity_hooks() {
  */
 
 /**
- *
+ * Implementation of hook_versioncontrol_code_arrival.
  */
-function versioncontrol_activity_versioncontrol_activity($repository, $uid) {
-  $aids = _trigger_get_hook_aids('versioncontrol', 'activity');
+function versioncontrol_activity_versioncontrol_code_arrival(VersioncontrolRepository $repository, VersioncontrolEvent $event) {
+  $aids = _trigger_get_hook_aids('versioncontrol', 'code_arrival');
   
-  // Hack required by the Activity module for correct Token replacement.
-  $repository->uid = $uid;
+  $context = versioncontrol_activity_context('code_arrival', $repository, $event);
+
+  actions_do(array_keys($aids), $repository, $context);
+}
+
+/**
+ * Implementation of hook_versioncontrol_repository_entity_insert.
+ */
+function versioncontrol_activity_versioncontrol_repository_entity_insert(VersioncontrolRepository $repository) {
+  global $user;
   
-  $context = versioncontrol_activity_context('activity', $repository, $uid);
+  if (!empty($repository->uid)) {
+    $uid = $repository->uid;
+  } else {
+    $uid = $user->uid;
+  }
+  
+  $aids = _trigger_get_hook_aids('versioncontrol', 'repository_insert');
+  
+  // Temporary fix, until we can associate repository insertion with a VersioncontrolEvent.
+  $data = array(
+    'uid' => $uid,
+    'repository' => $repository,
+    'timestamp' => time(),
+  );
+  $event = $repository->getBackend()->buildEntity('event', $data);
+  
+  $context = versioncontrol_activity_context('repository_insert', $repository, $event);
 
   actions_do(array_keys($aids), $repository, $context);
 }
@@ -103,21 +136,35 @@ function versioncontrol_activity_versioncontrol_activity($repository, $uid) {
 /**
  * Returns the context array for Project activity.
  */
-function versioncontrol_activity_context($op, $repository, $uid = FALSE) {
+function versioncontrol_activity_context($op, VersioncontrolRepository $repository, VersioncontrolEvent $event, $uid = FALSE) {
   if (empty($repository)) {
     return array();
   } 
   else {
-    $context = array(
+    $context = array();
+    
+    if ($uid !== FALSE) {
+      $context['actor'] = $uid;
+    } 
+    else {
+      $context['actor'] = $event->uid;
+    }
+    
+    if (!empty($context['actor'])) {
+      $repository->uid = $context['actor'];
+    }
+    else {
+      $context['actor'] = 0;
+      $repository->uid = 0;
+    }
+    
+    $context += array(
       'hook' => 'versioncontrol',
       'op' => $op,
       'action' => $op,
       'VersioncontrolRepository' => $repository,
+      'VersioncontrolEvent' => $event,
     );
-    
-    if ($uid !== FALSE) {
-      $context['actor'] = $uid;
-    }
     
     return $context;
   }
@@ -162,13 +209,13 @@ function versioncontrol_activity_list_activity_actions($hook, $op, $max_age) {
     $min_time = 0;
   }
 
+  $sql_strings = array(
+    'code_arrival' => 'SELECT repo_id as id, timestamp as created, uid as actor FROM {versioncontrol_event_log} WHERE timestamp > %d',
+    'repository_insert' => '',
+  );
 
-  if ($op == 'activity' ) {
-    $sql = "SELECT repo_id as id, timestamp as created, uid as actor FROM {versioncontrol_event_log} WHERE timestamp > %d";
-  }
-
-  if (isset($sql)) {
-    $result = db_query($sql, $min_time);
+  if (!empty($sql_strings[$op])) {
+    $result = db_query($sql_strings[$op], $min_time);
     while ($row = db_fetch_array($result)) {
       $actions[] = $row;
     }
@@ -192,5 +239,5 @@ function versioncontrol_activity_list_activity_actions($hook, $op, $max_age) {
  * @see trigger_nodeapi
  */
 function versioncontrol_activity_load_activity_context($hook, $op, $id) {
-  return versioncontrol_activity_context($op, versioncontrol_repository_load($id));
+  // return versioncontrol_activity_context($op, versioncontrol_repository_load($id));
 }

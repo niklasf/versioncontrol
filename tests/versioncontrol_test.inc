@@ -30,6 +30,15 @@ class VersioncontrolTestBackend extends VersioncontrolBackend {
     );
     parent::__construct();
   }
+  
+  public function generateCodeArrivalEvent($data) {
+    $obj = new stdClass();
+    $obj->uid = 0;
+    $obj->timestamp = time();
+
+    return $this->buildEntity('event', $obj);
+  }
+  
 }
 
 class VersioncontrolTestRepository extends VersioncontrolRepository {
