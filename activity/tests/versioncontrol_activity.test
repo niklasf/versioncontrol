@@ -136,6 +136,7 @@ class VersioncontrolActivityWebTestCase extends VersioncontrolTestCase {
     
     $before = views_get_view_result('all_activity');
     
+    $this->drupalGet('admin/build/activity');
     $urls = $this->xpath('//a[normalize-space(text())=:label]', array(':label' => t('regenerate')));
     
     for ($index = 0; $index < count($urls); $index ++) {
@@ -145,13 +146,21 @@ class VersioncontrolActivityWebTestCase extends VersioncontrolTestCase {
     
     $after = views_get_view_result('all_activity');
     
-    // $this->assertEqual($before, $after);
-    $index = 0;
+    $this->assertEqual(count($after), count($before));
     
-    while ($index < min(count($before), count($after))) {
-      $this->assertEqual($before[$index]->activity_messages_message, $after[$index]->activity_messages_message);
+    foreach ($after as &$activity) {
+      $activity = $activity->activity_messages_message;
+    }
+    
+    foreach ($before as &$activity) {
+      $activity = $activity->activity_messages_message;
+    }
+    
+    for ($i = 0; $i < count($before); $i ++) {
+      $x = array_search($before[$i], $after);
+      unset($after[$x]);
       
-      $index ++;
+      $this->assertTrue(($x !== FALSE), t('Activity successfully regenerated'));
     }
   }
   
@@ -192,22 +201,21 @@ class VersioncontrolActivityWebTestCase extends VersioncontrolTestCase {
   
   /**
    * Tests if regeneration works correctly.
-   *//*
+   */
   function testRegeneration() {
-    $this->createActivityTemplate('versioncontrol', 'code_arrival', 'VersioncontrolRepository');
+    $this->createActivityTemplate('versioncontrol', 'code_arrival', 'VersioncontrolEvent', array(), FALSE);
     
-    $account = $this->drupalCreateUser();
-    $this->drupalLogin($account);
+    $this->drupalLogin($this->versioncontrolUser);
     $user = $this->getUrl();
     
     // Create new repositories and create activity
-    $object = $this->versioncontrolCreateRepository();
+    // $repository = $this->versioncontrolCreateRepository();
     
     for ($i = 0; $i < 10; $i ++) {
-      $this->versioncontrolGenerateNetworkActivity($object);
+      $this->versioncontrolGenerateCodeArrival();
     }
     
     $this->regenerate();
-  }*/
+  }
   
 }

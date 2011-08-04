@@ -121,12 +121,7 @@ function versioncontrol_activity_versioncontrol_repository_entity_insert(Version
   $aids = _trigger_get_hook_aids('versioncontrol', 'repository_insert');
   
   // Temporary fix, until we can associate repository insertion with a VersioncontrolEvent.
-  $data = array(
-    'uid' => $uid,
-    'repository' => $repository,
-    'timestamp' => time(),
-  );
-  $event = $repository->getBackend()->buildEntity('event', $data);
+  $event = versioncontrol_activity_create_event($repository, $uid);
   
   $context = versioncontrol_activity_context('repository_insert', $repository, $event);
 
@@ -171,6 +166,19 @@ function versioncontrol_activity_context($op, VersioncontrolRepository $reposito
 }
 
 /**
+ *
+ */
+function versioncontrol_activity_create_event(VersioncontrolRepository $repository, $uid = 0) {
+  $data = array(
+    'uid' => $uid,
+    'repository' => $repository,
+    'timestamp' => time(),
+  );
+  
+  return $repository->getBackend()->buildEntity('event', $data);
+}
+
+/**
  * Implementation of hook_activity_token_list().
  *
  * Here we break with our convention of working abstract,
@@ -199,7 +207,7 @@ function versioncontrol_activity_token_list($type = 'all') {
  * @return array
  *  An array of arrays with 'id', 'created' and 'actor' keys.
  */
-function versioncontrol_activity_list_activity_actions($hook, $op, $max_age) {
+function versioncontrol_activity_list_activity_actions($hook, $op, $max_age, $from, $count) {
   $actions = array();
 
   if (!empty($max_age)) {
@@ -210,13 +218,19 @@ function versioncontrol_activity_list_activity_actions($hook, $op, $max_age) {
   }
 
   $sql_strings = array(
-    'code_arrival' => 'SELECT repo_id as id, timestamp as created, uid as actor FROM {versioncontrol_event_log} WHERE timestamp > %d',
-    'repository_insert' => '',
+    'code_arrival' => 'SELECT elid, repo_id, timestamp as created, uid as actor FROM {versioncontrol_event_log} WHERE timestamp > %d',
+    //'repository_insert' => 'SELECT repo_id, updated as created, ',
   );
 
   if (!empty($sql_strings[$op])) {
-    $result = db_query($sql_strings[$op], $min_time);
+    $result = db_query_range($sql_strings[$op], $min_time, $from, $count);
     while ($row = db_fetch_array($result)) {
+      $row['id'] = array(
+        'repo_id' => $row['repo_id'], 
+        'uid' => $row['actor'], 
+        'elid' => (!empty($row['elid']) ? $row['elid'] : FALSE)
+      );
+      
       $actions[] = $row;
     }
   }
@@ -239,5 +253,15 @@ function versioncontrol_activity_list_activity_actions($hook, $op, $max_age) {
  * @see trigger_nodeapi
  */
 function versioncontrol_activity_load_activity_context($hook, $op, $id) {
-  // return versioncontrol_activity_context($op, versioncontrol_repository_load($id));
+  $repositories = versioncontrol_repository_load_multiple(array($id['repo_id']));
+  $repository = reset($repositories);
+
+  if (!empty($id['elid'])) {
+    $event = reset($repository->loadEvents(array($id['elid'])));
+  }
+  else {
+    $event = versioncontrol_activity_create_event($repository, $id['uid']);
+  }
+
+  return versioncontrol_activity_context('repository_insert', $repository, $event);
 }
