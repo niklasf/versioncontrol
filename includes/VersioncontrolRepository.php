@@ -282,35 +282,6 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
     return $this->backend->loadEntities('operation', $ids, $conditions, $options);
   }
 
-  /**
-   * Return TRUE if the account is authorized to commit in the actual
-   * repository, or FALSE otherwise. Only call this function on existing
-   * accounts or uid 0, the return value for all other
-   * uid/repository combinations is undefined.
-   *
-   * FIXME deprecate this in favour of a plugin implementation.
-   *
-   * @param $uid
-   *   The user id of the checked account.
-   */
-  public function isAccountAuthorized($uid) {
-    if (!$uid) {
-      return FALSE;
-    }
-    $approved = array();
-
-    foreach (module_implements('versioncontrol_is_account_authorized') as $module) {
-      $function = $module .'_versioncontrol_is_account_authorized';
-
-      // If at least one hook_versioncontrol_is_account_authorized()
-      // returns FALSE, the account is assumed not to be approved.
-      if ($function($this, $uid) === FALSE) {
-        return FALSE;
-      }
-    }
-    return TRUE;
-  }
-
   public function save($options = array()) {
     return empty($this->repo_id) ? $this->insert($options) : $this->update($options);
   }
