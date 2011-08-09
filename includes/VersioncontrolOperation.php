@@ -129,7 +129,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
   public function loadItemRevisions($ids = array(), $conditions = array(), $options = array()) {
     $conditions['repo_id'] = $this->repo_id;
     $conditions['vc_op_id'] = $this->vc_op_id;
-    return $this->backend->loadEntities('item', $ids, $conditions, $options);
+    return $this->getBackend()->loadEntities('item', $ids, $conditions, $options);
   }
 
   /**
@@ -326,7 +326,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
    *   be the same for both versions.
    */
   public function formatRevisionIdentifier($format = 'full') {
-    return $this->backend->formatRevisionIdentifier($this->revision, $format);
+    return $this->getBackend()->formatRevisionIdentifier($this->revision, $format);
   }
 
   /**

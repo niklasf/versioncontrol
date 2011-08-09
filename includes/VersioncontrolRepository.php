@@ -226,7 +226,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
    */
   public function loadBranches($ids = array(), $conditions = array(), $options = array()) {
     $conditions['repo_id'] = $this->repo_id;
-    return $this->backend->loadEntities('branch', $ids, $conditions, $options);
+    return $this->getBackend()->loadEntities('branch', $ids, $conditions, $options);
   }
 
   /**
@@ -252,7 +252,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
    */
   public function loadTags($ids = array(), $conditions = array(), $options = array()) {
     $conditions['repo_id'] = $this->repo_id;
-    return $this->backend->loadEntities('tag', $ids, $conditions, $options);
+    return $this->getBackend()->loadEntities('tag', $ids, $conditions, $options);
   }
 
   /**
@@ -279,7 +279,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
   public function loadCommits($ids = array(), $conditions = array(), $options = array()) {
     $conditions['type'] = VERSIONCONTROL_OPERATION_COMMIT;
     $conditions['repo_id'] = $this->repo_id;
-    return $this->backend->loadEntities('operation', $ids, $conditions, $options);
+    return $this->getBackend()->loadEntities('operation', $ids, $conditions, $options);
   }
 
   public function save($options = array()) {
@@ -429,7 +429,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
    *   be the same for both versions.
    */
   public function formatRevisionIdentifier($revision, $format = 'full') {
-    return $this->backend->formatRevisionIdentifier($revision, $format);
+    return $this->getBackend()->formatRevisionIdentifier($revision, $format);
   }
 
   /**
@@ -450,7 +450,7 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
         $webviewer_base_url = $this->data['webviewer_base_url'];
       }
       else {
-        $variable = 'versioncontrol_repository_' . $this->backend->type . '_base_url_' . $plugin['name'];
+        $variable = 'versioncontrol_repository_' . $this->getBackend()->type . '_base_url_' . $plugin['name'];
         $webviewer_base_url = variable_get($variable, '');
       }
       $this->pluginInstances['webviewer_url_handler'] = new $class_name(

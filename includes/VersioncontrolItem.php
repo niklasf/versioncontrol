@@ -434,7 +434,7 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
     }
 
     $revision = '';
-    if (in_array(VERSIONCONTROL_CAPABILITY_DIRECTORY_REVISIONS, $this->backend->capabilities)) {
+    if (in_array(VERSIONCONTROL_CAPABILITY_DIRECTORY_REVISIONS, $this->getBackend()->capabilities)) {
       $revision = $this->revision;
     }
 
@@ -444,7 +444,7 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
       'revision' => $revision,
       'repository' => $this->repository,
     );
-    $parent_item = $this->backend->buildEntity('item', $build_data);
+    $parent_item = $this->getBackend()->buildEntity('item', $build_data);
 
     $parent_item->selected_label = new stdClass();
     $parent_item->selected_label->get_from = 'other_item';
@@ -691,7 +691,7 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
     }
     else if (!empty($this->source_item_revision_id)) {
       // Item isn't loaded, but should exist. Load it, save it, and return.
-      return $this->sourceItem = $this->backend->load('item', array($this->source_item_revision_id));
+      return $this->sourceItem = $this->getBackend()->load('item', array($this->source_item_revision_id));
     }
     else {
       return FALSE;
@@ -800,7 +800,7 @@ abstract class VersioncontrolItem extends VersioncontrolEntity {
    *   results can be the same for both versions.
    */
   public function formatRevisionIdentifier($format = 'full') {
-    return $this->backend->formatRevisionIdentifier($this->revision, $format);
+    return $this->getBackend()->formatRevisionIdentifier($this->revision, $format);
   }
 
   /**
