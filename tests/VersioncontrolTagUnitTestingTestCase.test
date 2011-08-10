@@ -46,10 +46,6 @@ class VersioncontrolTagUnitTestingTestCase extends VersioncontrolTestCase {
       ->execute()
       ->fetchObject();
     foreach ($tag as $key => $val) {
-      //TODO remove this when #998684 gets in
-      if ($key == 'action') {
-        continue;
-      }
       $this->assertEqual($val, $db_tag->$key, t('%key tag attribute is stored correctly', array('%key' => $key)), t('Creation'));
     }
   }
@@ -91,10 +87,6 @@ class VersioncontrolTagUnitTestingTestCase extends VersioncontrolTestCase {
       ->execute()
       ->fetchObject();
     foreach ($tag as $key => $val) {
-      //TODO remove this when #998684 gets in
-      if ($key == 'action') {
-        continue;
-      }
       $this->assertEqual($val, $db_tag->$key, t('%key tag attribute is updated correctly', array('%key' => $key)), t('Update'));
     }
 

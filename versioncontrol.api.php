@@ -73,11 +73,6 @@
  *        - 'id': The label identifier (a simple integer), used for unique
  *             identification of branches and tags in the database.
  *        - 'name': The branch or tag name (a string).
- *        - 'action': Specifies what happened to this label in this operation.
- *             For plain commits, this is always VERSIONCONTROL_ACTION_MODIFIED.
- *             For branch or tag operations (or commits that emulate those),
- *             it can be either VERSIONCONTROL_ACTION_ADDED or
- *             VERSIONCONTROL_ACTION_DELETED.
  *
  * @param $operation_items
  *   A structured array containing all items that were affected by the above

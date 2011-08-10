@@ -263,7 +263,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
       ->execute();
 
     $insert = db_insert('versioncontrol_operation_labels')
-      ->fields(array('vc_op_id', 'label_id', 'action'));
+      ->fields(array('vc_op_id', 'label_id'));
     foreach ($this->labels as $label) {
       // first, ensure there's a record of the label already
       if (!isset($label->label_id)) {
@@ -272,8 +272,6 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
       $values = array(
         'vc_op_id' => $this->vc_op_id,
         'label_id' => $label->label_id,
-        // FIXME temporary hack, sets a default action. _CHANGE_ this.
-        'action' => !empty($label->action) ? $label->action : VERSIONCONTROL_ACTION_MODIFIED,
       );
       $insert->values($values);
     }

@@ -46,10 +46,6 @@ class VersioncontrolBranchUnitTestingTestCase extends VersioncontrolTestCase {
       ->execute()
       ->fetchObject();
     foreach ($branch as $key => $val) {
-      //TODO remove this when #998684 gets in
-      if ($key == 'action') {
-        continue;
-      }
       $this->assertEqual($val, $db_branch->$key, t('%key branch attribute is stored correctly', array('%key' => $key)), t('Creation'));
     }
   }
@@ -91,10 +87,6 @@ class VersioncontrolBranchUnitTestingTestCase extends VersioncontrolTestCase {
       ->execute()
       ->fetchObject();
     foreach ($branch as $key => $val) {
-      //TODO remove this when #998684 gets in
-      if ($key == 'action') {
-        continue;
-      }
       $this->assertEqual($val, $db_branch->$key, t('%key branch attribute is updated correctly', array('%key' => $key)), t('Update'));
     }
 

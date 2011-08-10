@@ -112,19 +112,7 @@ function versioncontrol_schema() {
 
   $schema['versioncontrol_operation_labels'] = array(
     'description' =>
-      'This table contains information about which branches and/or tags (= labels, referred to by the label_id) have been affected by an operation (vc_op_id), and how they\'ve been affected (action). Let\'s refer to that combination as "label action".
-
-      Commit operations might not have any label associated, which happens e.g. for SVN commits outside of /trunk, /tags and /branches (or if labels are neither natively supported nor emulated).
-
-      Possible label actions are:
-      - Commit: commit operation, label is a branch, action == VERSIONCONTROL_ACTION_MODIFIED
-      - Native branch/tag creation: branch or tag operation, label has the
-          same type as the operation, action == VERSIONCONTROL_ACTION_ADDED
-      - Native branch/tag deletion: branch or tag operation, label has the
-          same type as the operation, action == VERSIONCONTROL_ACTION_DELETED
-      - Emulated branch/tag creation or deletion (think of SVN branches and
-          tags): commit operation, any label type, action is the same as for
-          native creations/deletions.',
+      'This table contains information about which branches and/or tags (= labels, referred to by the label_id) have been affected by an operation (vc_op_id).',
     'fields' => array(
       'vc_op_id' => array(
         'description' => 'Foreign key (referring to {versioncontrol_operations}.vc_op_id) for the operation that affected the given label(s).',
@@ -136,15 +124,6 @@ function versioncontrol_schema() {
       'label_id' => array(
         'description' => 'Foreign key (referring to {versioncontrol_labels}.label_id) for the affected label.',
         'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'action' => array(
-        'description' =>
-          'Specifies how the label was affected, see the {versioncontrol_operation_labels} table description for details on the semantics. Possible values are VERSIONCONTROL_ACTION_MODIFIED, VERSIONCONTROL_ACTION_ADDED and VERSIONCONTROL_ACTION_DELETED.',
-        'type' => 'int',
-        'size' => 'tiny',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
@@ -1363,5 +1342,14 @@ function versioncontrol_update_6320() {
     ),
   );
   db_create_table($ret, 'versioncontrol_event_log', $schema);
+  return $ret;
+}
+
+/**
+ * Remove {versioncontrol_operation_labels}.action column.
+ */
+function versioncontrol_update_6321() {
+  $ret = array();
+  db_drop_field($ret, 'versioncontrol_operation_labels', 'action');
   return $ret;
 }

@@ -490,7 +490,6 @@ class VersioncontrolOperationController extends VersioncontrolEntityController {
     $query->join('versioncontrol_operation_labels', 'vcol', 'vco.vc_op_id = vcol.vc_op_id');
     $query->join('versioncontrol_labels', 'vcl', 'vcol.label_id = vcl.label_id');
     $query->fields('vco', array('vc_op_id'))
-      ->fields('vcol', array('action'))
       ->fields('vcl'); // add all the label fields
     // build the constraint list
     $operation_ids = array();

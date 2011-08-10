@@ -33,16 +33,6 @@ class VersioncontrolBranch extends VersioncontrolEntity {
   public $type = VERSIONCONTROL_LABEL_BRANCH;
 
   /**
-   * @name VCS actions
-   * for a single item (file or directory) in a commit, or for branches and tags.
-   * either VERSIONCONTROL_ACTION_{ADDED,MODIFIED,MOVED,COPIED,MERGED,DELETED,
-   * REPLACED,OTHER}
-   *
-   * @var array
-   */
-  public $action;
-
-  /**
    * The database id of the repository with which this branch is associated.
    * @var int
    */
