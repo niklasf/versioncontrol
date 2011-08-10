@@ -142,11 +142,12 @@ abstract class VersioncontrolBackend {
       throw new Exception("Nonexistent class '$class' specified by " . __CLASS__ . " backend for requested type '$type' when attempting to build a Versioncontrol entity.", E_ERROR);
     }
 
-    // Ensure the class to create descends from VersioncontrolEntity.
-    // FIXME temporary hack to accommodate the introduction of the VersioncontrolEntityInterface interface; have to use reflection to check interfaces on a classname string, and
-    // it's too annoying to refactor all this to accommodate that right now.
-    else if (!is_subclass_of($class, 'VersioncontrolEntity') && !is_subclass_of($class, 'VersioncontrolRepository')) {
-      throw new Exception("Invalid class '$class' specified by " . __CLASS__ . " backend for requested type '$type' when attempting to build a Versioncontrol entity; class does not implement VersioncontrolEntityInterface.", E_ERROR);
+    // Ensure the class to create comes from VersioncontrolEntityInterface.
+    else {
+      $reflection = new ReflectionClass($class);
+      if (!$reflection->implementsInterface('VersioncontrolEntityInterface')) {
+        throw new Exception("Invalid class '$class' specified by " . __CLASS__ . " backend for requested type '$type' when attempting to build a Versioncontrol entity; class does not implement VersioncontrolEntityInterface.", E_ERROR);
+      }
     }
 
     // If we're not building a repo object, snag the repo object and pass it to
