@@ -170,8 +170,8 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
    */
   public function fetchLogs() {
     $sync = $this->getSynchronizer();
-    // FIXME This should determine if the repo is purged/new, and if so pick initialSync
-    return $sync->fullSync();
+    // FIXME This should determine if the repo is purged/new, and if so pick syncInitial
+    return $sync->syncFull();
   }
 
   /**

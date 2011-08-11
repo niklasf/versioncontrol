@@ -441,13 +441,13 @@ interface VersioncontrolRepositoryHistorySynchronizerInterface {
    * "diff" the db against the repo data and synchronize only that which is
    * different, leaving that which already exists alone.
    */
-  public function fullSync();
+  public function syncFull();
 
   /**
    * Perform an initial parse on a repository, bringing the db from empty all
    * the way fully up to date.
    */
-  public function initialSync();
+  public function syncInitial();
 
   /**
    * Perform a targeted sync based on information about an incoming data event
