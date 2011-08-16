@@ -514,29 +514,6 @@ class VersioncontrolItemController extends VersioncontrolEntityController {
   protected $idKey = 'item_revision_id';
 }
 
-interface VersioncontrolEntityInterface {
-  public function build($args = array());
-  public function save($options = array());
-
-  public function getBackend();
-
-  /**
-   * Insert a new entity into the database, then invoke relevant hooks, if any.
-   */
-  public function insert($options = array());
-
-  /**
-   * Update an existing entity's record in the database, then invoke relevant
-   * hooks, if any.
-   */
-  public function update($options = array());
-
-  /**
-   * Delete an entity from the database, along with any of its dependent data.
-   */
-  public function delete($options = array());
-}
-
 /**
  * Abstract parent class for all the various entity classes utilized by VC API.
  *

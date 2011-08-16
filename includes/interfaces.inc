@@ -1,5 +1,28 @@
 <?php
 
+interface VersioncontrolEntityInterface {
+  public function build($args = array());
+  public function save($options = array());
+
+  public function getBackend();
+
+  /**
+   * Insert a new entity into the database, then invoke relevant hooks, if any.
+   */
+  public function insert($options = array());
+
+  /**
+   * Update an existing entity's record in the database, then invoke relevant
+   * hooks, if any.
+   */
+  public function update($options = array());
+
+  /**
+   * Delete an entity from the database, along with any of its dependent data.
+   */
+  public function delete($options = array());
+}
+
 interface VersioncontrolItemParallelItems {
   /**
    * Given an item in a repository, retrieve related versions of that
@@ -394,6 +417,60 @@ interface VersioncontrolWebviewerUrlHandlerInterface {
    */
   public function getDiffUrl($file_item_new, $file_item_old);
 }
+
+/**
+ * Interface defining the behavior for the classes used by views set plugins.
+ *
+ * Views sets are wrappers around groups of views that VCAPI uses to ease the
+ * process of determining the most appropriate view (either generic or
+ * backend-specific) to use in a given situation.  A views set plugin represents
+ * something that would, under most circumstances, be a single view, but because
+ * vcapi has its various backends, it needs the group. Plugins implementing this
+ * interface are responsible for the logic of that multiplexing.
+ */
+interface VersioncontrolViewsSetInterface {
+  /**
+   * Derive the appropriate view for this set based on the data in a
+   * VersioncontrolEntity object.
+   *
+   * @param VersioncontrolEntity $entity
+   *   The entity from which a view should be derived.
+   */
+  public function getViewNameByEntity(VersioncontrolEntityInterface $entity);
+
+  /**
+   * Retrieve the appropriate view based on an explicitly known backend.
+   *
+   * @param mixed $backend
+   *   Either a VersioncontrolBackend object, or the short name that uniquely
+   *   refers to a backend.
+   */
+  public function getViewNameByBackend($backend);
+
+  public function getSetName();
+
+  public function getDefaultViews($vcs = '');
+
+  public function getBaseView();
+
+  /**
+   * \o/
+   */
+  public function setSet($data);
+}
+
+interface VersioncontrolViewsGlobalSetInterface extends VersioncontrolViewsSetInterface {
+  /**
+   * Retrieve the appropriate view, typically based on some environment data.
+   *
+   * Global views sets are, under most circumstances, sensitive only to whether
+   * or not VCAPI is operating in single backend mode (as defined by the
+   * global $conf variable). Thus, they tend not to need an argument to derive
+   * the appropriate view.
+   */
+  public function getViewName();
+}
+
 
 interface VersioncontrolRepositoryManagerWorkerInterface {
 

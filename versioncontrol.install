@@ -1353,3 +1353,12 @@ function versioncontrol_update_6321() {
   db_drop_field($ret, 'versioncontrol_operation_labels', 'action');
   return $ret;
 }
+
+/**
+ * Clear caches to update autoload information for VersioncontrolEntityInterface.
+ */
+function versioncontrol_update_6322() {
+  $ret = array();
+  cache_clear_all();
+  return $ret;
+}
