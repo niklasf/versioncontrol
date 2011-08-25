@@ -171,7 +171,7 @@ $handler->override_option('fields', array(
       'text' => '<div class="commit-global">
   <h3>[author_date]</h3>
   <div class="commit-info">Commit <strong>[revision]</strong> on <strong>[labels]</strong></div>
-  <div class="attribtution">[attribution]</div>
+  <div class="attribution">[attribution]</div>
 </div>',
       'make_link' => 0,
       'path' => '#',
