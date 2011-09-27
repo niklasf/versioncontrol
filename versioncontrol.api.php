@@ -12,181 +12,37 @@
  * Copyright 2007, 2008, 2009 by Jakob Petsovits ("jpetso", http://drupal.org/user/56020)
  */
 
-
 /**
- * Act on database changes when commit, tag or branch operations are inserted
- * or deleted. Note that this hook is not necessarily called at the time
- * when the operation actually happens - operations can also be inserted
- * by a cron script when the actual commit/branch/tag has been accomplished
- * for quite a while already.
+ * Act just after a versioncontrol operation has been inserted.
  *
- * @param $op
- *   'insert' when the operation has just been recorded and inserted into the
- *   database, or 'delete' if it will be deleted right after this hook
- *   has been called.
- *
- * @param $operation
- *   An operation array containing basic information about the commit, branch
- *   or tag operation. It consists of the following elements:
- *
- *   - 'vc_op_id': The Drupal-specific operation identifier (a simple integer)
- *        which is unique among all operations (commits, branch ops, tag ops)
- *        in all repositories.
- *   - 'type': The type of the operation - one of the
- *        VERSIONCONTROL_OPERATION_{COMMIT,BRANCH,TAG} constants.
- *        Note that if you pass branch or tag constraints, this function might
- *        nevertheless return commit operations too - that happens for version
- *        control systems without native branches or tags (like Subversion)
- *        when a branch or tag is affected by the commit.
- *   - 'repository': The repository where this operation occurred.
- *        This is a structured "repository array", like is returned
- *        by versioncontrol_get_repository().
- *   - 'date': The time when the operation was performed, given as
- *        Unix timestamp. (For commits, this is the time when the revision
- *        was committed, whereas for branch/tag operations it is the time
- *        when the files were branched or tagged.)
- *   - 'uid': The Drupal user id of the operation author, or 0 if no
- *        Drupal user could be associated to the author.
- *   - 'username': The system specific VCS username of the author.
- *   - 'message': The log message for the commit, tag or branch operation.
- *        If a version control system doesn't support messages for any of them,
- *        this element contains an empty string.
- *   - 'revision': The VCS specific repository-wide revision identifier,
- *        like '' in CVS, '27491' in Subversion or some SHA-1 key in various
- *        distributed version control systems. If there is no such revision
- *        (which may be the case for version control systems that don't support
- *        atomic commits) then the 'revision' element is an empty string.
- *        For branch and tag operations, this element indicates the
- *        (repository-wide) revision of the files that were branched or tagged.
- *
- *   - 'labels': An array of branches or tags that were affected by this
- *        operation. Branch and tag operations are known to only affect one
- *        branch or tag, so for these there will be only one element (with 0
- *        as key) in 'labels'. Commits might affect any number of branches,
- *        including none. Commits that emulate branches and/or tags (like
- *        in Subversion, where they're not a native concept) can also include
- *        add/delete/move operations for labels, as detailed below.
- *        Mind that the main development branch - e.g. 'HEAD', 'trunk'
- *        or 'master' - is also considered a branch. Each element in 'labels'
- *        is a structured array with the following keys:
- *
- *        - 'id': The label identifier (a simple integer), used for unique
- *             identification of branches and tags in the database.
- *        - 'name': The branch or tag name (a string).
- *
- * @param $operation_items
- *   A structured array containing all items that were affected by the above
- *   operation. Array keys are the current/new paths, even if the item doesn't
- *   exist anymore (as is the case with delete actions in commits).
- *   The associated array elements are structured item arrays and consist of
- *   the following elements:
- *
- *   - 'type': Specifies the item type, which is either
- *        VERSIONCONTROL_ITEM_FILE or VERSIONCONTROL_ITEM_DIRECTORY for items
- *        that still exist, or VERSIONCONTROL_ITEM_FILE_DELETED respectively
- *        VERSIONCONTROL_ITEM_DIRECTORY_DELETED for items that have been
- *        removed (by a commit's delete action).
- *   - 'path': The path of the item at the specific revision.
- *   - 'revision': The (file-level) revision when the item was changed.
- *        If there is no such revision (which may be the case for
- *        directory items) then the 'revision' element is an empty string.
- *   - 'item_revision_id': Identifier of this item revision in the database.
- *        Note that you can only rely on this element to exist for
- *        operation items - functions that interface directly with the VCS
- *        (such as VersioncontrolItem::getDirectoryContents() or
- *        VersioncontrolItem::getParallelItems()) might not include
- *        this identifier, for obvious reasons.
- *
- *   For commit operations, additional information about the origin of
- *   the items is also available. The following elements will be set
- *   for each item in addition to the ones listed above:
- *
- *   - 'action': Specifies how the item was changed.
- *        One of the predefined VERSIONCONTROL_ACTION_* values.
- *   - 'source_items': An array with the previous state(s) of the affected item.
- *        Empty if 'action' is VERSIONCONTROL_ACTION_ADDED.
- *   - 'replaced_item': The previous but technically unrelated item at the
- *        same location as the current item. Only exists if this previous item
- *        was deleted and replaced by a different one that was just moved
- *        or copied to this location.
+ * @param VersioncontrolOperation $operation
+ *   The operation object.
  *
  * @ingroup Operations
- * @ingroup Commit notification
- * @ingroup Database change notification
  */
-function hook_versioncontrol_operation($op, $operation, $operation_items) {
-  if ($op == 'insert' && module_exists('commitlog')) {
-    if (variable_get('commitlog_send_notification_mails', 0)) {
-      $mailto = variable_get('versioncontrol_email_address', 'versioncontrol@example.com');
-      commitlog_notification_mail($mailto, $operation, $operation_items);
-    }
-  }
+function hook_versioncontrol_entity_commit_insert(VersioncontrolOperation $operation) {
 }
 
 /**
- * Act on database changes when operation labels change or a given operation.
+ * Act just after a versioncontrol operation has been updated.
  *
- * @param $op
- *   'insert' when the operation along with its label associations has just
- *   been recorded and inserted into the database, 'update' when the set of
- *   operation labels changes, or 'delete' if the operation along with its
- *   label associations. Note that updating or deleting an operation label
- *   does not automatically trigger deletion of the label itself in the
- *   database, just the association of the operation to the label.
- *
- * @param $operation
- *   An operation array containing basic information about the commit, branch
- *   or tag operation. This is the same operation array format as is passed
- *   to hook_versioncontrol_operation() (and other functions), see the
- *   API documentation there for an exact description of its properties.
- *
- *   The operation array holds the labels' state *before* the action is being
- *   performed. That means when @p $op is 'insert', $operation['labels'] is an
- *   empty array, whereas with @p $op being 'update' or 'delete',
- *   $operation['labels'] holds the previous set of operation labels (which may
- *   also be empty of course).
- *
- * @param $labels
- *   The new set of operation labels - an array of branches or tags that were
- *   affected by the given operation. When @p $op is 'delete', this is an empty
- *   array, whereas with @p $op being 'insert' or 'update', @p $labels holds
- *   the new set of operation labels (which may also be empty of course).
- *   Same format as $operation['labels'].
+ * @param VersioncontrolOperation $operation
+ *   The operation object.
  *
  * @ingroup Operations
- * @ingroup Database change notification
  */
-function hook_versioncontrol_operation_labels($op, $operation, $labels) {
-  // This crude example tracks which labels are being added and removed, and
-  // adjusts a counter accordingly. Untested, don't assume this actually works.
-  $old_label_ids = $new_label_ids = array();
-  $adjustment_operators = array();
+function hook_versioncontrol_entity_commit_update(VersioncontrolOperation $operation) {
+}
 
-  foreach ($operation['labels'] as $label) {
-    $old_label_ids[] = $label['label_id'];
-  }
-  foreach ($labels as $label) {
-    if (!in_array($label['label_id'], $old_label_ids)) {
-      $adjustment_operators[$label['label_id']] = '+';
-    }
-    $new_label_ids[] = $label['label_id'];
-  }
-  foreach ($old_label_ids as $old_label_id) {
-    if (!in_array($old_label_id, $new_label_ids)) {
-      $adjustment_operators[$old_label_id] = '-';
-    }
-  }
-
-  foreach ($adjustment_operators as $label_id => $operator) {
-    $result = db_query('SELECT label_id FROM {mymodule_label_activity}');
-    if (!db_result($result)) { // does not yet exist in the database
-      db_query("INSERT INTO {mymodule_label_activity} (label_id, activity)
-                VALUES (%d, 0)", $label_id);
-    }
-    db_query("UPDATE {mymodule_label_activity}
-              SET activity = activity $operator 1
-              WHERE label_id = %d", $label_id);
-  }
+/**
+ * Act just after a versioncontrol operation has been deleted.
+ *
+ * @param VersioncontrolOperation $operation
+ *   The operation object.
+ *
+ * @ingroup Operations
+ */
+function hook_versioncontrol_entity_commit_delete(VersioncontrolOperation $operation) {
 }
 
 /**
