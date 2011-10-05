@@ -32,10 +32,11 @@ Have a look at the OVERVIEW.txt file for a basic introduction into concepts,
 forms and API of this module.
 
 
-AUTHOR
-------
+AUTHORS
+-------
 Jakob Petsovits <jpetso at gmx DOT at>
 Sam Boyer <drupal at samboyer DOT org>
+Marco Villegas - http://drupal.org/user/132175
 
 CREDITS
 -------
