@@ -418,6 +418,39 @@ class VersioncontrolRepositoryController extends VersioncontrolEntityController 
    * @param array $queried_entities
    */
   protected function extendData(&$queried_entities) {}
+
+  /**
+   * Adds a condition on the vcs column, so that only repositories are loaded,
+   * that are supported by the current controller.
+   */
+  protected function buildQueryConditions(&$query, $ids, $conditions) {
+    parent::buildQueryConditions(&$query, $ids, $conditions);
+
+    // We have a backend specific controller. Load only the supported
+    // repositories.
+    if (isset($this->backend->type)) {
+      $this->attachCondition($query, 'vcs', $this->backend->type);
+    }
+    // backend->type is not set, that means we use the default controller. We
+    // must load all repositories, except those that have an entity specific
+    // controller.
+    else {
+      // Determine backends using the default controller.
+      $default_controller_backends = array();
+      foreach (versioncontrol_get_backends() as $backend_name => $backend) {
+        if ($backend->classesControllers['repo'] == 'VersioncontrolRepositoryController') {
+          $default_controller_backends[] = $backend_name;
+        }
+      }
+
+      // Add the condition to the query.
+      $this->attachCondition($query, 'vcs', array(
+        'values' => $default_controller_backends,
+        'operator' => 'IN',
+      ));
+    }
+    return $query;
+  }
 }
 
 class VersioncontrolBranchController extends VersioncontrolEntityController {

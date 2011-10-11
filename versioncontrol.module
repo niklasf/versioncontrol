@@ -353,21 +353,19 @@ function versioncontrol_repository_load($repo_id, $conditions = array(), $option
  *
  */
 function versioncontrol_repository_load_multiple($ids = array(), $conditions = array(), $options = array()) {
-  $controller = &ctools_static(__FUNCTION__);
-  if (!isset($controller)) {
-    if (variable_get('versioncontrol_single_backend_mode', FALSE)) {
-      $backends = versioncontrol_get_backends();
-      $backend = reset($backends);
-      // need to ensure the controller is initialized, and this is the only way
-      $result = $backend->loadEntities('repo', $ids, $conditions, $options);
-      $controller = $backend->controllers['repo'];
-      return $result;
-    }
-    else {
-      $controller = new VersioncontrolRepositoryController();
-    }
+  $entities = array();
+
+  // Let all backends load the repositories they support.
+  foreach (versioncontrol_get_backends() as $type => $backend) {
+    $entities += $backend->loadEntities('repo', $ids, $conditions, $options);
   }
-  return $controller->load($ids, $conditions, $options);
+
+  // For all repositories that don't have a backend specific controller, use
+  // the default one.
+  $default_controller = new VersioncontrolRepositoryController();
+  $entities += $default_controller->load($ids, $conditions, $options);
+
+  return $entities;
 }
 
 /**
