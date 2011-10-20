@@ -32,12 +32,6 @@ class VersioncontrolTag extends VersioncontrolEntity {
    */
   public $type = VERSIONCONTROL_LABEL_TAG;
 
-  /**
-   * The database id of the repository with which this tag is associated.
-   * @var int
-   */
-  public $repo_id;
-
   public function update($options = array()) {
     if (empty($this->label_id)) {
       // This is supposed to be an existing tag, but has no label_id.

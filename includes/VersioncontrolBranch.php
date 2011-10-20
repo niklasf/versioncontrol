@@ -32,12 +32,6 @@ class VersioncontrolBranch extends VersioncontrolEntity {
    */
   public $type = VERSIONCONTROL_LABEL_BRANCH;
 
-  /**
-   * The database id of the repository with which this branch is associated.
-   * @var int
-   */
-  public $repo_id;
-
   protected $defaultCrudOptions = array(
     'update' => array('nested' => TRUE),
     'insert' => array('nested' => TRUE),

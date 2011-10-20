@@ -569,6 +569,14 @@ abstract class VersioncontrolEntity implements VersioncontrolEntityInterface {
   protected $repository;
 
   /**
+   * The database id of the repository with which this entity is associated.
+   * Used only to load repository data member if not already there.
+   *
+   * @var int
+   */
+  public $repo_id = NULL;
+
+  /**
    * Internal property that holds the name of the property which contains the
    * entity's primary key.
    *

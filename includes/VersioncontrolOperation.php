@@ -127,7 +127,7 @@ abstract class VersioncontrolOperation extends VersioncontrolEntity {
   );
 
   public function loadItemRevisions($ids = array(), $conditions = array(), $options = array()) {
-    $conditions['repo_id'] = $this->repo_id;
+    $conditions['repo_id'] = $this->repository->repo_id;
     $conditions['vc_op_id'] = $this->vc_op_id;
     return $this->getBackend()->loadEntities('item', $ids, $conditions, $options);
   }
