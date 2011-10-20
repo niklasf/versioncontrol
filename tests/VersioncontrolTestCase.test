@@ -122,6 +122,22 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     }
   }
 
+  private function fillRepository($backend, &$data) {
+    if (isset($data['repository'])) {
+      if (!is_subclass_of($data['repository'], 'VersioncontrolRepository')) {
+        $this->fail(t('Repository in data array is not a VersioncontrolRepository child.'));
+      }
+      return;
+    }
+    if (!isset($data['repo_id'])) {
+      $repo = $this->versioncontrolCreateRepository($backend->type);
+      $data['repository'] = $repo;
+    }
+    else {
+      $data['repository'] = $backend->loadEntity('repo', array($data['repo_id']));
+    }
+  }
+
   /**
    * Create a dummy backend, insert it in the database, and return it for use.
    *
@@ -178,12 +194,7 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     $data += $default_data;
 
     $backend = $this->backends[$backend_name];
-    if (!isset($data['repo_id'])) {
-      if (!isset($data['repository']) || !is_subclass_of($data['repository'], 'VersioncontrolRepository')) {
-        $repo = $this->versioncontrolCreateRepository($backend_name);
-        $data['repo_id'] = $repo->repo_id;
-      }
-    }
+    $this->fillRepository($backend, $data);
     $label = $backend->buildEntity($type, $data);
     if ($insert) {
       $label->insert();
@@ -227,12 +238,7 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     $data += $default_data;
 
     $backend = $this->backends[$backend_name];
-    if (!isset($data['repo_id'])) {
-      if (!isset($data['repository']) || !is_subclass_of($data['repository'], 'VersioncontrolRepository')) {
-        $repo = $this->versioncontrolCreateRepository($backend_name);
-        $data['repo_id'] = $repo->repo_id;
-      }
-    }
+    $this->fillRepository($backend, $data);
     $operation = $backend->buildEntity('operation', $data);
     if ($insert) {
       $operation->insert();
@@ -256,14 +262,9 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     $data += $default_data;
 
     $backend = $this->backends[$backend_name];
-    if (!isset($data['repo_id'])) {
-      if (!isset($data['repository']) || !is_subclass_of($data['repository'], 'VersioncontrolRepository')) {
-        $repo = $this->versioncontrolCreateRepository($backend_name);
-        $data['repo_id'] = $repo->repo_id;
-      }
-    }
+    $this->fillRepository($backend, $data);
     if (!isset($data['vc_op_id'])) {
-      $operation = $this->versioncontrolCreateOperation('test', array('repo_id' => $data['repo_id']));
+      $operation = $this->versioncontrolCreateOperation('test', array('repo_id' => $data['repository']->repo_id));
       $data['vc_op_id'] = $operation->vc_op_id;
     }
     $item = $backend->buildEntity('item', $data);
