@@ -93,4 +93,14 @@ class VersioncontrolTag extends VersioncontrolEntity {
 
     module_invoke_all('versioncontrol_entity_tag_delete', $this);
   }
+
+  /**
+   * Get a message or annotation that describes the tag.
+   *
+   * @return
+   *  The message or an empty string.
+   */
+  public function getMessage() {
+    return '';
+  }
 }
