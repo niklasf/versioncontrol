@@ -104,7 +104,7 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
           continue;
         }
         if (($module->status == TRUE && ($this->useBackends & self::BACKENDS_ENABLED)) ||
-            ($modules->status == FALSE && ($this->useBackends & self::BACKENDS_DISABLED))) {
+            ($module->status == FALSE && ($this->useBackends & self::BACKENDS_DISABLED))) {
           $modules[] = $module->name;
         }
       }
