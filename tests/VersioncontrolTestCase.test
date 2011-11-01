@@ -375,15 +375,15 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
 
     return $event;
   }
-  
+
   /**
    * Create a code arrival event made up from passed data.
    *
    * @param string $backend_name
    *   The backend with which the event should be created.
    * @param array $data
-   *   Data to be used in generating the code arrival event object. Defaults will be appended
-   *   to this list.
+   *   Data to be used in generating the code arrival event object. Defaults
+   *   will be appended to this list.
    * @param $insert
    *   Whether to properly insert the object into the database, or simply
    *   create the dummy object and postpone insertion.
@@ -394,23 +394,23 @@ abstract class VersioncontrolTestCase extends DrupalWebTestCase {
     if (empty($data['repository']) || (!is_subclass_of($data['repository'], 'VersioncontrolRepository'))) {
       $data['repository'] = $this->versioncontrolCreateRepository($backend_name);
     }
-    
+
     $data += array(
       'timestamp' => time(),
       'data' => '',
       'uid' => 0,
     );
-    
+
     $event = $data['repository']->getBackend()->generateCodeArrivalEvent($data);
     if ($insert) {
       $event->insert();
       $this->assertTrue(isset($event->elid) && is_numeric($event->elid), t('VerioncontrolEvent::insert() properly populates a new event object with an integer elid.'));
     }
-    
+
     if ($sync) {
       $data['repository']->getSynchronizer()->syncEvent($event);
     }
-    
+
     return $event;
   }
 }
