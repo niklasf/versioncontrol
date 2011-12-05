@@ -486,7 +486,14 @@ abstract class VersioncontrolRepository implements VersioncontrolEntityInterface
       return FALSE;
     }
 
-    return $plugin;
+    // If $plugin_name is empty ctools_get_plugins() returns an array of plugins
+    // instead of a single one. Default to the first one.
+    if (!$plugin_name) {
+      return reset($plugin);
+    }
+    else {
+      return $plugin;
+    }
   }
 
   /**
